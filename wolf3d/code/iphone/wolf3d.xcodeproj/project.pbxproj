@@ -95,11 +95,17 @@
 		72935BA20F6B2D9D0085DD28 /* zmem.c in Sources */ = {isa = PBXBuildFile; fileRef = 72935B720F6B2D9D0085DD28 /* zmem.c */; };
 		72A7E8F70F5F2063005B83C0 /* iphone_menus.c in Sources */ = {isa = PBXBuildFile; fileRef = 72A7E8F60F5F2063005B83C0 /* iphone_menus.c */; };
 		72B5FF390F7E5C3D00C8A372 /* hud.c in Sources */ = {isa = PBXBuildFile; fileRef = 72B5FF380F7E5C3D00C8A372 /* hud.c */; };
+		ED0A8D121069ACA8001E0547 /* iphone_alerts.m in Sources */ = {isa = PBXBuildFile; fileRef = ED0A8D0C1069ACA8001E0547 /* iphone_alerts.m */; };
+		ED0A8D131069ACA8001E0547 /* iphone_downloadSOD.m in Sources */ = {isa = PBXBuildFile; fileRef = ED0A8D0D1069ACA8001E0547 /* iphone_downloadSOD.m */; };
+		ED0A8D141069ACA8001E0547 /* iphone_downloadUserMap.m in Sources */ = {isa = PBXBuildFile; fileRef = ED0A8D0E1069ACA8001E0547 /* iphone_downloadUserMap.m */; };
+		ED0A8D151069ACA8001E0547 /* iphone_mapselector.c in Sources */ = {isa = PBXBuildFile; fileRef = ED0A8D0F1069ACA8001E0547 /* iphone_mapselector.c */; };
+		ED0A8D161069ACA8001E0547 /* iphone_store.m in Sources */ = {isa = PBXBuildFile; fileRef = ED0A8D111069ACA8001E0547 /* iphone_store.m */; };
+		ED3703B4106C1CD40059C5F8 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ED3703B3106C1CD40059C5F8 /* SystemConfiguration.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		1D30AB110D05D00D00671497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		1D6058910D05DD3D006BFB54 /* wolf3dlite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = wolf3dlite.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1D6058910D05DD3D006BFB54 /* wolf3d.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = wolf3d.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		28AD733E0D9D9553002E5188 /* MainWindow.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainWindow.xib; sourceTree = "<group>"; };
 		28FD14FF0DC6FC520079059D /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
@@ -257,6 +263,15 @@
 		72A7E8F60F5F2063005B83C0 /* iphone_menus.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = iphone_menus.c; sourceTree = "<group>"; };
 		72B5FF380F7E5C3D00C8A372 /* hud.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = hud.c; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		ED0A8D0A1069ACA8001E0547 /* arialGlyphRects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = arialGlyphRects.h; sourceTree = "<group>"; };
+		ED0A8D0B1069ACA8001E0547 /* iphone_alerts.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iphone_alerts.h; sourceTree = "<group>"; };
+		ED0A8D0C1069ACA8001E0547 /* iphone_alerts.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iphone_alerts.m; sourceTree = "<group>"; };
+		ED0A8D0D1069ACA8001E0547 /* iphone_downloadSOD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iphone_downloadSOD.m; sourceTree = "<group>"; };
+		ED0A8D0E1069ACA8001E0547 /* iphone_downloadUserMap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iphone_downloadUserMap.m; sourceTree = "<group>"; };
+		ED0A8D0F1069ACA8001E0547 /* iphone_mapselector.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = iphone_mapselector.c; sourceTree = "<group>"; };
+		ED0A8D101069ACA8001E0547 /* iphone_store.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iphone_store.h; sourceTree = "<group>"; };
+		ED0A8D111069ACA8001E0547 /* iphone_store.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iphone_store.m; sourceTree = "<group>"; };
+		ED3703B3106C1CD40059C5F8 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -271,6 +286,7 @@
 				4333CCE80F5CC23E00AE2B6F /* AudioToolbox.framework in Frameworks */,
 				43AE7E9F0F67387500B2F562 /* CoreGraphics.framework in Frameworks */,
 				720EBBAE0F82E0BB003F989A /* QuartzCore.framework in Frameworks */,
+				ED3703B4106C1CD40059C5F8 /* SystemConfiguration.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -280,7 +296,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				1D6058910D05DD3D006BFB54 /* wolf3dlite.app */,
+				1D6058910D05DD3D006BFB54 /* wolf3d.app */,
 				4364BF3E0F5CB25900F29317 /* dist.plist */,
 			);
 			name = Products;
@@ -301,6 +317,14 @@
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
+				ED0A8D0A1069ACA8001E0547 /* arialGlyphRects.h */,
+				ED0A8D0B1069ACA8001E0547 /* iphone_alerts.h */,
+				ED0A8D0C1069ACA8001E0547 /* iphone_alerts.m */,
+				ED0A8D0D1069ACA8001E0547 /* iphone_downloadSOD.m */,
+				ED0A8D0E1069ACA8001E0547 /* iphone_downloadUserMap.m */,
+				ED0A8D0F1069ACA8001E0547 /* iphone_mapselector.c */,
+				ED0A8D101069ACA8001E0547 /* iphone_store.h */,
+				ED0A8D111069ACA8001E0547 /* iphone_store.m */,
 				72935B180F6B2D630085DD28 /* env */,
 				7229CC5A0F6B324A004123C5 /* tremor */,
 				72935B190F6B2D720085DD28 /* wolf */,
@@ -337,6 +361,7 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				ED3703B3106C1CD40059C5F8 /* SystemConfiguration.framework */,
 				720EBBAD0F82E0BB003F989A /* QuartzCore.framework */,
 				4333CCE70F5CC23E00AE2B6F /* AudioToolbox.framework */,
 				43E8D4DF0F51B48B003F09B2 /* OpenAL.framework */,
@@ -517,7 +542,7 @@
 			);
 			name = wolf3d;
 			productName = wolf3d;
-			productReference = 1D6058910D05DD3D006BFB54 /* wolf3dlite.app */;
+			productReference = 1D6058910D05DD3D006BFB54 /* wolf3d.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -649,6 +674,11 @@
 				7229CE550F6C8CDE004123C5 /* gles_glue.c in Sources */,
 				72B5FF390F7E5C3D00C8A372 /* hud.c in Sources */,
 				43AF6B950F996DA200777569 /* iphone_sys.m in Sources */,
+				ED0A8D121069ACA8001E0547 /* iphone_alerts.m in Sources */,
+				ED0A8D131069ACA8001E0547 /* iphone_downloadSOD.m in Sources */,
+				ED0A8D141069ACA8001E0547 /* iphone_downloadUserMap.m in Sources */,
+				ED0A8D151069ACA8001E0547 /* iphone_mapselector.c in Sources */,
+				ED0A8D161069ACA8001E0547 /* iphone_store.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -678,7 +708,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Cass Everitt";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: John Carmack";
 				COPY_PHASE_STRIP = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = wolf3d_Prefix.pch;
@@ -687,7 +717,7 @@
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = wolf3d;
 				PROFILE_PREFIX = nu.r3;
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "94041F5C-2EDC-4F49-AF97-95ECE6BB398D";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "156B7F53-1BDC-4116-B0CC-F8CB2252E722";
 			};
 			name = Release;
 		};
@@ -766,12 +796,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: John Carmack";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_THUMB_SUPPORT = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "156B7F53-1BDC-4116-B0CC-F8CB2252E722";
 				SDKROOT = iphoneos2.0;
 				SYMROOT = ../../build;
 			};
@@ -781,7 +812,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Cass Everitt";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: John Carmack";
 				COPY_PHASE_STRIP = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = wolf3d_Prefix.pch;
@@ -793,7 +824,7 @@
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_NAME = wolf3dlite;
 				PROFILE_PREFIX = nu.r3;
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "94041F5C-2EDC-4F49-AF97-95ECE6BB398D";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "156B7F53-1BDC-4116-B0CC-F8CB2252E722";
 			};
 			name = ReleaseLite;
 		};
@@ -853,16 +884,50 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: John Carmack";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_THUMB_SUPPORT = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "156B7F53-1BDC-4116-B0CC-F8CB2252E722";
 				SDKROOT = iphoneos2.0;
 				SYMROOT = ../../build;
 			};
 			name = Release;
+		};
+		ED2751531083BE8C009C891E /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: id Software";
+				GCC_C_LANGUAGE_STANDARD = c99;
+				GCC_THUMB_SUPPORT = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				PREBINDING = NO;
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "31C73095-0DD9-4ABA-BB25-8D23F661F10F";
+				SDKROOT = iphoneos2.0;
+				SYMROOT = ../../build;
+			};
+			name = Distribution;
+		};
+		ED2751541083BE8C009C891E /* Distribution */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: id Software";
+				COPY_PHASE_STRIP = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = wolf3d_Prefix.pch;
+				GCC_PREPROCESSOR_DEFINITIONS = IPHONE;
+				HEADER_SEARCH_PATHS = "";
+				INFOPLIST_FILE = Info.plist;
+				PRODUCT_NAME = wolf3d;
+				PROFILE_PREFIX = nu.r3;
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "31C73095-0DD9-4ABA-BB25-8D23F661F10F";
+			};
+			name = Distribution;
 		};
 /* End XCBuildConfiguration section */
 
@@ -876,6 +941,7 @@
 				43AE7CA50F61EC4E00B2F562 /* ReleaseLite */,
 				4364BF490F5CB27300F29317 /* AdHocDist */,
 				431181710F994C5400FF9351 /* AdHocDistLite */,
+				ED2751541083BE8C009C891E /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -889,6 +955,7 @@
 				43AE7CA40F61EC4E00B2F562 /* ReleaseLite */,
 				4364BF480F5CB27300F29317 /* AdHocDist */,
 				431181700F994C5400FF9351 /* AdHocDistLite */,
+				ED2751531083BE8C009C891E /* Distribution */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

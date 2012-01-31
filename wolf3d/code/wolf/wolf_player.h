@@ -135,6 +135,7 @@ typedef struct player_s
 	int old_score, score, next_extra;
 	unsigned items; // (keys, weapon)
 	int weapon, pendingweapon;
+	int previousweapon; //gsh
 // additional info
 	int attackframe, attackcount, weaponframe; // attack info
 	unsigned flags;

@@ -690,7 +690,7 @@ PRIVATE void Sound_Register( void )
 {
 	
 	s_initSound = Cvar_Get( "s_initSound", "1", CVAR_INIT );	
-	s_masterVolume	= Cvar_Get( "s_masterVolume", "1.0", CVAR_ARCHIVE );
+	s_masterVolume	= Cvar_Get( "s_masterVolume", "0.3", CVAR_ARCHIVE ); //gsh changed this from "1.0" to "0.3" for the volume hack... otherwise it's too loud
 	s_sfxVolume		= Cvar_Get( "s_sfxVolume", "1.0", CVAR_ARCHIVE );
 	s_musicVolume	= Cvar_Get( "s_musicVolume", "1.0", CVAR_ARCHIVE );
 	s_minDistance	= Cvar_Get( "s_minDistance", "0.0", CVAR_ARCHIVE );

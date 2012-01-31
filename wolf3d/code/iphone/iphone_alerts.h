@@ -1,4 +1,14 @@
 /*
+ *  iphone_alerts.h
+ *  wolf3d
+ *
+ *  Created by Greg Hodges on 7/14/09.
+ *  Copyright 2009 id software. All rights reserved.
+ *
+ *  C wrappers for the UIAlertView.
+ *
+ */
+/*
  
  Copyright (C) 2009 Id Software, Inc.
  
@@ -18,24 +28,12 @@
  
  */
 
-#import <UIKit/UIKit.h>
-#import <UIKit/UIAccelerometer.h>
 
+#ifndef __IPHONE_ALERTS__
+#define __IPHONE_ALERTS__
 
-@class EAGLView;
+void iphoneMessageBox(char *title, char *message);
+void iphoneKillMessageBox();
+void iphoneYesNoBox(char *title, char *message);
 
-@interface wolf3dAppDelegate : NSObject <UIApplicationDelegate, UIAccelerometerDelegate, UIAlertViewDelegate> {
-    UIWindow *window;
-    EAGLView *glView;
-	int		lastAccelUpdateMsec;
-	
-//	UIAlertView *alertPurchaseSpear;
-}
-
-@property (nonatomic, retain) IBOutlet UIWindow *window;
-@property (nonatomic, retain) IBOutlet EAGLView *glView;
-
-- (void)restartAccelerometerIfNeeded;
-
-@end
-
+#endif

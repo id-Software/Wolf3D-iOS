@@ -29,7 +29,6 @@
 
 #include "../wolfiphone.h"
 
-
 cvar_t	*controlScheme;
 cvar_t	*sensitivity;
 cvar_t	*stickTurnBase;
@@ -42,6 +41,13 @@ cvar_t	*tiltMove;
 cvar_t	*tiltDeadBand;
 cvar_t	*tiltAverages;
 cvar_t	*tiltFire;
+#ifdef VOLUMEHACK
+cvar_t	*volumeFireUp; //gsh
+cvar_t	*volumeFireDown; //gsh
+cvar_t	*volumeFireUpSetting; //gsh
+cvar_t	*volumeFireDownSetting; //gsh
+#endif
+cvar_t	*hudAlpha; //gsh
 cvar_t	*music;
 cvar_t	*showTilt;
 cvar_t	*showTime;
@@ -55,6 +61,10 @@ cvar_t	*hideControls;
 cvar_t	*autoFire;
 
 W32	sys_frame_time;
+
+#ifdef STOREKIT
+extern void CheckForStorekitExistence(); //gsh
+#endif
 
 void Sys_Error( const char *format, ... )
 { 
@@ -101,7 +111,12 @@ void Reset_f() {
 void iphoneStartup() {
 	char	*s;
 	int		start = Sys_Milliseconds();
-
+	
+#ifdef STOREKIT
+	//check for storekit framework and set appropriate flags... gsh
+	CheckForStorekitExistence();
+#endif
+	
 	// temporary 
 	const char *systemVersion = SysIPhoneGetOSVersion();
 	printf( "systemVersion = %s\n", systemVersion );
@@ -118,6 +133,7 @@ void iphoneStartup() {
 	Cvar_Init();
 	Con_Init();
 	FS_InitFilesystem();	
+	
 	
 	// We need to add the early commands twice, because
 	// a basedir or cddir needs to be set before execing
@@ -137,9 +153,7 @@ void iphoneStartup() {
 	Cvar_Get( "version", s, CVAR_SERVERINFO | CVAR_NOSET );
 	
 	Con_Init();
-	
 	Sound_Init();
-	
 	Game_Init();	// game and player init
 	
 	Cbuf_AddText( "exec config.cfg\n" );
@@ -165,6 +179,13 @@ void iphoneStartup() {
 	tiltTurn = Cvar_Get( "tiltTurn", "0", CVAR_ARCHIVE );
 	tiltMove = Cvar_Get( "tiltMove", "0", CVAR_ARCHIVE );
 	tiltFire = Cvar_Get( "tiltFire", "0", CVAR_ARCHIVE );
+#ifdef VOLUMEHACK
+	volumeFireUp = Cvar_Get( "volumeFireUp", "0", 0 );  //gsh
+	volumeFireDown = Cvar_Get( "volumeFireDown", "0", 0 );  //gsh
+	volumeFireUpSetting = Cvar_Get( "volumeFireUpSetting", "1", CVAR_ARCHIVE );  //gsh      // 1 = primary
+	volumeFireDownSetting = Cvar_Get( "volumeFireDownSetting", "0", CVAR_ARCHIVE );  //gsh  // 0 = secondary
+#endif
+	hudAlpha = Cvar_Get("hudAlpha", "1.0", CVAR_ARCHIVE); //gsh
 	music = Cvar_Get( "music", "1", CVAR_ARCHIVE );
 	tiltDeadBand = Cvar_Get( "tiltDeadBand", "0.08", CVAR_ARCHIVE );
 	tiltAverages = Cvar_Get( "tiltAverages", "3", CVAR_ARCHIVE );
@@ -181,7 +202,8 @@ void iphoneStartup() {
 	
 	// make sure volume changes and incoming calls draw the right orientation
 	SysIPhoneSetUIKitOrientation( revLand->value );
-	
+
+	/*  //if we don't preload the ogg files then we have faster start ups... gsh
 	// preload all the ogg FM synth sounds
 	Com_Printf( "before ogg preload: %i msec\n", Sys_Milliseconds() - start );
 	
@@ -210,7 +232,7 @@ void iphoneStartup() {
 	Sound_RegisterSound( "lsfx/078.wav" );
 	Sound_RegisterSound( "lsfx/080.wav" );
 	Sound_RegisterSound( "lsfx/085.wav" );
-	Sound_RegisterSound( "lsfx/086.wav" );
+	Sound_RegisterSound( "lsfx/086.wav" );*/
 	
 	// these should get overwritten by LoadTheGame
 	memset( &currentMap, 0, sizeof( currentMap ) );
@@ -218,12 +240,13 @@ void iphoneStartup() {
 	currentMap.episode = 0;
 	HudSetForScheme( 0 );
 	
+		
 	Com_Printf( "before LoadTheGame: %i msec\n", Sys_Milliseconds() - start );
-	
+
 	if ( !LoadTheGame() ) {
 		PL_NewGame( &Player );
 		iphoneStartMap( currentMap.episode, currentMap.map, currentMap.skill );
-	}	
+	}
 	
 
 	// always start at main menu
@@ -236,7 +259,7 @@ void iphoneStartup() {
  ===================
  iphonePreloadBeforePlay
  
- This couold all be done at startup, but moving a bit of the delay
+ This could all be done at startup, but moving a bit of the delay
  to after pressing the resume button works a little better.
  ===================
 */

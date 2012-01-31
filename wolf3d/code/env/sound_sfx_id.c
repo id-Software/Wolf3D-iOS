@@ -248,33 +248,57 @@ PUBLIC void Sound_BeginRegistration( void )
 	s_registering = true;
 }
 
+
 PUBLIC sfx_t *Sound_RegisterSound( const char *name )
 {
 	sfx_t	*sfx;
+	bool isSpearSound = false;
 
 	if( ! sound_initialized )
 	{
 		return NULL;
 	}
-
-	if( g_version->value == 1 )
+	
+	if( g_version->value == SPEAROFDESTINY  && currentMap.episode >= 6 && strncmp(name, "iphone", 6) && currentMap.episode < 9)//added the episode & iphone check... gsh
 	{
+		isSpearSound = true;
+		
 		char tempname[ 256 ];
-
 		my_snprintf( tempname, sizeof( tempname ), "sod%s", name );
-
 		sfx = Sound_FindSound( tempname );
+	
+		//gsh
+		//Com_Printf("Finding Sound: %s\n", tempname);		
 	}
 	else
 	{
 		sfx = Sound_FindSound( name );
+		
+		//gsh
+		//Com_Printf("Finding Sound: %s\n", name);
 	}
-
+/*
+	//original
 	if( ! s_registering )
 	{
 		Sound_LoadSound( sfx );
 	}
-
+*/
+	//gsh
+	if( ! s_registering )
+	{
+		//if it couldn't be found and we tried finding it in sod
+		//then it might exist in wolf3d
+		if( !Sound_LoadSound( sfx ) && isSpearSound)
+		{
+			sfx = Sound_FindSound( name );		
+			//Com_Printf("Finding Sound Again: %s\n", name);
+			
+			if( ! s_registering )
+				Sound_LoadSound( sfx );  //try loading again
+		}
+	}
+	
 	return sfx;
 }
 

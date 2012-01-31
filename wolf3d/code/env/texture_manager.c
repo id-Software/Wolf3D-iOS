@@ -464,14 +464,14 @@ PUBLIC texture_t *TM_FindTexture( const char *name, texturetype_t type )
 	{
 		return r_notexture;
 	}
-	
+
 	// Check for file extension
 	len = strlen( name );
 	if( len < 5 )
 	{
 		return r_notexture;
 	}
-
+	
 	// look for it in the texture cache
 	for( i = 0, tex = ttextures; i < numttextures; ++i, ++tex )
 	{
@@ -490,7 +490,8 @@ PUBLIC texture_t *TM_FindTexture( const char *name, texturetype_t type )
 		return r_notexture;
 	}
 
-//	Com_Printf( "Loading texture: %s\n", name );
+	//gsh
+	//Com_Printf( "Loading texture: %s\n", name );
 	
 	// look for the pre-digested 5551 version
 	strcpy( digested, name );
@@ -513,7 +514,6 @@ PUBLIC texture_t *TM_FindTexture( const char *name, texturetype_t type )
 			{ GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG, GL_UNSIGNED_BYTE, 2 },
 			{ GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG, GL_UNSIGNED_BYTE, 2 },
 		};
-		
 		
 		picHeader_t *ph = (picHeader_t *)fh->filedata;
 		
@@ -606,7 +606,7 @@ PUBLIC texture_t *TM_FindTexture( const char *name, texturetype_t type )
 		if ( fh == NULL ) {
 			Com_Printf( "Failed to find texture %s\n", name );
 			return r_notexture;
-		}
+		} //else {   //added the else...gsh
 		jpgSize = FS_GetFileSize( fh );
 		jpgData = fh->ptrStart;
 		
@@ -616,13 +616,48 @@ PUBLIC texture_t *TM_FindTexture( const char *name, texturetype_t type )
 		if ( ! data ) {
 			free( jpgData );
 			return r_notexture; 
-		}
+		} //else {   //added the else
 		tex = TM_LoadTexture( name, data, width, height, type, bytes );
 		MM_FREE( data );
 		tex->maxS = tex->maxT = 1.0f;
 		return tex;
+		
+		
+	}
+	
+	/*
+	Com_Printf("Trying to find texture made it to the end\n");
+	
+	//gsh.. couldn't find it... try doing it again, but looking in a new location
+	if (spritelocation == SODSPRITESDIRNAME && spritelocation != WL6SPRITESDIRNAME)
+	{
+		//need to remove the 'sod'
+		if (strncmp(spritelocation, name, strlen(spritelocation)) == 0)
+		{
+			char buffer[64];
+			char tempName[64];
+			int offset = strlen(spritelocation) + 1;
+			for (int i = 0; i < strlen(name) - offset; ++i)
+			{
+				buffer[i] = name[i+offset];
+			}
+			buffer[i] = '\0'; //just in case
+			
+			spritelocation = WL6SPRITESDIRNAME;
+			
+			//TODO: 
+			my_snprintf(tempName, sizeof(tempName), "%s/%s", spritelocation, buffer);
+			
+			Com_Printf("tempName: %s\n", tempName);
+			Com_Printf("buffer: %s\n", buffer);
+			
+			spritelocation = SODSPRITESDIRNAME;  //return to sodsprites
+			tex = TM_FindTexture( tempName, type);
+			return tex;
+		}
 	}
 
+	return r_notexture;*/
 	return NULL;
 }
 

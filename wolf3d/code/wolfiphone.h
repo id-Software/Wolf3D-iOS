@@ -85,3 +85,5 @@
 
 #include "iphone/iphone_wolf.h"
 
+#include "iphone_alerts.h"
+

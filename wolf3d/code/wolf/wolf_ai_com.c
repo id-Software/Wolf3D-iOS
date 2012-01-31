@@ -924,7 +924,8 @@ PUBLIC void T_Bite( entity_t *self )
 {
 	long dx, dy;
 
-	Sound_StartSound( NULL, 1, CHAN_VOICE, Sound_RegisterSound( "lsfx/076.wav" ), 1, ATTN_NORM, 0 );
+//	Sound_StartSound( NULL, 1, CHAN_VOICE, Sound_RegisterSound( "lsfx/076.wav" ), 1, ATTN_NORM, 0 );  //gsh this was the original code
+	Sound_StartSound( NULL, 1, CHAN_VOICE, Sound_RegisterSound( "sfx/002.wav" ), 1, ATTN_NORM, 0 );  //gsh changed to this... the original code wasn't the correct sound file
 
 	dx = ABS( Player.position.origin[ 0 ] - self->x ) - TILEGLOBAL;
 	if( dx <= MINACTORDIST )
@@ -1156,7 +1157,7 @@ PUBLIC void T_Shoot( entity_t *self )
 	switch( self->type )
 	{
 		case en_ss:
-			if( g_version->value == SPEAROFDESTINY )
+			if( g_version->value == SPEAROFDESTINY && currentMap.episode >= 6 && currentMap.episode < 9 )//added the episode check... gsh)
 			{
 				Sound_StartSound( NULL, 1, CHAN_WEAPON, Sound_RegisterSound( "sfx/020.wav" ), 1, ATTN_NORM, 0 );
 			}
@@ -1175,7 +1176,7 @@ PUBLIC void T_Shoot( entity_t *self )
 			break;
 
 		default:
-			if( g_version->value == SPEAROFDESTINY )
+			if( g_version->value == SPEAROFDESTINY && currentMap.episode >= 6 && currentMap.episode < 9)//added the episode check... gsh)
 			{
 				Sound_StartSound( NULL, 1, CHAN_WEAPON, Sound_RegisterSound( "sfx/038.wav" ), 1, ATTN_NORM, 0 );
 			}
@@ -1302,7 +1303,7 @@ PUBLIC void T_Launch( entity_t *self )
 		default:
 			proj->type = en_rocket;
 
-			if( g_version->value == SPEAROFDESTINY )
+			if( g_version->value == SPEAROFDESTINY && currentMap.episode >= 6 && currentMap.episode < 9)//added the episode check... gsh)
 			{
 				Sound_StartSound( NULL, 1, CHAN_WEAPON, Sound_RegisterSound( "lsfx/008.wav" ), 1, ATTN_NORM, 0 );
 			}

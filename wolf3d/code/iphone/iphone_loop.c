@@ -120,8 +120,9 @@ brown plant
 cp 136.5551 ~/dev/iphone/wolf3d/base/sprites/013.5551
  
  */
-
+#include <pthread.h> //gsh
 #include "../wolfiphone.h"
+#include "arialGlyphRects.h" //gsh... cass made a nice fontimage helper.  We might as well use it.
 
 currentMap_t currentMap;
 
@@ -131,12 +132,16 @@ int		iphoneFrameNum;
 int		intermissionTriggerFrame;
 int		slowAIFrame;
 
+//gsh
+int returnButtonFrameNum = 0;
+
 // console mode
 int consoleActive;
 
 // the native iPhone code should set the following each frame:
 int	numTouches;
 int	touches[5][2];	// [0] = x, [1] = y in landscape mode, raster order with y = 0 at top
+int isTouchMoving = 0; //gsh
 float	tilt;		// -1.0 to 1.0
 float	tiltPitch;
 
@@ -149,6 +154,9 @@ int	numPrevTouches;
 int prevTouches[5][2];
 
 texture_t *numberPics[10];
+
+//gsh
+texture_t *arialFontTexture;
 
 char *mugshotnames[ NUM_MUGSHOTS ] =
 {
@@ -181,7 +189,11 @@ char *mugshotnames[ NUM_MUGSHOTS ] =
 "iphone/FACE7CPIC.tga",
 
 "iphone/FACE8APIC.tga",
-"iphone/GOTGATLINGPIC.tga"		
+"iphone/GOTGATLINGPIC.tga",	
+
+"iphone/GODMODEFACE0PIC.tga",
+"iphone/GODMODEFACE1PIC.tga",
+"iphone/GODMODEFACE2PIC.tga",
 };
 
 int damageflash;
@@ -308,6 +320,439 @@ int iphoneCenterText( int x, int y, const char *str ) {
 	return l * step;
 }
 
+//gsh
+void iphoneCenterTextWithColor(int x, int y, const char *str, colour4_t color ) {
+	
+	pfglColor4f(color[0], color[1], color[2], color[3]);
+	
+	iphoneCenterText(x, y, str);
+	
+	pfglColor4f(1, 1, 1, 1);
+}
+/*
+ ==================
+ iphoneDrawArialText
+ left justified arial text
+ gsh
+ Returns the width in pixels
+ ==================
+ */
+int iphoneDrawArialText( int x, int y, float scale, const char *str ) {
+	/*
+	int l = strlen( str );
+	int	i;
+	font_t *myfont = myfonts[0];
+	//	int		scale;
+	int		step = 10;
+	
+	//	scale = 16;
+	int left_margin = x;
+	 */
+	texture_t *gl;
+	
+	gl = TM_FindTexture( "iphone/arialImageLAL_white-alpha.tga", TT_Pic );
+	if( ! gl ) {
+		Com_Printf( "Can't find pic: %s\n", "iphone/arialImageLAL_white-alpha.tga" );
+		return 0;
+	}
+	
+	R_Bind( gl->texnum );
+	
+		
+//	float	fx = x;
+//	float	fy = y;
+	
+//	int scale = 1;//16;
+//	float scale = 0.9f;
+	
+	pfglBegin( GL_QUADS );
+	
+	while ( *str ) {
+		int i = *str;
+		if ( i >= ' ' && i < 128 ) {
+			GlyphRect *glyph = &glyphRects[i-32];
+			
+			// the glyphRects don't include the shadow outline
+			float	x0 = ( glyph->x0 - 2 ) / 256.0;
+			float	y0 = ( glyph->y0 - 2 ) / 256.0;
+			float	x1 = ( glyph->x1 + 3 ) / 256.0;
+			float	y1 = ( glyph->y1 + 3 ) / 256.0;
+			
+			
+			float	width = ( x1 - x0 ) * 256 * scale;
+			float	height = ( y1 - y0 ) * 256 * scale;
+			
+//			float	xoff = ( glyph->xoff - 1 ) * scale;
+			float	yoff = ( glyph->yoff - 1 ) * scale;
+			
+			if (i == 'l' || i == 'I' || i == 'h' || i == 'i')
+				yoff += 1;
+			
+			pfglTexCoord2f( x0, y0 );
+//			pfglVertex2f( fx + xoff, fy + yoff );
+			pfglVertex2i( x, y + yoff);
+			
+			pfglTexCoord2f( x1, y0 );
+//			pfglVertex2f( fx + xoff + width, fy + yoff );
+			pfglVertex2i( x+width, y + yoff);
+			
+			pfglTexCoord2f( x1, y1);
+//			pfglVertex2f( fx + xoff + width, fy + yoff + height );
+			pfglVertex2i( x+width, y+height + yoff );
+			
+			pfglTexCoord2f( x0, y1);
+//			pfglVertex2f( fx + xoff, fy + yoff + height );
+			pfglVertex2i( x, y+height + yoff);			
+			
+			// with our default texture, the difference is negligable
+//			fx += glyph->xadvance * scale;
+			x += glyph->xadvance * scale;
+			//			fx += ceil(glyph->xadvance);	// with the outline, ceil is probably the right thing
+		}
+		str++;
+	}
+	
+	pfglEnd();
+	
+	return x;
+}
+/*
+ ==================
+ iphoneCenterArialText
+ center justified arial text
+ gsh
+ Returns the width in pixels
+ ==================
+ */
+int iphoneCenterArialText( int x, int y, float scale, const char *str )
+{
+	const char *strcopy = str;
+	float width = 0;
+	while ( *str )
+	{
+		int i = *str;
+		if ( i >= ' ' && i < 128 ) {
+			
+			GlyphRect *glyph = &glyphRects[i-32];
+			width += glyph->xadvance * scale;
+		}
+		++str;
+	}
+	
+	return iphoneDrawArialText( x - width/2, y, scale, strcopy );
+}
+/*
+ ==================
+ iphoneDrawArialTextInBox
+ center justified arial text
+ gsh
+ Returns the width in pixels
+ ==================
+ */
+int iphoneDrawArialTextInBox( rect_t paragraph, int lineLength, const char *str, rect_t boxRect ) {
+	int l = strlen( str );
+	int	i;
+	
+	if (paragraph.x > boxRect.x + boxRect.width)
+		return 0;
+	if (paragraph.x + lineLength < boxRect.x)
+		return 0;
+	
+	int x = paragraph.x;
+	int y = paragraph.y;
+//	Com_Printf("y value: %i\n", y);
+//	int width = paragraph.width;   //font width
+//	int height = paragraph.height; //font height
+	
+	const int left_margin = x+5;
+	int		step = 10;
+	
+	texture_t *gl;
+	
+	gl = TM_FindTexture( "iphone/arialImageLAL_white-alpha.tga", TT_Pic );
+	if( ! gl ) {
+		Com_Printf( "Can't find pic: %s\n", "iphone/arialImageLAL_white-alpha.tga" );
+		return 0;
+	}
+	
+	R_Bind( gl->texnum );
+	pfglBegin( GL_QUADS );
+	
+	int lengthOfNextWord = 0;
+	float scale = 0.65f;//0.9f;
+	
+	for ( i = 0 ; i < l ; i++/*, x += step*/ ) { 
+		int m = str[i];
+		GlyphRect *glyph = &glyphRects[m-32];
+		
+		float	x0 = ( glyph->x0 - 2 ) / 256.0;
+		float	y0 = ( glyph->y0 - 2 ) / 256.0;
+		float	x1 = ( glyph->x1 + 3 ) / 256.0;
+		float	y1 = ( glyph->y1 + 3 ) / 256.0;
+		
+		float	width = ( x1 - x0 ) * 256 * scale;
+		float	height = ( y1 - y0 ) * 256 * scale;
+		
+		//			float	xoff = ( glyph->xoff - 1 ) * scale;
+		float	yoff = ( glyph->yoff - 1 ) * scale;
+		
+		
+		//int	row, col; 
+		//float frow, fcol;
+		int	num = str[i];
+		
+		//check when to new-line
+		if ( num == ' ' ) {
+			float w = 0;
+			int n = i + 1;
+			while ( str[n] != ' ' && str[n] != '\0' && str[n] != '\n') {
+				//++n;
+				int m = str[n];
+				GlyphRect *glyph2 = &glyphRects[m-32];
+				w += glyph2->xadvance * scale;
+				++n;
+			}
+			lengthOfNextWord = n - i - 1;
+//			Com_Printf("length of word: %i\n", n - i - 1);
+//			Com_Printf("length of word pixels: %f\n",w);
+			
+			if ( w + x > lineLength + left_margin ) {
+				y += 30*scale;
+				x = left_margin;
+			}
+			else
+				x += 10*scale;
+			//whil
+			//x += 10*scale;
+			continue;
+		}
+		if (num == '\n') {
+			y += 30*scale;
+			x = left_margin;
+			continue;
+		}/*
+		if (x + glyph->xadvance * scale > left_margin + lineLength) {
+			y += 30*scale;
+			x = left_margin;// + width;
+		}*/
+		
+		//check rendering boundaries
+		if (x < boxRect.x+10) {
+			x += glyph->xadvance * scale + 1;
+			continue;
+		}
+		if (x + glyph->xadvance * scale > boxRect.x + boxRect.width) {
+			x += glyph->xadvance * scale + 1;
+			continue;
+		}
+		
+		if (y > boxRect.y + boxRect.height)
+			break;
+				
+		pfglTexCoord2f( x0, y0 );
+		pfglVertex2i( x, y + yoff);
+		
+		pfglTexCoord2f( x1, y0 );
+		pfglVertex2i( x+width, y + yoff);
+		
+		pfglTexCoord2f( x1, y1);
+		pfglVertex2i( x+width, y+height + yoff );
+		
+		pfglTexCoord2f( x0, y1);
+		pfglVertex2i( x, y+height + yoff);		
+		
+		x += glyph->xadvance * scale + 1;
+		
+	}
+	
+	pfglEnd();
+	
+	return l * step;
+}
+
+
+
+int iphoneDrawText( int x, int y, int width, int height, const char *str ) {
+	int l = strlen( str );
+	int	i;
+	font_t *myfont = myfonts[0];
+//	int		scale;
+	int		step = 10;
+	
+//	scale = 16;
+	int left_margin = x;
+	
+	R_Bind( myfont->texfont->texnum );
+	//R_Bind(arialFontTexture->texnum );
+	pfglBegin( GL_QUADS );
+	
+	for ( i = 0 ; i < l ; i++, x += step ) { 
+		int	row, col; 
+		float frow, fcol;
+		int	num = str[i];
+		
+		if ( num == ' ' ) {
+			continue;
+		}
+		if (num == '\n') {
+			y += height;
+			x = left_margin;
+		}
+		
+		row = (num >> 4) - 2;
+		col = num & 15;
+		
+		frow = row * myfont->hFrac;
+		fcol = col * myfont->wFrac;
+		
+		pfglTexCoord2f( fcol, frow );							
+		pfglVertex2i( x, y );
+		
+		pfglTexCoord2f( fcol+myfont->wFrac, frow );					
+		pfglVertex2i( x+width, y );
+		
+		pfglTexCoord2f( fcol+myfont->wFrac, frow+myfont->hFrac );	
+		pfglVertex2i( x+width, y+height );
+		
+		pfglTexCoord2f( fcol, frow+myfont->hFrac );
+		pfglVertex2i( x, y+height );			
+	}
+	
+	pfglEnd();
+	
+	return l * step;
+}
+
+/*
+ ==================
+ iphoneDrawTextWithColor
+ gsh
+ ==================
+ */
+void iphoneDrawTextWithColor( rect_t rect, const char *str, float colors[4] ) {
+
+	pfglColor4f(colors[0], colors[1], colors[2], colors[3]);
+	iphoneDrawText(rect.x, rect.y, rect.width, rect.height, str);
+	pfglColor4f(1, 1, 1, 1);
+}
+
+/*
+ ==================
+ iphoneDrawMapName
+ gsh
+ ==================
+ */
+void iphoneDrawMapName( rect_t rect, const char *str ) {
+	
+	rect.y += 25;
+	rect.x += 110;//80;
+	/*
+	float colors[4] =  { 0, 0, 0, 1 };
+	iphoneDrawTextWithColor(RectMake(rect.x+1, rect.y+1, rect.width, rect.height), str, colors);
+	iphoneDrawTextWithColor(RectMake(rect.x+2, rect.y+2, rect.width, rect.height), str, colors);
+	
+	colors[0] = 225.0f/255;
+	colors[1] = 166.0f/255;
+	iphoneDrawTextWithColor(rect, str, colors);
+	*/
+	
+	pfglColor4f(0, 0, 0, 1);
+	iphoneDrawArialText(rect.x + 1, rect.y + 1, 0.9f, str);
+	iphoneDrawArialText(rect.x + 2, rect.y + 2, 0.9f, str);
+	pfglColor4f(225.0f/255, 166.0f/255, 0, 1);
+	pfglColor4f(225.0f/255, 242.0f/255, 0, 1);
+	iphoneDrawArialText(rect.x, rect.y, 0.9f, str);
+	pfglColor4f(1, 1, 1, 1);
+}
+
+/*
+ ==================
+ iphoneDrawTextInBox
+ gsh
+ Returns the width in pixels
+ ==================
+ */
+int iphoneDrawTextInBox( rect_t paragraph, int lineLength, const char *str, rect_t boxRect ) {
+	int l = strlen( str );
+	int	i;
+	font_t *myfont = myfonts[0];
+	
+	int x = paragraph.x;
+	int y = paragraph.y;
+	int width = paragraph.width;   //font width
+	int height = paragraph.height; //font height
+	
+	int left_margin = x;
+	int		step = 10;
+	
+	R_Bind( myfont->texfont->texnum );
+	pfglBegin( GL_QUADS );
+	
+	int lengthOfNextWord = 0;
+	
+	for ( i = 0 ; i < l ; i++, x += step ) { 
+		int	row, col; 
+		float frow, fcol;
+		int	num = str[i];
+		
+		//check when to new-line
+		if ( num == ' ' ) {
+			int n = i+1;
+			while (str[n] != ' ' && str[n] != '\0' && str[n] != '\n') { 
+				++n;
+			}
+			lengthOfNextWord = n - i;// - 1;
+			if (x + lengthOfNextWord*step > left_margin + lineLength) {
+				y += height;
+				x = left_margin;
+			}
+			continue;
+		}
+		if (num == '\n') {
+			y += height;
+			x = left_margin;
+			continue;
+		}
+		if (x + width > left_margin + lineLength) {
+			y += height;
+			x = left_margin + width;
+		}
+		
+		//check rendering boundaries
+		if (x < boxRect.x)
+			continue;
+		if (x + width > boxRect.x + boxRect.width)
+			continue;
+		if (y < boxRect.y)
+			continue;
+		if (y + height > boxRect.y + boxRect.height)
+			continue;
+		
+		row = (num >> 4) - 2;
+		col = num & 15;
+		
+		frow = row * myfont->hFrac;
+		fcol = col * myfont->wFrac;
+		
+		pfglTexCoord2f( fcol, frow );							
+		pfglVertex2i( x, y );
+		
+		pfglTexCoord2f( fcol+myfont->wFrac, frow );					
+		pfglVertex2i( x+width, y );
+		
+		pfglTexCoord2f( fcol+myfont->wFrac, frow+myfont->hFrac );	
+		pfglVertex2i( x+width, y+height );
+		
+		pfglTexCoord2f( fcol, frow+myfont->hFrac );
+		pfglVertex2i( x, y+height );			
+	}
+	
+	pfglEnd();
+	
+	return l * step;
+}
+
+
 
 /*
  ==================
@@ -358,7 +803,7 @@ int	TouchReleased( int x, int y, int w, int h ) {
 	}
 	
 	if ( !downPrev ) {
-		if ( downNow ) {
+		if ( downNow && !isTouchMoving ) {
 			Sound_StartLocalSound( "iphone/bdown_01.wav" );
 		}
 		// wasn't down the previous frame
@@ -370,14 +815,16 @@ int	TouchReleased( int x, int y, int w, int h ) {
 		return 0;
 	}
 	
-	if ( numTouches == numPrevTouches ) {
+	if ( numTouches == numPrevTouches && !isTouchMoving ) {
 		// finger dragged off
 		Sound_StartLocalSound( "iphone/baborted_01.wav" );
 		return 0;
 	}
 	
-	// released
-	Sound_StartLocalSound( "iphone/baction_01.wav" );
+	if ( !isTouchMoving ) {  //gsh, added the if !isTouchMoving check
+		// released
+		Sound_StartLocalSound( "iphone/baction_01.wav" );
+	}
 	return 1;
 }
 
@@ -652,6 +1099,28 @@ PRIVATE void CreateIphoneUserCmd()
 	if ( tiltFire->value > 0 && tiltPitch < tiltFire->value ) {
 		cmd->buttons |= BUTTON_ATTACK;
 	}
+	
+#ifdef VOLUMHACK
+	//gsh... attempting a left/right click attack
+	if ( volumeFireUp->value ) {
+		
+		if ((int)volumeFireUpSetting->value)
+			cmd->buttons |= BUTTON_ATTACK;
+		else
+			cmd->buttons |= BUTTON_ALTERNATE_ATTACK;
+		
+		Cvar_Set("volumeFireUp", "0");
+	}
+	else if ( volumeFireDown->value ) {
+		
+		if ((int)volumeFireDownSetting->value)
+			cmd->buttons |= BUTTON_ATTACK;
+		else
+			cmd->buttons |= BUTTON_ALTERNATE_ATTACK;
+		
+		Cvar_Set("volumeFireDown", "0");
+	}
+#endif
 
 	// tapping the weapon issues the nextWeapon impulse
 	if ( TouchReleased( 240 - 40, 320 - 80 - 64, 80, 64 ) ) {
@@ -680,11 +1149,14 @@ iphoneHighlightPicWhenTouched
 Draw transparent except when touched
 =================
 */
+//gsh TODO: change hud alphas
+//TODO: make this cvar setable and adjustable in settings menu
+//float alphaValueForHudControls = 1;//0.5f;
 void iphoneHighlightPicNumWhenTouched( int x, int y, int w, int h, int glTexNum ) {
 	if ( TouchDown( x, y, w, h ) ) {
 		pfglColor4f(1,1,1,1);
 	} else {
-		pfglColor4f(1,1,1,0.5);
+		pfglColor4f(1,1,1,hudAlpha->value);//0.5);
 	}
 	iphoneDrawPicNum( x, y, w, h, glTexNum );
 	pfglColor4f(1,1,1,1);
@@ -752,6 +1224,7 @@ void iphoneDrawNumber( int x, int y, int number, int charWidth, int charHeight )
 	for( i = 0 ; i < length ; i++ ) {
 		int digit = string[i] - '0';
 		tex = numberPics[digit];
+		
 		R_Bind( tex->texnum );
 		pfglBegin( GL_QUADS );
 		
@@ -828,6 +1301,10 @@ void iphoneDrawFace() {
 				h = 0;
 			}
 			pic = mugshotnames[ 3*((100-h)/16)+Player.faceframe ];
+			
+			//gsh
+			if ((Player.flags & FL_GODMODE))
+				pic = mugshotnames[ 23+Player.faceframe ];
 		}
 	}
 	else
@@ -901,9 +1378,77 @@ void iphoneDrawNotifyText() {
 		}
 	}
 	
+	--notifyFrameNum; //gsh
+	
+//	pfglColor4f( 1, 1, 1, f );
+	//iphoneCenterText( 240, 5, notifyText );
+//	iphoneDrawArialText( 200, 20, 0.7f, notifyText );  //gsh
+	pfglColor4f( 0, 0, 0, f );
+	iphoneCenterArialText( 240+1, 20+1, 0.8f, notifyText); //gsh
+	iphoneCenterArialText( 240+2, 20+2, 0.8f, notifyText); //gsh
+	iphoneCenterArialText( 240+3, 20+3, 0.8f, notifyText); //gsh
 	pfglColor4f( 1, 1, 1, f );
-	iphoneCenterText( 240, 5, notifyText );
+	iphoneCenterArialText( 240, 20, 0.8f, notifyText); //gsh
 	pfglColor4f( 1, 1, 1, 1 );
+}
+
+/*
+ ==================
+ iphoneDrawReturnButton
+ 
+ Displays a button that allows the player to return to the map screen.
+ But it only displays for a few seconds.
+ ==================
+ */
+void iphoneDrawReturnButton() {
+	
+	if (returnButtonFrameNum <= 0)
+		return;
+		
+	// display for three seconds, then fade over 0.3
+	float f = iphoneFrameNum - returnButtonFrameNum - 80;
+	if ( f < 0 ) {
+		f = 1.0;
+	} else {
+		f = 1.0 - f * 0.1f;
+		if ( f < 0 ) {
+			returnButtonFrameNum = 0;
+			return;
+		}
+	}
+	
+	//always be semi-transparent
+	if ( f > 0.5f )
+		f = 0.5f;
+
+	pfglColor4f( 1, 1, 1, f );
+	if (iphoneDrawPicWithTouch( 240-32, 32, 64, 48, "iphone/button_back.tga")) {//int x, int y, int w, int h, const char *pic )) {
+		menuState = IPM_MAPS;
+		returnButtonFrameNum = 0;
+		
+		//if it's a spear map, it needs special attention
+		if (currentMap.episode > 5 && currentMap.episode < 10)
+		{
+			//get the level number
+			int levelNum = currentMap.episode*10 + currentMap.map;
+			
+			if (levelNum == 78 || (levelNum >= 60 && levelNum < 65)) {
+				episode->value = 6;
+			}
+			else if (levelNum == 79 || (levelNum >= 65 && levelNum < 70)) {
+				episode->value = 7;
+			}
+			else if (levelNum >= 70 && levelNum < 76) {
+				episode->value = 8;
+			}
+			else if (levelNum == 76 || levelNum == 77 || levelNum == 80) {
+				episode->value = 9;
+			}
+		}
+	}
+	pfglColor4f( 1, 1, 1, 1 );
+	
+	--returnButtonFrameNum;
 }
 
 void iphoneStartBonusFlash() {
@@ -936,14 +1481,14 @@ void iphoneSetAttackDirection( int dir ) {
 		attackDirTime[1] = iphoneFrameNum;
 	}
 }
-
+//gsh... note to self:  this is where the controls are drawn
 void iphoneDrawHudControl( hudPic_t *hud ) {
 	if ( hud->hudFlags & HF_DISABLED ) {
 		return;
 	}
 	iphoneHighlightPicNumWhenTouched( hud->x, hud->y, hud->width, hud->height, hud->glTexNum );
 }
-
+//gsh... note to self:  this is where menu/map buttons are drawn
 int iphoneDrawHudButton( hudPic_t *hud ) {
 	if ( hud->hudFlags & HF_DISABLED ) {
 		return 0;
@@ -1007,7 +1552,7 @@ iphoneFrame
 ==================
 */
 void iphoneFrame() {
-	unsigned char blendColor[4];
+	unsigned char blendColor[4] = { 0, 0, 0, 0 };
 	
 	iphoneFrameNum++;
 	loggedTimes[iphoneFrameNum&(MAX_LOGGED_TIMES-1)].enterFrame = Sys_Milliseconds();
@@ -1052,6 +1597,12 @@ void iphoneFrame() {
 	//------------------
 	// normal gameplay
 	//------------------
+	
+	//this is a hack for "Floor 18, Part II: Death's Door"
+	//there's no gold key to leave the first room
+	//so we give it to the player here... gsh
+	if (currentMap.episode == 8 && !(Player.items & ITEM_KEY_1))
+		Player.items |= ITEM_KEY_1;
 
 	if( Player.playstate != ex_dead )
 	{
@@ -1125,16 +1676,19 @@ void iphoneFrame() {
 		blendColor[0] = 255;
 		blendColor[1] = 0;
 		blendColor[2] = 0;
-		blendColor[3] = deathFadeIntensity;
+		blendColor[3] = deathFadeIntensity; 
 		deathFadeIntensity += 2;
 		if( deathFadeIntensity >= 240 ) {
 			deathFadeIntensity = 0;
 			PL_NewGame( &Player );
-			iphoneStartMap( currentMap.episode, currentMap.map, currentMap.skill );
+			if (currentMap.episode >=9) //gsh
+				iphoneStartUserMap( currentMap.episode, currentMap.map, currentMap.skill, NULL );
+			else
+				iphoneStartMap( currentMap.episode, currentMap.map, currentMap.skill );
 		}
 	} else {
 		iphoneDrawWeapon();
-		if( damageflash ) {
+		if( damageflash ) { 
 			blendColor[0] = 255;
 			blendColor[1] = 0;
 			blendColor[2] = 0;
@@ -1160,6 +1714,9 @@ void iphoneFrame() {
 	}
 	
 	iphoneDrawNotifyText();
+	
+	//gsh
+	iphoneDrawReturnButton();
 
 	iphoneDrawMapView();
 
@@ -1180,7 +1737,7 @@ void iphoneFrame() {
 	if ( iphoneDrawHudButton( &huds.map ) ) {
 		iphoneOpenAutomap();
 	}
-		
+
 	Client_Screen_DrawConsole();	
 
 	ShowTilt();		// debug tool
@@ -1189,4 +1746,20 @@ void iphoneFrame() {
 	iphoneSavePrevTouches();
 	
 	SysIPhoneSwapBuffers();	// do the swapbuffers
+	
 }
+
+void iphoneDrawLoading()
+{
+	Com_Printf("Draw Loading!\n");
+//	unsigned char blendColor[4];
+	
+	iphoneSet2D();
+	
+	//draw stuff here
+	iphoneDrawText(100, 100, 16, 16, "Drawing Loading!");//, <#int y#>, <#int width#>, <#int height#>, <#const char * str#>)
+	
+	SysIPhoneSwapBuffers();	// do the swapbuffers	
+}
+
+

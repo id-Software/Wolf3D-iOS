@@ -71,8 +71,8 @@ PUBLIC void A_DeathScream( entity_t *self )
 {
 	switch( self->type )
 	{
-		case en_mutant:
-			if( g_version->value == SPEAROFDESTINY )
+		case en_mutant:  //added 0's to all of these in order to check if sounds are correct... gsh
+			if( g_version->value == SPEAROFDESTINY && currentMap.episode >= 6 && currentMap.episode < 9)//added the episode check... gsh )
 			{
 				Sound_StartSound( NULL, 1, CHAN_VOICE, Sound_RegisterSound( "sfx/033.wav" ), 1, ATTN_NORM, 0 );
 			}
@@ -83,7 +83,7 @@ PUBLIC void A_DeathScream( entity_t *self )
 			break;
 
 		case en_guard:
-			if( g_version->value == SPEAROFDESTINY )
+			if( g_version->value == SPEAROFDESTINY && currentMap.episode >= 6 && currentMap.episode < 9)//added the episode check... gsh )
 			{
 				Sound_StartSound( NULL, 1, CHAN_VOICE, Sound_RegisterSound( dsodsounds[ US_RndT() % 6 ] ), 1, ATTN_NORM, 0 );			
 			}
@@ -94,7 +94,7 @@ PUBLIC void A_DeathScream( entity_t *self )
 			break;
 
 		case en_officer:
-			if( g_version->value == SPEAROFDESTINY )
+			if( g_version->value == SPEAROFDESTINY && currentMap.episode >= 6 && currentMap.episode < 9)//added the episode check... gsh )
 			{
 				Sound_StartSound( NULL, 1, CHAN_VOICE, Sound_RegisterSound( "sfx/046.wav" ), 1, ATTN_NORM, 0 );
 			}
@@ -105,7 +105,7 @@ PUBLIC void A_DeathScream( entity_t *self )
 			break;
 
 		case en_ss:
-			if( g_version->value == SPEAROFDESTINY )
+			if( g_version->value == SPEAROFDESTINY && currentMap.episode >= 6 && currentMap.episode < 9)//added the episode check... gsh )
 			{
 				Sound_StartSound( NULL, 1, CHAN_VOICE, Sound_RegisterSound( "sfx/035.wav" ), 1, ATTN_NORM, 0 );
 			}
@@ -116,7 +116,7 @@ PUBLIC void A_DeathScream( entity_t *self )
 			break;
 
 		case en_dog:
-			if( g_version->value == SPEAROFDESTINY )
+			if( g_version->value == SPEAROFDESTINY && currentMap.episode >= 6 && currentMap.episode < 9)//added the episode check... gsh )
 			{
 				Sound_StartSound( NULL, 1, CHAN_VOICE, Sound_RegisterSound( "sfx/031.wav" ), 1, ATTN_NORM, 0 );
 			}
@@ -208,7 +208,7 @@ PUBLIC void A_FirstSighting( entity_t *self )
 			break;
 
 		case en_officer:
-			if( g_version->value == SPEAROFDESTINY )
+			if( g_version->value == SPEAROFDESTINY && currentMap.episode >= 6 && currentMap.episode < 9)//added the episode check... gsh )
 			{
 				Sound_StartSound( NULL, 1, CHAN_VOICE, Sound_RegisterSound( "sfx/043.wav" ), 1, ATTN_NORM, 0 );
 			}
@@ -918,7 +918,7 @@ PUBLIC void T_Projectile( entity_t *self )
 	{
 		if( self->type == en_rocket || self->type == en_hrocket )
 		{ // rocket ran into obstacle, draw explosion!
-			if( g_version->value == SPEAROFDESTINY )
+			if( g_version->value == SPEAROFDESTINY && currentMap.episode >= 6 && currentMap.episode < 9)//added the episode check... gsh )
 			{
 				Sound_StartSound( NULL, 1, CHAN_WEAPON, Sound_RegisterSound( "lsfx/001.wav" ), 1, ATTN_NORM, 0 );
 			}

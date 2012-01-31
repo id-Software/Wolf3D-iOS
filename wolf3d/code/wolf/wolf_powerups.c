@@ -254,7 +254,8 @@ PRIVATE int Pow_Give( pow_t type )
 			{
 				return 0;
 			}
-			Sound_StartSound( NULL, 0, CHAN_ITEM, Sound_RegisterSound( "lsfx/064.wav" ), 1, ATTN_NORM, 0 );
+//			Sound_StartSound( NULL, 0, CHAN_ITEM, Sound_RegisterSound( "lsfx/064.wav" ), 1, ATTN_NORM, 0 ); //gsh, I don't like this sound
+			Sound_StartSound( NULL, 0, CHAN_ITEM, Sound_RegisterSound( "lsfx/031.wav" ), 1, ATTN_NORM, 0 ); //gsh, I like this sound
 			break;
 
 		case pow_machinegun:
@@ -290,14 +291,22 @@ PRIVATE int Pow_Give( pow_t type )
 
 		case pow_spear:
 			{
-			char szTextMsg[ 256 ];
+			//gsh char szTextMsg[ 256 ];
+				
+				Com_Printf("Spear of Destiny picked up!!\n");
 
-			Sound_StartSound( NULL, 0, CHAN_ITEM, Sound_RegisterSound( "sodsfx/109.wav" ), 1, ATTN_NORM, 0 );
+			Sound_StartSound( NULL, 0, CHAN_ITEM, Sound_RegisterSound( "sfx/109.wav" ), 1, ATTN_NORM, 0 ); //gsh
 			iphoneSetNotifyText( "Spear of Destiny" );
-
-			my_snprintf( szTextMsg, sizeof( szTextMsg ), 
+/*			//gsh
+			my_snprintf( szTextMsg, sizeof( szTextMsg ),   //this is supposed to load the last level... but it isn't
 				"loading ; map s%.2d.map\n", 20 );
 			Cbuf_AddText( szTextMsg );
+ */
+			
+				//this might be a bit of a hack.  But it works.
+				//Load the last level... gsh
+				iphoneStartMap(8, 0, currentMap.skill);
+			
 			}
 			break;
 

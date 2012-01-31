@@ -45,6 +45,7 @@
 
 extern void	FS_InitFilesystem(void);
 extern char	*FS_Gamedir(void);
+//extern char *FS_ForceGamedir(void); //gsh
 
 
 

@@ -16,6 +16,11 @@
 
 #include "wolfiphone.h"
 
+
+
+//gsh
+//#define NOTIFYLISTEN  //uncomment to receive notifications
+
 struct AVSystemControllerPrivate;
 
 @interface AVSystemController : NSObject
@@ -144,6 +149,40 @@ EAGLView *eaglview;
 		((void(*)(int))eglSwapInterval)( 2 );
 	}
 #endif
+
+#ifdef VOLUMEHACK
+	//-------------------
+	// Volume Button Hack
+	//gsh
+	// Note: MediaPlayer framework required for this trick
+	//create a MPVolumeView to hack the volume button
+	CGRect frame = CGRectMake(0, -30, 180, 10);  //put this thing offscreen
+	volumeView = [[[MPVolumeView alloc] initWithFrame:frame] autorelease];
+	[volumeView sizeToFit];
+	[self addSubview:volumeView];
+	
+	// Find the volume view slider 
+	for (UIView *view in [volumeView subviews]){
+		if ([[[view class] description] isEqualToString:@"MPVolumeSlider"]) {
+			volumeViewSlider = (UISlider *)view;
+		}
+	}
+	
+	//listen for volume changes
+	[[NSNotificationCenter defaultCenter] addObserver:self 
+											 selector:@selector(volumeListener:) 
+												 name:@"AVSystemController_SystemVolumeDidChangeNotification" 
+											   object:nil];
+	
+	//---------------------
+#endif
+	
+#ifdef NOTIFYLISTEN	//gsh
+	//this is a general purpose listener
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(notificationListener:)
+												 name:nil
+											   object:nil];
+#endif
 	
 	// with swapinterval, we want to update as fast as possible
 	float	interval = 1.0 / 30.0f;
@@ -155,7 +194,14 @@ EAGLView *eaglview;
     return self;
 }
 
+//gsh
+- (void)viewDidLoad {
+
+	Com_Printf("\n---------------\nviewDidLoad() called\n---------------\n\n");
+}
+
 - (void)drawView {
+		
 	[ (wolf3dAppDelegate *)[UIApplication sharedApplication].delegate restartAccelerometerIfNeeded];
 	
 #if 0	
@@ -175,10 +221,27 @@ EAGLView *eaglview;
 		}
 	}
 #endif	
+	
+#ifdef VOLUMEHACK
 	//------------------
+	// volume hack
+
+	
+	//check for volume adjustments   gsh
+	if ( menuState == IPM_CONTROLS)
+	{
+		if (lastFramesVolume != s_masterVolume->value)
+		{
+			lastFramesVolume = s_masterVolume->value;
+			[volumeViewSlider setValue:lastFramesVolume animated:NO];
+			[volumeViewSlider _commitVolumeChange];
+		}
+	}
+#endif
 	
 	iphoneFrame();	// swapBuffers() will be called from here
 }
+
 
 - (void)swapBuffers {
 //    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
@@ -215,7 +278,11 @@ EAGLView *eaglview;
 - (void) handleTouches:(NSSet*)touches withEvent:(UIEvent*)event {
 	int touchCount = 0;
 	int points[16];
-	static int previousTouchCount;
+	static int previousTouchCount = 0;
+	
+	//gsh
+	if (previousTouchCount == 0)
+		isTouchMoving = 0;
 	
 	NSSet *t = [event allTouches];
     for (UITouch *myTouch in t)
@@ -232,10 +299,12 @@ EAGLView *eaglview;
         }
         if (myTouch.phase == UITouchPhaseMoved) {
             // touch moved handler
+			//gsh, use this for swipe events in the scrolling menus
+			isTouchMoving = 1;
         }
         if (myTouch.phase == UITouchPhaseEnded) {
 			touchCount--;
-        }
+		}
     }
 	
 	// toggle the console with four touches
@@ -281,11 +350,62 @@ EAGLView *eaglview;
 	[self handleTouches:touches withEvent:event];
 }
 
-
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
 	[self handleTouches:touches withEvent:event];
 }
 
+// gsh
+#ifdef NOTIFYLISTEN
+- (void) notificationListener:(NSNotification *)notify
+{
+	Com_Printf("notificationListener: %s\n", [notify.name UTF8String]);
+//NSString
+	
+	if ([notify.name isEqualToString:@"CPDistributedMessagingCenterServerDidTerminateNotification"] && menuState == IPM_STOREKIT)
+	{
+		iphoneMessageBox("Apple Store Failed", "Connection to app store has terminated.  Please try again later.");
+		menuState = IPM_MAIN;
+	}
+	//sometimes after requrestProductData() is called we get these notifications
+	//and the storekit no longer responds (making it appear as a crash)
+	/*	
+notificationListener: CPDistributedMessagingCenterServerDidTerminateNotification
+notificationListener: SKNotificationRequestFinished
+notificationListener: SKNotificationTransactionsRefreshed
+notificationListener: CPDistributedMessagingCenterServerDidTerminateNotification
+*/	
+}
+#endif
+
+#ifdef VOLUMEHACK
+//-------------------
+// Volume Button Hack
+// gsh
+// currently this is problematic...
+// it's slow if the user holds the volume button
+// let's see if inlining this with the normal game loop is faster
+// than listening for the event... it's not
+// Note:  MediaPlayer framework required for this trick
+//-------------------
+- (void) volumeListener:(NSNotification *)notify
+{
+	//TODO: provide left/right click attacks
+	if (volumeViewSlider.value < s_masterVolume->value)
+	{
+	
+		[volumeViewSlider setValue:s_masterVolume->value animated:NO];//volumeSetting animated:NO];
+		[volumeViewSlider _commitVolumeChange];  //again, ignoring compiler warning complaints
+												//this might have a warning because it's currently undocumented?
+		Cvar_Set("volumeFireDown", "1");
+	}
+	else if (volumeViewSlider.value > s_masterVolume->value)//volumeSetting)
+	{
+		[volumeViewSlider setValue:s_masterVolume->value animated:NO];//volumeSetting animated:NO];
+		[volumeViewSlider _commitVolumeChange];  //again, ignoring compiler warning complaints
+		Cvar_Set("volumeFireUp", "1");
+	}
+}
+#endif
 
 
 @end

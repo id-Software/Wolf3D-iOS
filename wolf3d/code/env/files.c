@@ -60,7 +60,7 @@
 
 
 PRIVATE char fs_gamedir[ MAX_OSPATH ];
-
+//PRIVATE char fs_soddir[ MAX_OSPATH ]; //gsh
 
 
 /*
@@ -77,8 +77,24 @@ PRIVATE char fs_gamedir[ MAX_OSPATH ];
 */
 PUBLIC char *FS_Gamedir( void )
 {
+	/*
+	//gsh... this is a trick to load in where the iphoneDocDirectory is
+	if (currentMap.episode >= 6)
+	{
+//		sprintf( fs_soddir, "%s/SODbase", iphoneDocDirectory );  //if you're downloading the SOD data
+		sprintf( fs_soddir, "%s/", iphoneDocDirectory );  //if you're only downloading the spear maps
+		return fs_soddir;
+	}*/
+	
 	return fs_gamedir;
 }
+/*
+//gsh this is so that we can force a non-SOD folder
+//it's only getting used in the FSOpenFile() of fileio.c
+PUBLIC char *FS_ForceGamedir( void )
+{
+	return fs_gamedir;
+}*/
 
 
 /*

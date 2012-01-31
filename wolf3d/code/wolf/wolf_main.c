@@ -70,7 +70,9 @@ PUBLIC void Game_Init( void )
 
 	episode = Cvar_Get( "episode", "0", CVAR_ARCHIVE );
 	skill = Cvar_Get( "skill", "1", CVAR_ARCHIVE );
-	g_version = Cvar_Get( "g_version", "0", CVAR_ARCHIVE ); 
+//	g_version = Cvar_Get( "g_version", "0", CVAR_ARCHIVE );
+	g_version = Cvar_Get( "g_version", "1", CVAR_ARCHIVE ); //we should make a #ifdef for "special version"
+															//this version is to come with spear
 
 #ifndef LITE	
 	Cmd_AddCommand( "map", Map_f );

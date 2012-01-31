@@ -23,7 +23,7 @@
 //#define EPISODE_ONE_ONLY
 
 // this is the version number displayed on the menu screen
-#define WOLF_IPHONE_VERSION 1.1
+#define WOLF_IPHONE_VERSION 1.2//1.1
 
 extern viddef_t viddef;
 
@@ -33,13 +33,19 @@ typedef enum menuState {
 	IPM_SKILL,
 	IPM_EPISODE,
 	IPM_MAPS,
+	IPM_MAPSELECTOR, //gsh
 	IPM_CONTROLS,
 	IPM_INTERMISSION,
 	IPM_VICTORY,
 	IPM_AUTOMAP,
 	IPM_STATS,
-	IPM_HUDEDIT
-	
+	IPM_HUDEDIT,
+	IPM_DOWNLOADPROGRESS,  //gsh
+	IPM_STOREKIT, //gsh	
+//	IPM_LOADING, //gsh
+	IPM_TRIVIA, //gsh
+	IPM_MORE, //gsh
+	IPM_DOWNLOADINSTRUCTIONS, //gsh
 } menuState_t;
 
 extern menuState_t menuState;
@@ -51,7 +57,7 @@ void iphoneDrawMenus();
 #define SAVEGAME_VERSION	108
 
 #define MAX_SKILLS		4
-#define MAX_MAPS		60
+#define MAX_MAPS		81 //60    changed by gsh to allow for SOD levels
 
 #define MF_TRIED		1
 #define MF_COMPLETED	2
@@ -69,15 +75,25 @@ typedef struct {
 	int		mapFlags[MAX_SKILLS][MAX_MAPS];
 } currentMap_t;
 
+//gsh
+typedef struct {
+	int x;
+	int y;
+	int width;
+	int height;
+} rect_t;
+rect_t RectMake(int x, int y, int width, int height);
+
 extern currentMap_t currentMap;
 
 void iphoneStartMap( int episodeNum, int mapNum, int skillLevel );
+void iphoneStartUserMap( int episodeNum, int mapNum, int skillLevel, char *mapName );  //gsh
 
 extern char iphoneDocDirectory[1024];
 extern char iphoneAppDirectory[1024];
 
 extern texture_t *numberPics[10];
-#define NUM_MUGSHOTS	23
+#define NUM_MUGSHOTS	26//23
 extern char *mugshotnames[ NUM_MUGSHOTS ];
 
 extern vec3_t	vnull;
@@ -100,6 +116,13 @@ extern cvar_t	*tiltMove;
 extern cvar_t	*tiltDeadBand;
 extern cvar_t	*tiltAverages;
 extern cvar_t	*tiltFire;
+#ifdef VOLUMEHACK
+extern cvar_t	*volumeFireUp; //gsh
+extern cvar_t	*volumeFireDown; //gsh
+extern cvar_t	*volumeFireUpSetting; //gsh
+extern cvar_t	*volumeFireDownSetting; //gsh
+#endif
+extern cvar_t	*hudAlpha; //gsh
 extern cvar_t	*music;
 extern cvar_t	*showTilt;
 extern cvar_t	*showTime;
@@ -115,6 +138,7 @@ extern cvar_t	*autoFire;
 // the native iPhone code should set the following each frame:
 extern int	numTouches;
 extern int	touches[5][2];	// [0] = x, [1] = y in landscape mode, raster order with y = 0 at top
+extern int isTouchMoving; //gsh
 extern float	tilt;		// -1.0 to 1.0
 extern float	tiltPitch;
 
@@ -135,6 +159,14 @@ void LoadWallTexture( int wallPicNum );
 int	TouchDown( int x, int y, int w, int h );
 int	TouchReleased( int x, int y, int w, int h );
 int iphoneCenterText( int x, int y, const char *str );
+void iphoneCenterTextWithColor( int x, int y, const char *str, colour4_t color );  //gsh
+int iphoneDrawText( int x, int y, int width, int height, const char *str ); //gsh
+int iphoneDrawArialText( int x, int y, float scale, const char *str ); //gsh
+int iphoneCenterArialText( int x, int y, float scale, const char *str ); //gsh
+int iphoneDrawArialTextInBox( rect_t paragraph, int lineLength, const char *str, rect_t boxRect ); //gsh
+void iphoneDrawTextWithColor( rect_t rect, const char *str, float colors[4] ); //gsh
+void iphoneDrawMapName( rect_t rect, const char *str ); //gsh
+int iphoneDrawTextInBox( rect_t paragraph, int lineLength, const char *str, rect_t boxRect ); //gsh
 void iphoneDrawNumber( int x, int y, int number, int charWidth, int charHeight );
 void iphoneDrawPic( int x, int y, int w, int h, const char *pic );
 int iphoneDrawPicWithTouch( int x, int y, int w, int h, const char *pic );
@@ -166,6 +198,12 @@ typedef struct {
 	int		width, height;
 	int		glTexNum;
 	int		hudFlags;
+	int		drawWidth, drawHeight;		//from here down (in the struct) is from doom iphone... gsh
+	int		touchWidth, touchHeight;
+	texture_t *texture;
+	bool	drawAsLimit;
+	float	touchState;
+	//struct touch_s *touch;
 } hudPic_t;
 
 //#define ALLOW_MAP_VIEW_HUD
@@ -188,6 +226,7 @@ extern hud_t	huds;
 void HudSetForScheme( int schemeNum );
 void HudSetTexnums();
 void HudEditFrame();
+void iphoneHudEditFrame();
 
 
 
@@ -199,6 +238,7 @@ void iphoneStartDamageFlash( int points );
 void iphoneSetAttackDirection( int dir );
 void iphoneStartIntermission( int framesFromNow );
 void iphoneSetNotifyText( const char *str, ... );
+void iphoneSetLevelNotifyText(); //gsh
 	
 //---------------------------------------
 // interfaces to Objective-C land

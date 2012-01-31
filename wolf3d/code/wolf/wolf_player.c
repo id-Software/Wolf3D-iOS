@@ -83,6 +83,7 @@ PRIVATE _boolean PL_ChangeWeapon( player_t *self, int weapon )
 		return false;
 	}
 
+
 	self->weapon = 
 	self->pendingweapon = weapon;
 
@@ -461,7 +462,7 @@ PRIVATE void PL_PlayerAttack( player_t *self, _boolean re_attack )
 -----------------------------------------------------------------------------
 */
 PUBLIC void PL_Process( player_t *self, LevelData_t *lvl )
-{
+{	
 	int n;
 
 	self->madenoise = false;
@@ -489,11 +490,34 @@ PUBLIC void PL_Process( player_t *self, LevelData_t *lvl )
 		if( Player.cmd.buttons & BUTTON_ATTACK )
 		{
 			self->flags |= PL_FLAG_ATTCK;
-
+			
+			//gsh
+			if (self->previousweapon != WEAPON_KNIFE && self->previousweapon)
+			{
+				//self->weapon = self->previousweapon;
+				PL_ChangeWeapon(self, self->previousweapon);
+			}
+			
 			self->attackframe = 0;
 			self->attackcount = attackinfo[ self->weapon ][ 0 ].tics;
 			self->weaponframe = attackinfo[ self->weapon ][ 0 ].frame;
-		} else if ( Player.cmd.buttons & BUTTON_CHANGE_WEAPON ) {
+		}
+		else if ( Player.cmd.buttons & BUTTON_ALTERNATE_ATTACK )   //gsh
+		{
+			self->flags |= PL_FLAG_ATTCK;
+			
+//			PL_ChangeWeapon(self, WEAPON_KNIFE);
+			if (self->weapon != WEAPON_KNIFE)
+			{
+				self->previousweapon = self->weapon;
+				self->weapon = WEAPON_KNIFE;
+			}
+			
+			self->attackframe = 0;
+			self->attackcount = attackinfo[ self->weapon ][ 0 ].tics;
+			self->weaponframe = attackinfo[ self->weapon ][ 0 ].frame;
+		}
+		else if ( Player.cmd.buttons & BUTTON_CHANGE_WEAPON ) {
 			self->pendingweapon=self->weapon;
 			for( n = 0 ; n < 4; ++n )
 			{
@@ -559,9 +583,51 @@ PUBLIC void PL_Spawn( placeonplane_t location, LevelData_t *lvl )
 
 	Areas_ConnectAreas( Player.areanumber );
 	
+	//gsh
+	iphoneSetLevelNotifyText();
+	/*
 	char str[128];
-	sprintf( str, "Entering level E%iM%i", currentMap.episode + 1, currentMap.map + 1 );
+	//sprintf( str, "Entering level E%iM%i", currentMap.episode + 1, currentMap.map + 1 );
+	//gsh
+	if (currentMap.episode < 6)
+		sprintf( str, "Entering level E%iM%i", currentMap.episode+1, currentMap.map+1 );
+	else if (currentMap.episode < 10) {
+		int currentLevel = currentMap.episode * 10 + currentMap.map;
+		switch (currentLevel) {
+			case 60: case 61: case 62: case 63: case 64:
+				sprintf( str, "Entering Tunnels %i", currentLevel-60+1);
+				break;
+			case 78:
+				sprintf( str, "Entering Tunnels %i", 6);
+				break;				
+			case 65: case 66: case 67: case 68: case 69:
+				sprintf( str, "Entering Dungeons %i", currentLevel-65+1);
+				break;
+			case 79:
+				sprintf( str, "Entering Dungeons %i", 6);
+				break;				
+			case 70: case 71: case 72: case 73: case 74: case 75:
+				sprintf( str, "Entering Castle");
+				break;
+			case 76:
+				sprintf( str, "Entering Ramparts");
+				break;
+			case 77:
+				sprintf( str, "Entering Death Knight");
+				break;
+			case 80:
+				sprintf( str, "Entering Dungeon Dimension");
+				break;
+			default:
+				sprintf( str, "  ");
+				break;
+		}
+	}
+	else 
+		sprintf( str, "Entering level custom %i", /*currentMap.episode+1,* currentMap.map+1 );
+	
 	iphoneSetNotifyText( str );
+	*/
 }
 
 /*
@@ -918,6 +984,7 @@ PUBLIC void PL_NewGame( player_t *self )
 	self->ammo[ AMMO_BULLETS ] = 16;	// JDC: changed for iphone 8;
 	self->lives = 3;
 
+	self->previousweapon = WEAPON_KNIFE; //gsh
 	self->weapon = self->pendingweapon = WEAPON_PISTOL;
 	self->items = ITEM_WEAPON_1 | ITEM_WEAPON_2;
 	self->next_extra = EXTRAPOINTS;
@@ -973,6 +1040,7 @@ PUBLIC _boolean PL_Reborn( player_t *self )
 	self->weaponframe = 0;
 	self->flags = 0;
 
+	self->previousweapon = WEAPON_KNIFE; //gsh
 	self->weapon = self->pendingweapon = WEAPON_PISTOL;
 	self->items = ITEM_WEAPON_1 | ITEM_WEAPON_2;
 

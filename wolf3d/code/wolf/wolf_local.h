@@ -140,8 +140,7 @@ extern void ProcessGuards( void );
 
 
 #define WL6SPRITESDIRNAME	"sprites"
-#define SODSPRITESDIRNAME	"sodsprites"
-
+#define SODSPRITESDIRNAME	"sodsprites"//"sprites"  //gsh was originally "sodsprites"
 
 extern char *spritelocation;
 

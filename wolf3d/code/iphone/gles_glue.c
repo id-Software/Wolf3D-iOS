@@ -101,6 +101,14 @@ void pfglVertex2i( GLint x, GLint y ) {
 	immediate[ curr_vertex ] = vab;
 	curr_vertex++;
 }
+void pfglVertex2f( GLfloat x, GLfloat y ) {
+	assert( curr_vertex < MAX_VERTS );
+	vab.xyz[ 0 ] = (float)x;
+	vab.xyz[ 1 ] = (float)y;
+	vab.xyz[ 2 ] = 0.0f;
+	immediate[ curr_vertex ] = vab;
+	curr_vertex++;
+}
 void pfglColor4ub( GLubyte r, GLubyte g, GLubyte b, GLubyte a ) {
 	vab.c[ 0 ] = r;
 	vab.c[ 1 ] = g;

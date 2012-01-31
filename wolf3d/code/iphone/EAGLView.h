@@ -24,6 +24,13 @@
 #import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES1/glext.h>
 
+ 
+
+
+#ifdef VOLUMEHACK
+#import <MediaPlayer/MPVolumeView.h>
+#endif
+
 /*
 This class wraps the CAEAGLLayer from CoreAnimation into a convenient UIView subclass.
 The view content is basically an EAGL surface you render your OpenGL scene into.
@@ -48,6 +55,14 @@ Note that setting the view non-opaque will only work if the EAGL surface has an 
     
     NSTimer *animationTimer;
 	NSTimeInterval animationInterval;
+	
+	//gsh... an attempt at hacking the volume button
+#ifdef VOLUMEHACK
+	MPVolumeView *volumeView;
+	UISlider *volumeViewSlider;
+	float lastFramesVolume;
+#endif	
+//	NSThread *pLoadThread;
 	
 }
 

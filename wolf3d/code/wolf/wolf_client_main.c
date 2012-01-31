@@ -19,6 +19,20 @@
 */
 
 #include "../wolfiphone.h"
+/*
+void ReplaceText(char* original, char* insert, int nInsertAt)
+{
+	int sizeInsert = sizeof(insert);
+	int sizeOriginal = sizeof(original); //should be 1024
+	
+	for (int i = 0; i < sizeInsert; i++)
+	{
+		original[nInsertAt + i] = insert[i];
+	}
+	
+	
+	
+}*/
 
 /*
 -----------------------------------------------------------------------------
@@ -34,14 +48,15 @@
 */
 PUBLIC void Client_PrepRefresh( const char *r_mapname )
 {
-	char mapname[ 32 ];
+//	char mapname[ 32 ];
+	char mapname[ 64 ]; //gsh, decided to allow longer map names
 
 	if( ! r_mapname || ! *r_mapname )
 	{
 		return;
 	}
 
-	if( g_version->value == SPEAROFDESTINY )
+	if( g_version->value == SPEAROFDESTINY && currentMap.episode >= 6 && currentMap.episode < 10)//added the episode check... gsh)
 	{
 		spritelocation = SODSPRITESDIRNAME;
 	}
@@ -78,7 +93,47 @@ PUBLIC void Client_PrepRefresh( const char *r_mapname )
 	
 	// clear any lines of console text
 	Con_ClearNotify();
-
+	
+	//gsh
+	//this is a hack... to save space on the download... we've removed the music
+	//so instead we're going to replace the SOD music with wolf3d music here
+	//however, we don't have to worry about that now that we package the SOD music
+	//with the binary
+	/*
+	if (currentMap.episode >= 6)   //if it's the SOD levels
+	{
+		char *source;
+		switch (currentMap.episode * 10 + currentMap.map)
+		{
+			case 60:	source = "ZEROHOUR.ogg";	break;
+			case 61:	source = "CORNER.ogg";		break;
+			case 62:	source = "DUNGEON.ogg";		break;
+			case 63:	source = "ENDLEVEL.ogg";	break;
+			case 64:	source = "FUNKYOU.ogg";		break;
+			case 65:	source = "HEADACHE.ogg";	break;
+			case 66:	source = "HITLWLTZ.ogg";	break;
+			case 67:	source = "INTROCW3.ogg";	break;
+			case 68:	source = "NAZI_NOR.ogg";	break;
+			case 69:	source = "NAZI_OMI.ogg";	break;
+			case 70:	source = "NAZI_RAP.ogg";	break;
+			case 71:	source = "PACMAN.ogg";		break;
+			case 72:	source = "POW.ogg";			break;
+			case 73:	source = "PREGNANT.ogg";	break;
+			case 74:	source = "ROSTER.ogg";		break;
+			case 75:	source = "SALUTE.ogg";		break;
+			case 76:	source = "SEARCHN.ogg";		break;
+			case 77:	source = "SUSPENSE.ogg";	break;
+			case 78:	source = "TWELFTH.ogg";		break;
+			case 79:	source = "URAHERO.ogg";		break;
+			case 80:	source = "ULTIMATE.ogg";	break;  
+			default:
+				source = "CORNER.ogg";
+		}
+		strcpy(levelData.musicName + 6, source);  //the '6' is to get us past the "music/" part of musicName
+		levelData.musicName[6 + strlen(source)] = '\0';
+	}*/
+	
+	Com_Printf("Starting Music Track: %s\n", levelData.musicName);
 	Sound_StartBGTrack( levelData.musicName, levelData.musicName );
 
 	Player.playstate = ex_playing;	

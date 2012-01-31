@@ -216,8 +216,6 @@ PUBLIC filehandle_t *FS_OpenFile( const char *filename, W32 FlagsAndAttributes )
 		pathBase = iphoneDocDirectory;
 		my_snprintf( netpath, sizeof( netpath ), "%s/%s", pathBase, filename );
 	} else {
-//		extern char iphoneAppDirectory[1024];
-//		pathBase = iphoneAppDirectory;
 		pathBase = FS_Gamedir();
 		my_snprintf( netpath, sizeof( netpath ), "%s/%s", pathBase, filename );
 	}
@@ -225,7 +223,17 @@ PUBLIC filehandle_t *FS_OpenFile( const char *filename, W32 FlagsAndAttributes )
 	// high performance file mapping path, avoiding stdio
 	fd = open( netpath, O_RDONLY );
 	if ( fd == -1 ) {
-		return NULL;
+//		return NULL; 
+		//if it couldn't be found in that path then check again in the document directory
+		//gsh
+		//pathBase = FS_ForceGamedir(); 
+		extern char iphoneDocDirectory[1024];
+		pathBase = iphoneDocDirectory;
+		my_snprintf( netpath, sizeof( netpath ), "%s/%s", pathBase, filename );
+		fd = open( netpath, O_RDONLY );
+		if ( fd == -1 ) {  //okay, couldn't find it there either... return null
+			return NULL;
+		}
 	}
 	fstat( fd, &s );
 	

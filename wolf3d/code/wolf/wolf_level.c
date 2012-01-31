@@ -905,7 +905,7 @@ PUBLIC LevelData_t *Level_LoadMap( const char *levelname )
 
 
 
-	if( g_version->value == SPEAROFDESTINY )
+	if( g_version->value == SPEAROFDESTINY  && currentMap.episode >= 6 && currentMap.episode < 9)//added the episode check... gsh)
 	{
 		statinfo = static_sod;
 		num_statics = sizeof( static_sod ) / sizeof( static_sod[ 0 ] );
@@ -933,6 +933,7 @@ PUBLIC LevelData_t *Level_LoadMap( const char *levelname )
 	filesize = FS_GetFileSize( fhandle );
 	if( filesize < MAPHEADER_SIZE )
 	{
+		Com_Printf("Map file size is smaller than mapheader size\n");
 		return NULL;
 	}
 
@@ -943,6 +944,7 @@ PUBLIC LevelData_t *Level_LoadMap( const char *levelname )
 	FS_ReadFile( &signature, 1, 4, fhandle );
 	if( signature != MAP_SIGNATURE )
 	{
+		Com_Printf("File signature does not match MAP_SIGNATURE\n");
 		return NULL;
 	}
 
@@ -973,6 +975,7 @@ PUBLIC LevelData_t *Level_LoadMap( const char *levelname )
 	if( filesize < (MAPHEADER_SIZE + mapNameLength + musicNameLength +
 			length[ 0 ] + length[ 1 ] + length[ 2 ]) )
 	{
+		Com_Printf("filesize is less than MAPHEADER_SIZE + mapNameLength + musicNameLength + etc\n");
 		return NULL;	
 	}
 	
@@ -990,6 +993,7 @@ PUBLIC LevelData_t *Level_LoadMap( const char *levelname )
 
 	if( filesize < (MAPHEADER_SIZE + mapNameLength + musicNameLength) )
 	{
+		Com_Printf("filesize is less than MAPHEADER_SIZE + mapNameLength + musicNameLength\n");
 		return NULL;	
 	}
 	
@@ -1163,6 +1167,114 @@ PUBLIC LevelData_t *Level_LoadMap( const char *levelname )
 	newMap->floorColour[ 2 ] = (W8)((floor ) & 0xFF);
 
 	return newMap;
+}
+
+/*
+ -----------------------------------------------------------------------------
+ Function:		Level_VerifyMap
+ 
+ Parameters:	level file name
+ 
+ Returns:		0 if invalid map, 1 otherwise
+ 
+ Notes: 
+ 
+ -----------------------------------------------------------------------------
+ */
+PUBLIC int Level_VerifyMap( const char *levelname )
+{
+	W16 rle;
+	W32  offset[ 3 ];
+	W16 length[ 3 ];	
+	W16 w, h;
+	W32	signature;
+	W32 ceiling, floor;
+	filehandle_t *fhandle;
+	W16 mapNameLength;
+	char *mapName = NULL;
+	W16 musicNameLength;
+	char *musicName = NULL;
+	SW32 filesize;
+	int value = 1;
+	
+	
+	fhandle = FS_OpenFile( levelname, FA_FILE_IPHONE_DOC_DIR );
+	if( ! fhandle )
+	{
+		value = 0;
+		goto cleanup;
+	}
+	
+	filesize = FS_GetFileSize( fhandle );
+	if( filesize < MAPHEADER_SIZE )
+	{
+		value = 0;
+		goto cleanup;
+	}
+	
+	FS_ReadFile( &signature, 1, 4, fhandle );
+	if( signature != MAP_SIGNATURE )
+	{
+		value = 0;
+		goto cleanup;
+	}
+	
+	FS_ReadFile( &rle, 2, 1, fhandle );
+	
+	FS_ReadFile( &w, 2, 1, fhandle );
+	FS_ReadFile( &h, 2, 1, fhandle );
+	
+	FS_ReadFile( &ceiling, 4, 1, fhandle );
+	FS_ReadFile( &floor, 4, 1, fhandle );
+	
+	
+	FS_ReadFile( &length, 2, 3, fhandle );
+	FS_ReadFile( &offset, 4, 3, fhandle );
+	
+	
+	FS_ReadFile( &mapNameLength, 1, 2, fhandle );
+	FS_ReadFile( &musicNameLength, 1, 2, fhandle );
+	
+	FS_ReadFile( &levelstate.fpartime, sizeof( float ), 1, fhandle );
+	
+	FS_ReadFile( levelstate.spartime, sizeof( W8 ), 5, fhandle );
+	levelstate.spartime[ 5 ] = '\0';
+	
+	
+	if( filesize < (MAPHEADER_SIZE + mapNameLength + musicNameLength +
+					length[ 0 ] + length[ 1 ] + length[ 2 ]) )
+	{
+		value = 0;
+		goto cleanup;
+	}
+	
+	mapName = Z_Malloc( mapNameLength + 1 );
+	musicName = Z_Malloc( musicNameLength + 1 );
+	
+	
+	FS_ReadFile( mapName, 1, mapNameLength, fhandle );
+	mapName[ mapNameLength ] = '\0';	
+	
+	
+	FS_ReadFile( musicName, 1, musicNameLength, fhandle );
+	musicName[ musicNameLength ] = '\0';
+	
+	
+	if( filesize < (MAPHEADER_SIZE + mapNameLength + musicNameLength) )
+	{
+		value = 0;
+		goto cleanup;
+	}
+	
+cleanup:
+	FS_CloseFile(fhandle);
+	if (mapName) {
+		Z_Free(mapName);
+	}
+	if (musicName) {
+		Z_Free(musicName);
+	}
+	return value;
 }
 
 

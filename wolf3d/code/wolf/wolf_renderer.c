@@ -59,7 +59,14 @@ PUBLIC void R_BeginRegistration( const char *map )
 	++texture_registration_sequence;
 
 
-	my_snprintf( fullname, sizeof( fullname ), "maps/%s.map", map );
+	//my_snprintf( fullname, sizeof( fullname ), "maps/%s.map", map );
+	if ( g_version->value == SPEAROFDESTINY && currentMap.episode >= 6 && currentMap.episode < 10)  //add if/else... gsh
+		my_snprintf( fullname, sizeof( fullname ), "%s.map", map );
+	else if (currentMap.episode >= 10)
+		my_snprintf( fullname, sizeof( fullname ), "%s.map", map );
+	else
+		my_snprintf( fullname, sizeof( fullname ), "maps/%s.map", map );
+	
 
 //	Door_ResetDoors( &r_world->Doors );
 	Powerup_Reset();
@@ -74,13 +81,13 @@ PUBLIC void R_BeginRegistration( const char *map )
 
 	if( r_world == NULL )
 	{
-		Com_Printf( "Could not load map (%s)\n", map );
+		Com_Printf( "Could not load map (%s) in R_BeginRegistration\n", map );
 		return;
 	}	
 
 	levelstate.floornum = floornumber;
 
-	if( g_version->value == SPEAROFDESTINY )
+	if( g_version->value == SPEAROFDESTINY && currentMap.episode >= 6 && currentMap.episode < 9)  //added the episode check... gsh)
 	{
 		if( strlen( map ) >= 2 )
 		{

@@ -96,7 +96,7 @@ PUBLIC _boolean PushWall_Push( int x, int y, dir4type dir )
 		iphoneSetNotifyText( "You found a secret!" );
 	}
 
-	if( g_version->value == SPEAROFDESTINY )
+	if( g_version->value == SPEAROFDESTINY && currentMap.episode >= 6 && currentMap.episode < 9)//added the episode check... gsh ).. TODO: fix sfx and other media
 	{
 		Sound_StartSound( NULL, 1, CHAN_AUTO, Sound_RegisterSound( "sfx/030.wav" ), 1, ATTN_STATIC, 0 );
 	}
