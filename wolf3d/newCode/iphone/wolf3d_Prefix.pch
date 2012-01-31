@@ -1,0 +1,8 @@
+//
+// Prefix header for all source files of the 'wolf3d' target in the 'wolf3d' project
+//
+
+#ifdef __OBJC__
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+#endif
