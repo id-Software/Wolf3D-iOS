@@ -1,16 +1,9 @@
 /*
- *  iphone_alerts.h
- *  wolf3d
- *
- *  Created by Greg Hodges on 7/14/09.
- *  Copyright 2009 id software. All rights reserved.
- *
- *  C wrappers for the UIAlertView.
- *
- */
-/*
  
- Copyright (C) 2009 Id Software, Inc.
+ Copyright (C) 2009-2011 id Software LLC, a ZeniMax Media company. 
+
+ This file is part of the WOLF3D iOS v2.1 GPL Source Code. 
+
  
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -28,12 +21,12 @@
  
  */
 
-
 #ifndef __IPHONE_ALERTS__
 #define __IPHONE_ALERTS__
 
 void iphoneMessageBox(char *title, char *message);
 void iphoneKillMessageBox();
+void iphoneNewMessageBox(char *title, char *message);
 void iphoneYesNoBox(char *title, char *message);
 
 #endif

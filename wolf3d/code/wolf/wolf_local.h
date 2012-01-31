@@ -39,6 +39,9 @@
 #ifndef __WOLF_LOCAL_H__
 #define __WOLF_LOCAL_H__
 
+#include "filesystem.h"
+#include "arch.h"
+#include "cvar.h"
 
 // Game Version
 #define WOLFENSTEINWL6	0x00

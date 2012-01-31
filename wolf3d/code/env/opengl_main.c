@@ -284,7 +284,6 @@ PUBLIC void R_Init()
 	int		err;
 	int		a, b;
 
-
 	Com_Printf( "\n------ Display Initialization ------\n" );
 
 	Com_Printf( "Initializing OpenGL Subsystem\n" );
@@ -293,9 +292,6 @@ PUBLIC void R_Init()
 
 	// set our "safe" modes
 	gl_state.prev_mode = 0;
-
-	viddef.width = 480;
-	viddef.height = 320;
 
 	//	get various GL strings
 	gl_config.vendor_string = (char *)pfglGetString( GL_VENDOR );
@@ -316,7 +312,6 @@ PUBLIC void R_Init()
 	my_strlcpy( vendor_buffer, gl_config.vendor_string, sizeof( vendor_buffer ) );
 	(void)my_strlwr( vendor_buffer );
 
-
 	sscanf( gl_config.version_string, "%d.%d", &a, &b );
 	if( a >= 1 && b >= 2 )
 	{
@@ -325,6 +320,14 @@ PUBLIC void R_Init()
 
 	pfglGetIntegerv( GL_MAX_TEXTURE_SIZE, &glMaxTexSize );
 	Com_Printf( "GL_MAX_TEXTURE_SIZE: %d\n", glMaxTexSize);
+
+	if ( strstr( gl_config.extensions_string, "GL_EXT_discard_framebuffer" ) != 0 ) {
+		gl_config.framebuffer_discard = true;
+	} else {
+		gl_config.framebuffer_discard = false;
+	}
+
+	InitImmediateModeGL();
 
 	GL_SetDefaultState();
 
@@ -359,7 +362,7 @@ PUBLIC void PrintGLError( W32 err, const char *from )
 		return;
 	}
 
-    if( from != "" )
+    if( strlen(from) != 0 )
 	{
 		Com_Printf( "\n\n\nGL Error: %s\n", from );
 	}

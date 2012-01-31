@@ -1,11 +1,27 @@
 /*
- *  iphone_mapselector.c
- *  wolf3d
- *
- *  Created by Greg Hodges on 7/2/09.
- *  Copyright 2009 id software. All rights reserved.
- *
+ 
+ Copyright (C) 2009-2011 id Software LLC, a ZeniMax Media company. 
+
+ This file is part of the WOLF3D iOS v2.1 GPL Source Code. 
+
+ 
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; either version 2
+ of the License, or (at your option) any later version.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ 
  */
+ 
+ 
 #include "../wolfiphone.h"
 #include <dirent.h>
 
@@ -13,7 +29,6 @@ const char levelNames[][29] = {
 "E1 level 1",
 "E1 level 2",
 "E1 level 3",
-#ifndef LITE
 "E1 level 4",
 "E1 level 5",
 "E1 level 6",
@@ -92,7 +107,6 @@ const char levelNames[][29] = {
 "Floor 19: Secret 1      ",
 "Floor 20: Secret 2      ",
 "Floor 21: Angel of Death",
-#endif
 };
 
 int dragVelocity = 0;   //velocity for the scrolling maps
@@ -106,9 +120,7 @@ extern int iphoneDrawPicWithTouchAndColor( int x, int y, int w, int h, const cha
 extern void iphoneStartUserMap( int episodeNum, int mapNum, int skillLevel, char *mapName );
 
 
-#ifdef LITE
 extern void GetMoreLevels( int x, int y );
-#endif
 
 //==========================================
 //  iphoneUpdateDrags()
@@ -132,13 +144,13 @@ void iphoneUpdateDrags(int numMaps, int skillSides, int height, int spacing, int
 	
 	//boundary check the drags
 	int num = numMaps+1+6;
-	if (g_version-> value == SPEAROFDESTINY)
+	if (g_version->value == SPEAROFDESTINY)
 		num = numMaps + 7;
 	
 	num += numUserMaps + 1;
 	
 	if (dragPosition < 320 - (height+spacing)*(num) - 20)
-		dragPosition < 320 - (height+spacing)*(num) - 20;
+		dragPosition = 320 - (height+spacing)*(num) - 20;
 	else if (dragPosition > 40)
 		dragPosition = 40;
 	
@@ -149,6 +161,8 @@ void iphoneUpdateDrags(int numMaps, int skillSides, int height, int spacing, int
 	
 	//update the drags
 	dragPosition -= dragVelocity;
+	
+	dragVelocity /= screenScale;
 	
 	//retard the velocity
 	if (dragVelocity > 0)
@@ -184,28 +198,28 @@ void iphoneDrawRewards(int m, int s, int x, int y)
 	int height = 40;//22;
 	int spacing = -12;
 	// draw award shadows
-	iphoneDrawPic( x,y+23, width, height, "iphone/kills_shadow.tga" );		x += width + spacing;
-	iphoneDrawPic( x,y+23, width, height, "iphone/secrets_shadow.tga" );	x += width + spacing;
-	iphoneDrawPic( x,y+23, width, height, "iphone/treasure_shadow.tga" );	x += width + spacing;
-	iphoneDrawPic( x,y+23, width, height, "iphone/partime_shadow.tga" );	//x += width + 5;
+	iphoneDrawPicRect( MakeScaledRectFloat( x,y+23, width, height ), "iphone/kills_shadow.tga" );		x += width + spacing;
+	iphoneDrawPicRect( MakeScaledRectFloat( x,y+23, width, height ), "iphone/secrets_shadow.tga" );		x += width + spacing;
+	iphoneDrawPicRect( MakeScaledRectFloat( x,y+23, width, height ), "iphone/treasure_shadow.tga" );	x += width + spacing;
+	iphoneDrawPicRect( MakeScaledRectFloat( x,y+23, width, height ), "iphone/partime_shadow.tga" );	//x += width + 5;
 	
 	x = startX;
 	
 	// draw awards
 	if ( (ch & MF_KILLS) || forceDrawRewards) {
-		iphoneDrawPic( x,y+23, width, height, "iphone/kills.tga" );		
+		iphoneDrawPicRect( MakeScaledRectFloat( x,y+23, width, height ), "iphone/kills.tga" );		
 	}
 	x += width + spacing;
 	if ( (ch & MF_SECRETS) || forceDrawRewards) {
-		iphoneDrawPic( x,y+23, width, height, "iphone/secrets.tga" );
+		iphoneDrawPicRect( MakeScaledRectFloat( x,y+23, width, height ), "iphone/secrets.tga" );
 	}
 	x += width + spacing;
 	if ( (ch & MF_TREASURE) || forceDrawRewards) {
-		iphoneDrawPic( x,y+23, width, height, "iphone/treasure.tga" );
+		iphoneDrawPicRect( MakeScaledRectFloat( x,y+23, width, height ), "iphone/treasure.tga" );
 	}
 	x += width + spacing;
 	if ( (ch & MF_TIME) || forceDrawRewards) {
-		iphoneDrawPic( x,y+23, width, height, "iphone/partime.tga" );
+		iphoneDrawPicRect( MakeScaledRectFloat( x,y+23, width, height ), "iphone/partime.tga" );
 	}
 }
 
@@ -239,7 +253,7 @@ int iphoneDrawUserMaps(int Yoffset, int height, int spacing, int skillValue)
 		iphoneDrawPic( 0, y, 480-80, height, "iphone/button_epSOD.tga");
 		
 			
-		while (ep = readdir (dp))
+		while ( ( ep = readdir (dp) ) )
 		{
 			++numMaps;
 			if (numMaps < 3)  //skip the '.' and '..'
@@ -315,13 +329,9 @@ void iphoneSelectMapMenu()
 	char strMission[80];
 	strMission[79] = '\0';
 	
-#ifdef LITE
-	int		numMaps = 3;//5;
-#else
 	int		numMaps = 60;
 	if (g_version->value == SPEAROFDESTINY)
 		numMaps = 60 + 21;
-#endif
 	
 	iphoneDrawPic(0, 0, 480, 320, "iphone/submenus_background_image.tga");
 	
@@ -429,18 +439,13 @@ void iphoneSelectMapMenu()
 	
 	int numUserMaps = 0;
 	
-#ifdef LITE
-	//buy more episodes button
-	GetMoreLevels( 0, dragPosition + (height + spacing) * (m+1) );
-#else
 #if 0
 	//buy more episodes button
 	if (g_version->value != SPEAROFDESTINY) 
 		GetSpearOfDestiny( 0, dragPosition + (height + spacing) * (m+6) );
 #endif
 	//TODO: Draw user maps
-	numUserMaps = iphoneDrawUserMaps(y, height, spacing, skillValue);
-#endif	
+	numUserMaps = iphoneDrawUserMaps(y, height, spacing, skillValue);	
 	
 	//Update the scrolling drags
 	iphoneUpdateDrags(numMaps, skillSides, height, spacing, numUserMaps);

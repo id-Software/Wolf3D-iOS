@@ -1,14 +1,9 @@
 /*
- *  iphone_downloadUserMap.c
- *  wolf3d
- *
- *  Created by Greg Hodges on 7/20/09.
- *  Copyright 2009 id software. All rights reserved.
- *
- */
-/*
  
- Copyright (C) 2009 Id Software, Inc.
+ Copyright (C) 2009-2011 id Software LLC, a ZeniMax Media company. 
+
+ This file is part of the WOLF3D iOS v2.1 GPL Source Code. 
+
  
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -25,7 +20,6 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  
  */
-
 
 #import "../wolfiphone.h"
 #import "wolf3dAppDelegate.h"
@@ -91,7 +85,7 @@ void DownloadURLConnection( char *url )
 	if (dp != NULL)
 	{
 		struct dirent *ep;
-		while (ep = readdir (dp))
+		while ( ( ep = readdir (dp) ) )
 		{
 			//if you find a .DS_Store file... ignore it!
 			if ( strcmp(ep->d_name, ".DS_Store") == 0 )

@@ -1,6 +1,9 @@
 /*
  
- Copyright (C) 2009 Id Software, Inc.
+ Copyright (C) 2009-2011 id Software LLC, a ZeniMax Media company. 
+
+ This file is part of the WOLF3D iOS v2.1 GPL Source Code. 
+
  
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -46,8 +49,8 @@ unsigned int QGLBeginStarted = 0;
 
 
 struct Vertex {
-	float xyz[3];
-	float st[2];
+	GLfloat xyz[3];
+	GLfloat st[2];
 	GLubyte c[4];
 };
 
@@ -56,9 +59,11 @@ struct Vertex {
 typedef struct Vertex Vertex;
 Vertex immediate[ MAX_VERTS ];
 Vertex vab;
-short quad_indexes[MAX_VERTS * 3 / 2 ];
+GLushort quad_indexes[MAX_VERTS * 3 / 2 ];
 int curr_vertex;
 GLenum curr_prim;
+
+GLuint quad_index_buffer_name;
 
 void		InitImmediateModeGL() {
 	for ( int i = 0; i < MAX_VERTS * 3 / 2; i+=6 ) {
@@ -71,6 +76,11 @@ void		InitImmediateModeGL() {
 		quad_indexes[ i + 4 ] = q + 2;
 		quad_indexes[ i + 5 ] = q + 3;
 	}
+
+	// Use a VBO for the quad indices, since they never change.
+	glGenBuffers( 1, &quad_index_buffer_name );
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, quad_index_buffer_name );
+	glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( quad_indexes), quad_indexes, GL_STATIC_DRAW );
 	
 	qglVertexPointer( 3, GL_FLOAT, sizeof( Vertex ), immediate[ 0 ].xyz );
 	qglTexCoordPointer( 2, GL_FLOAT, sizeof( Vertex ), immediate[ 0 ].st );
@@ -132,7 +142,7 @@ void pfglTexCoord2f( GLfloat s, GLfloat t ) {
 
 void pfglEnd() {
 	if ( curr_prim == GL_QUADS ) {
-		qglDrawElements( GL_TRIANGLES, curr_vertex / 4 * 6, GL_UNSIGNED_SHORT, quad_indexes );
+		qglDrawElements( GL_TRIANGLES, curr_vertex / 4 * 6, GL_UNSIGNED_SHORT, (void*)0 );
 	} else {
 		qglDrawArrays( curr_prim, 0, curr_vertex );
 	}

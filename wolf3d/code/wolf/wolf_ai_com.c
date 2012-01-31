@@ -540,6 +540,9 @@ PRIVATE _boolean AI_CheckSight( entity_t *self )
 			if( deltax > 0 )
 				return false;
 			break;
+		
+		default:
+			break;
 	}
 
 // trace a line to check for blocking tiles (corners)

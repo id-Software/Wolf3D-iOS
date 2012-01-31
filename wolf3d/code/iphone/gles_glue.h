@@ -55,6 +55,7 @@ extern "C" {
 void pfglBegin( GLenum prim );
 void pfglVertex3f( float x, float y, float z );
 void pfglVertex2i( GLint x, GLint y );
+void pfglVertex2f(GLfloat x, GLfloat y );
 void pfglColor4ub( GLubyte r, GLubyte g, GLubyte b, GLubyte a );
 void pfglColor4f( GLfloat r, GLfloat g, GLfloat b, GLfloat a );
 void pfglTexCoord2i( GLint s, GLint t );

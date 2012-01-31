@@ -1,11 +1,25 @@
-//
-//  EAGLView.m
-//  wolf3d
-//
-//  Created by Cass Everitt on 2/20/09.
-//  Copyright Id Software 2009. All rights reserved.
-//
+/*
+ 
+ Copyright (C) 2009-2011 id Software LLC, a ZeniMax Media company. 
 
+ This file is part of the WOLF3D iOS v2.1 GPL Source Code. 
+
+ 
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; either version 2
+ of the License, or (at your option) any later version.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ 
+ */
 
 
 #import <QuartzCore/QuartzCore.h>
@@ -15,8 +29,6 @@
 #import "wolf3dAppDelegate.h"
 
 #include "wolfiphone.h"
-
-
 
 //gsh
 //#define NOTIFYLISTEN  //uncomment to receive notifications
@@ -60,218 +72,235 @@ struct AVSystemControllerPrivate;
 @end
 
 AVSystemController *SharedAVSystemController;
-EAGLView *eaglview;
+EAGLView *eaglview = nil;
 
 // A class extension to declare private methods
-@interface EAGLView ()
-
-@property (nonatomic, retain) EAGLContext *context;
-@property (nonatomic, assign) NSTimer *animationTimer;
-
-- (void) destroyFramebuffer;
-- (void) swapBuffers;
-
+@interface EAGLView (PrivateMethods)
+- (void)createFramebuffer;
+- (void)deleteFramebuffer;
 @end
-
 
 @implementation EAGLView
 
-@synthesize context;
-@synthesize animationTimer;
-@synthesize animationInterval;
-
+@dynamic context;
 
 // You must implement this method
 + (Class)layerClass {
     return [CAEAGLLayer class];
 }
 
-
 //The GL view is stored in the nib file. When it's unarchived it's sent -initWithCoder:
-- (id)initWithCoder:(NSCoder*)coder {
-    self = [super initWithCoder:coder];
+- (id)initWithFrame:(CGRect)aRect {
+    self = [super initWithFrame:aRect];
 	
 	eaglview = self;
+
+	if ( self ) {
+		[self setMultipleTouchEnabled:YES];
 		
-	// Get the layer
-	CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
+		// Support rendering at native resolution on devices with Retina displays.
+		if( [self respondsToSelector:@selector(contentScaleFactor)] ) {
+			self.contentScaleFactor = deviceScale;
+		}
 	
-	eaglLayer.opaque = YES;
-	eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-									
-									[NSNumber numberWithBool:NO], 
-									kEAGLDrawablePropertyRetainedBacking, 
-									
-									kEAGLColorFormatRGB565,
-									/* kEAGLColorFormatRGBA8, */
-									kEAGLDrawablePropertyColorFormat, 
-									
-									nil];
-	
-	context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
-	assert( context );
-	
-	if ( ![EAGLContext setCurrentContext:context]) {
-		[self release];
-		return nil;
-	}        
-	self.multipleTouchEnabled = true;
-	
-    [EAGLContext setCurrentContext:context];
-	
-    glGenFramebuffersOES(1, &viewFramebuffer);
-    glGenRenderbuffersOES(1, &viewRenderbuffer);
-    
-    glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
-    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-    [context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer*)self.layer];
-    glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
-    
-    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
-    
-	glGenRenderbuffersOES(1, &depthRenderbuffer);
-	glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthRenderbuffer);
-	glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_DEPTH_COMPONENT16_OES, backingWidth, backingHeight);
-	glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER_OES, depthRenderbuffer);
-    
-    if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
-        NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
-    }
-	
-    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-	
-#if 0	
-	// set swapinterval if possible
-	void *eglSwapInterval;	
-	eglSwapInterval = dlsym( RTLD_DEFAULT, "eglSwapInterval" );
-	if ( eglSwapInterval ) {
-		((void(*)(int))eglSwapInterval)( 2 );
-	}
-#endif
+		// Get the layer
+		CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
+		
+		eaglLayer.opaque = TRUE;
+		eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
+										
+										[NSNumber numberWithBool:NO], 
+										kEAGLDrawablePropertyRetainedBacking,
+										kEAGLColorFormatRGB565,
+										kEAGLDrawablePropertyColorFormat,
+										nil];
+		
+
+		    
+		//self.multipleTouchEnabled = true;
 
 #ifdef VOLUMEHACK
-	//-------------------
-	// Volume Button Hack
-	//gsh
-	// Note: MediaPlayer framework required for this trick
-	//create a MPVolumeView to hack the volume button
-	CGRect frame = CGRectMake(0, -30, 180, 10);  //put this thing offscreen
-	volumeView = [[[MPVolumeView alloc] initWithFrame:frame] autorelease];
-	[volumeView sizeToFit];
-	[self addSubview:volumeView];
-	
-	// Find the volume view slider 
-	for (UIView *view in [volumeView subviews]){
-		if ([[[view class] description] isEqualToString:@"MPVolumeSlider"]) {
-			volumeViewSlider = (UISlider *)view;
+		//-------------------
+		// Volume Button Hack
+		//gsh
+		// Note: MediaPlayer framework required for this trick
+		//create a MPVolumeView to hack the volume button
+		CGRect frame = CGRectMake(0, -30, 180, 10);  //put this thing offscreen
+		volumeView = [[[MPVolumeView alloc] initWithFrame:frame] autorelease];
+		[volumeView sizeToFit];
+		[self addSubview:volumeView];
+		
+		// Find the volume view slider 
+		for (UIView *view in [volumeView subviews]){
+			if ([[[view class] description] isEqualToString:@"MPVolumeSlider"]) {
+				volumeViewSlider = (UISlider *)view;
+			}
 		}
-	}
-	
-	//listen for volume changes
-	[[NSNotificationCenter defaultCenter] addObserver:self 
-											 selector:@selector(volumeListener:) 
-												 name:@"AVSystemController_SystemVolumeDidChangeNotification" 
-											   object:nil];
+		
+		//listen for volume changes
+		[[NSNotificationCenter defaultCenter] addObserver:self 
+												 selector:@selector(volumeListener:) 
+													 name:@"AVSystemController_SystemVolumeDidChangeNotification" 
+												   object:nil];
 	
 	//---------------------
 #endif
 	
 #ifdef NOTIFYLISTEN	//gsh
-	//this is a general purpose listener
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(notificationListener:)
-												 name:nil
-											   object:nil];
+		//this is a general purpose listener
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(notificationListener:)
+													 name:nil
+												   object:nil];
 #endif
-	
-	// with swapinterval, we want to update as fast as possible
-	float	interval = 1.0 / 30.0f;
-    self.animationTimer = [NSTimer scheduledTimerWithTimeInterval:interval 
-														   target:self 
-														 selector:@selector(drawView) 
-														 userInfo:nil repeats:YES];
-	
+	}
+
     return self;
 }
 
-//gsh
-- (void)viewDidLoad {
-
-	Com_Printf("\n---------------\nviewDidLoad() called\n---------------\n\n");
-}
-
-- (void)drawView {
-		
-	[ (wolf3dAppDelegate *)[UIApplication sharedApplication].delegate restartAccelerometerIfNeeded];
-	
-#if 0	
-	//------------------
-	// Volume button hack
-	{
-		if ( SharedAVSystemController ) {
-			float newVolume;
-			NSString *categoryName;
-			static float activeVolume = 0.9;
-			if ([SharedAVSystemController getActiveCategoryVolume:&newVolume andName:&categoryName]) {
-				if (activeVolume < newVolume) {
-					[SharedAVSystemController setActiveCategoryVolumeTo:activeVolume];
-					Com_Printf( "Volume up: %i\n", Sys_Milliseconds() );
-				}
-			}
-		}
-	}
-#endif	
-	
-#ifdef VOLUMEHACK
-	//------------------
-	// volume hack
-
-	
-	//check for volume adjustments   gsh
-	if ( menuState == IPM_CONTROLS)
-	{
-		if (lastFramesVolume != s_masterVolume->value)
-		{
-			lastFramesVolume = s_masterVolume->value;
-			[volumeViewSlider setValue:lastFramesVolume animated:NO];
-			[volumeViewSlider _commitVolumeChange];
-		}
-	}
-#endif
-	
-	iphoneFrame();	// swapBuffers() will be called from here
-}
-
-
-- (void)swapBuffers {
-//    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-	loggedTimes[iphoneFrameNum&(MAX_LOGGED_TIMES-1)].beforeSwap = Sys_Milliseconds();
-    [context presentRenderbuffer:GL_RENDERBUFFER_OES];
-	loggedTimes[iphoneFrameNum&(MAX_LOGGED_TIMES-1)].afterSwap = Sys_Milliseconds();
-}
-
-- (void)layoutSubviews {
-    [self drawView];
-}
-
-
-
-- (void)destroyFramebuffer {
-    glDeleteFramebuffersOES(1, &viewFramebuffer);
-    viewFramebuffer = 0;
-    glDeleteRenderbuffersOES(1, &viewRenderbuffer);
-    viewRenderbuffer = 0;
-	glDeleteRenderbuffersOES(1, &depthRenderbuffer);
-	depthRenderbuffer = 0;
-}
-
-
-- (void)dealloc {
-    if ([EAGLContext currentContext] == context) {
+- (void)setContext:(EAGLContext *)newContext
+{
+    if (context != newContext)
+    {
+        [self deleteFramebuffer];
+        
+        [context release];
+        context = [newContext retain];
+        
         [EAGLContext setCurrentContext:nil];
     }
+}
+
+- (void)createFramebuffer
+{
+    if (context && !defaultFramebuffer)
+    {
+        [EAGLContext setCurrentContext:context];
+		
+        // Create default framebuffer object.
+        glGenFramebuffersOES(1, &defaultFramebuffer);
+        glBindFramebufferOES(GL_FRAMEBUFFER_OES, defaultFramebuffer);
+        
+        // Create color render buffer and allocate backing store.
+        glGenRenderbuffersOES(1, &colorRenderbuffer);
+        glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);
+			
+        [context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer *)self.layer];
+        glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &framebufferWidth);
+        glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &framebufferHeight);
+        
+		glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, colorRenderbuffer);
+		
+		// Create the depth render buffer and allocate backing store.
+		glGenRenderbuffersOES(1, &depthRenderbuffer);
+		glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthRenderbuffer);
+		glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_DEPTH_COMPONENT16_OES, framebufferWidth, framebufferHeight);
+		
+		glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER_OES, depthRenderbuffer);
+		
+        if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
+            NSLog(@"Failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
+		}
+		
+		// We can bind the color buffer here to avoid doing it every frame.
+		glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);
+    }
+}
+
+- (void)deleteFramebuffer
+{
+    if (context)
+    {
+        [EAGLContext setCurrentContext:context];
+        
+        if (defaultFramebuffer)
+        {
+            glDeleteFramebuffersOES(1, &defaultFramebuffer);
+            defaultFramebuffer = 0;
+        }
+        
+        if (colorRenderbuffer)
+        {
+            glDeleteRenderbuffersOES(1, &colorRenderbuffer);
+            colorRenderbuffer = 0;
+        }
+		
+		if (depthRenderbuffer)
+		{
+			glDeleteFramebuffersOES(1, &depthRenderbuffer);
+			depthRenderbuffer = 0;
+		}
+    }
+}
+
+- (void)setFramebuffer
+{
+    if (context)
+    {
+        [EAGLContext setCurrentContext:context];
+        
+        if (!defaultFramebuffer)
+            [self createFramebuffer];
+        
+		//glBindFramebufferOES(GL_FRAMEBUFFER_OES, defaultFramebuffer);
+        
+        //glViewport(0, 0, framebufferWidth, framebufferHeight);
+    }
+}
+
+- (BOOL)presentFramebuffer
+{
+    BOOL success = FALSE;
     
-    [context release];  
+    if (context)
+    {
+        [EAGLContext setCurrentContext:context];
+		
+		//glBindRenderbufferOES(GL_RENDERBUFFER_OES, colorRenderbuffer);
+		
+		if ( gl_config.framebuffer_discard ) {
+			const GLenum discards[]  = {GL_DEPTH_ATTACHMENT_OES};
+			glDiscardFramebufferEXT(GL_FRAMEBUFFER_OES,1,discards);
+		}
+		
+        
+		loggedTimes[iphoneFrameNum&(MAX_LOGGED_TIMES-1)].beforeSwap = Sys_Milliseconds();
+        success = [context presentRenderbuffer:GL_RENDERBUFFER_OES];
+		loggedTimes[iphoneFrameNum&(MAX_LOGGED_TIMES-1)].afterSwap = Sys_Milliseconds();
+    }
+    
+    return success;
+}
+
+
+- (void)layoutSubviews {
+	//float widthRatio = ( self.bounds.size.width * deviceScale ) / REFERENCE_WIDTH;
+	//float heightRatio = ( self.bounds.size.height * deviceScale ) / REFERENCE_HEIGHT;
+	
+	[self deleteFramebuffer];
+	
+	/*
+	if ( widthRatio < heightRatio ) {
+		screenScale = widthRatio;
+	} else {
+		screenScale = heightRatio; 
+	}
+	
+	// Set the global width and height so the game code can access it.
+	// since the game runs in landscape, we must switch width and height.
+	viddef.width = self.bounds.size.width * deviceScale;
+	viddef.height = self.bounds.size.height * deviceScale;
+	*/
+	// Need to re-arrange the HUD now that the screen changed.
+	if ( controlScheme ) {
+		HudSetForScheme( controlScheme->value );
+	}
+}
+
+
+- (void)dealloc {    
+	[self deleteFramebuffer];
+    [context release];
+	
     [super dealloc];
 }
 
@@ -287,7 +316,7 @@ EAGLView *eaglview;
 	NSSet *t = [event allTouches];
     for (UITouch *myTouch in t)
     {
-        CGPoint touchLocation = [myTouch locationInView:nil];
+        CGPoint touchLocation = [myTouch locationInView:self];
 
 		points[ 2 * touchCount + 0 ] = touchLocation.x;
 		points[ 2 * touchCount + 1 ] = touchLocation.y; // ( h - 1 ) - touchLocation.y;
@@ -434,23 +463,11 @@ void SysIPhoneSetConsoleTextField( const char * str) {
 	eaglview->textField.text = [ NSString stringWithUTF8String: str ];
 }
 
-void SysIPhoneSwapBuffers() {
-	[eaglview swapBuffers];
-}
-
 void SysIPhoneOpenURL( const char *url ) {
 	Com_Printf( "OpenURL char *: %s\n", url );
 	
 	NSString *nss = [NSString stringWithCString: url encoding: NSASCIIStringEncoding];
 	[[UIApplication sharedApplication] openURL:[NSURL URLWithString: nss]];
-}
-
-void SysIPhoneSetUIKitOrientation( int isLandscapeRight ) {
-	if ( isLandscapeRight ) {
-		[UIApplication sharedApplication].statusBarOrientation = UIInterfaceOrientationLandscapeRight;
-	} else {
-		[UIApplication sharedApplication].statusBarOrientation = UIInterfaceOrientationLandscapeLeft;
-	}
 }
 
 void SysIPhoneLoadJPG( W8* jpegData, int jpegBytes, W8 **pic, W16 *width, W16 *height, W16 *bytes ) {

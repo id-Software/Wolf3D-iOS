@@ -95,6 +95,7 @@ PRIVATE void Sound_AllocChannels( void )
 	for( i = 0, ch = s_channels ; i < MAX_CHANNELS ; ++i, ++ch )
 	{
 		pfalGenSources( 1, &ch->sourceName );
+		AL_CheckErrors();
 
 		if( pfalGetError() != AL_NO_ERROR )
 		{
@@ -123,6 +124,7 @@ PRIVATE int Sound_ChannelState( channel_t *ch )
 	int state;
 
 	pfalGetSourcei( ch->sourceName, AL_SOURCE_STATE, &state );
+	AL_CheckErrors();
 
 	return state;
 }
@@ -133,9 +135,16 @@ PRIVATE void Sound_PlayChannel( channel_t *ch, sfx_t *sfx )
 	ch->sfx = sfx;
 
 	pfalSourcei( ch->sourceName, AL_BUFFER, sfx->bufferNum );
+	AL_CheckErrors();
+	
 	pfalSourcei( ch->sourceName, AL_LOOPING, ch->loopSound );
+	AL_CheckErrors();
+	
 	pfalSourcei( ch->sourceName, AL_SOURCE_RELATIVE, AL_FALSE );
+	AL_CheckErrors();
+	
 	pfalSourcePlay( ch->sourceName );
+	AL_CheckErrors();
 }
 
 
@@ -147,12 +156,15 @@ PRIVATE void Sound_StopChannel( channel_t *ch )
 	// Only deleting the entire source seems to work.
 	
 	pfalSourceStop( ch->sourceName );
+	AL_CheckErrors();
 //	pfalSourceStopv( 1, &ch->sourceName );
 //	pfalSourcei( ch->sourceName, AL_BUFFER, 0 );
 //	pfalSourceRewind( ch->sourceName );
 #if 1
 	pfalDeleteSources( 1, &ch->sourceName );
+	AL_CheckErrors();
 	pfalGenSources( 1, &ch->sourceName );
+	AL_CheckErrors();
 #endif
 }
 
@@ -165,14 +177,18 @@ PRIVATE void Sound_SpatializeChannel( channel_t *ch )
 	if( ch->entNum == 0 || ! ch->distanceMult )
 	{
 		pfalSourcefv( ch->sourceName, AL_POSITION, s_listener.position );
+		AL_CheckErrors();
 		pfalSourcefv( ch->sourceName, AL_VELOCITY, s_listener.velocity );
+		AL_CheckErrors();
 	}
 	else 
 	{
 		if( ch->fixedPosition )
 		{
 			pfalSource3f( ch->sourceName, AL_POSITION, ch->position[1], ch->position[2], -ch->position[0] );
+			AL_CheckErrors();
 			pfalSource3f( ch->sourceName, AL_VELOCITY, 0, 0, 0 );
+			AL_CheckErrors();
 		}
 /*		else 
 		{
@@ -195,17 +211,23 @@ PRIVATE void Sound_SpatializeChannel( channel_t *ch )
 	if( ch->distanceMult )
 	{
 		pfalSourcef( ch->sourceName, AL_REFERENCE_DISTANCE, s_minDistance->value * ch->distanceMult );
+		AL_CheckErrors();
 	}
 	else
 	{
 		pfalSourcef( ch->sourceName, AL_REFERENCE_DISTANCE, s_maxDistance->value );
+		AL_CheckErrors();
 	}
 
 	pfalSourcef( ch->sourceName, AL_MAX_DISTANCE, s_maxDistance->value );
+	AL_CheckErrors();
 
 	// Update volume and rolloff factor
 	pfalSourcef( ch->sourceName, AL_GAIN, s_sfxVolume->value * ch->volume );
+	AL_CheckErrors();
+	
 	pfalSourcef( ch->sourceName, AL_ROLLOFF_FACTOR, s_rolloffFactor->value );
+	AL_CheckErrors();
 }
 
 
@@ -572,15 +594,26 @@ PUBLIC void Sound_Update( const vec3_t position, const vec3_t velocity, const ve
 	vectorSet( &s_listener.orientation[3], up[1], -up[2], -up[0] );
 
 	pfalListenerfv( AL_POSITION, s_listener.position );
+	AL_CheckErrors();
+	
 	pfalListenerfv( AL_VELOCITY, s_listener.velocity );
+	AL_CheckErrors();
+	
 	pfalListenerfv( AL_ORIENTATION, s_listener.orientation );
+	AL_CheckErrors();
+	
 	pfalListenerf( AL_GAIN, (s_activeApp) ? s_masterVolume->value : 0.0);
+	AL_CheckErrors();
 
 	// Set state
 	pfalDistanceModel( AL_INVERSE_DISTANCE_CLAMPED );
+	AL_CheckErrors();
 
 	pfalDopplerFactor( s_dopplerFactor->value );
+	AL_CheckErrors();
+	
 	pfalDopplerVelocity( s_dopplerVelocity->value );
+	AL_CheckErrors();
 
 	// Stream background track
 	Sound_StreamBGTrack();
@@ -639,9 +672,26 @@ PUBLIC void Sound_Activate( _boolean active )
 	}
 
 	pfalListenerf( AL_GAIN, ( active ) ? s_masterVolume->value : 0.0 );
-
+	AL_CheckErrors();
 }
 
+void AL_CheckErrors() {
+#if 0
+#ifdef DEBUG
+	ALenum error = alGetError();
+	if ( error != AL_NO_ERROR ) {
+		printf( "OpenAL error (al)! %d\n", error);
+	}
+#endif
+#endif
+}
+
+void ALC_CheckErrors() {
+	//ALenum error = alcGetError();
+	//if ( error != AL_NO_ERROR ) {
+	//	printf( "OpenAL error (alc)! %d\n", error);
+	//}
+}
 
 /////////////////////////////////////////////////////////////////////
 //
@@ -690,14 +740,14 @@ PRIVATE void Sound_Register( void )
 {
 	
 	s_initSound = Cvar_Get( "s_initSound", "1", CVAR_INIT );	
-	s_masterVolume	= Cvar_Get( "s_masterVolume", "0.3", CVAR_ARCHIVE ); //gsh changed this from "1.0" to "0.3" for the volume hack... otherwise it's too loud
+	s_masterVolume	= Cvar_Get( "s_masterVolume", "0.6", CVAR_ARCHIVE ); //gsh changed this from "1.0" to "0.3" for the volume hack... otherwise it's too loud
 	s_sfxVolume		= Cvar_Get( "s_sfxVolume", "1.0", CVAR_ARCHIVE );
 	s_musicVolume	= Cvar_Get( "s_musicVolume", "1.0", CVAR_ARCHIVE );
 	s_minDistance	= Cvar_Get( "s_minDistance", "0.0", CVAR_ARCHIVE );
 	s_maxDistance	= Cvar_Get( "s_maxDistance", "1.0", CVAR_ARCHIVE );
 	s_rolloffFactor = Cvar_Get( "s_rolloffFactor", "1.0", CVAR_ARCHIVE );
 	s_dopplerFactor = Cvar_Get( "s_dopplerFactor", "1.0", CVAR_ARCHIVE );
-	s_dopplerVelocity = Cvar_Get( "s_dopplerVelocity", "0.0", CVAR_ARCHIVE );
+	s_dopplerVelocity = Cvar_Get( "s_dopplerVelocity", "1.0", CVAR_ARCHIVE );
 
 	Cmd_AddCommand( "play", Sound_Play_f );
 	Cmd_AddCommand( "stopsound", Sound_StopSound_f );

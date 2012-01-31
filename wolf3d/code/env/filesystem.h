@@ -39,6 +39,8 @@
 #ifndef __FILESYSTEM_H__
 #define __FILESYSTEM_H__
 
+#include "arch.h"
+
 #define	MAX_GAMEPATH	256	// max length of a game pathname
 #define	MAX_OSPATH		256	// max length of a filesystem pathname
 

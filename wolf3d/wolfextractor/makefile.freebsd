@@ -1,0 +1,190 @@
+#
+# Project: Wolfenstein 3-D Redux
+#
+# Program: wolfextractor
+#
+
+COMPILER = gcc
+CFLAGS = -Wall -c -O2 -idirafter /usr/local/include
+LDFLAGS = -s
+ODIR = Release
+                                                                                
+EXEBASE = wolfextractor
+EXE = $(ODIR)/$(EXEBASE)
+
+
+
+all: $(EXE)
+
+
+VORBISFLAGS = -L/usr/local/lib  -lvorbis -lvorbisenc -logg
+
+
+clean:
+	rm -f $(ODIR)/*.o $(EXE)
+
+
+PROGRAM_FILES = $(ODIR)/adlib.o $(ODIR)/fmopl.o $(ODIR)/arch.o $(ODIR)/file.o $(ODIR)/unix_file.o $(ODIR)/glob.o $(ODIR)/com_string.o $(ODIR)/tga.o $(ODIR)/wav.o $(ODIR)/mac.o $(ODIR)/memory.o $(ODIR)/wl6_name.o $(ODIR)/wolf_aud.o $(ODIR)/wolf_gfx.o $(ODIR)/wolf_map.o $(ODIR)/wolf_pal.o $(ODIR)/wolf_pm.o $(ODIR)/zipfile.o $(ODIR)/adler32.o $(ODIR)/compress.o $(ODIR)/crc32.o $(ODIR)/deflate.o $(ODIR)/trees.o $(ODIR)/zutil.o $(ODIR)/hq2x.o $(ODIR)/pak.o $(ODIR)/vorbisenc_inter.o $(ODIR)/main.o
+
+
+
+$(EXE): $(PROGRAM_FILES) 
+	${COMPILER} -o $(EXE) $(PROGRAM_FILES) $(LDFLAGS) $(VORBISFLAGS) -lm
+
+
+
+#===========================================================================
+#	Build
+#===========================================================================
+  
+#
+#	adlib/
+#
+$(ODIR)/adlib.o : adlib/adlib.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+$(ODIR)/fmopl.o : adlib/fmopl.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+#
+#	common/
+#
+$(ODIR)/arch.o :  ../../common/arch.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+#
+#	filesys/
+#
+$(ODIR)/file.o : filesys/file.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+#
+#	filesys/unix/
+#
+$(ODIR)/unix_file.o : filesys/unix/unix_file.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+$(ODIR)/glob.o : filesys/unix/glob.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+#
+#	loaders/
+#
+$(ODIR)/tga.o : loaders/tga.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+$(ODIR)/wav.o : loaders/wav.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+#
+#	mac/
+#
+$(ODIR)/mac.o : mac/mac.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+#
+#	memory/
+#
+$(ODIR)/memory.o : memory/memory.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+#
+#	string/
+#
+$(ODIR)/com_string.o : string/com_string.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+#
+#	wolf/
+#
+$(ODIR)/wl6_name.o : wolf/wl6_name.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+$(ODIR)/wolf_aud.o : wolf/wolf_aud.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+$(ODIR)/wolf_gfx.o : wolf/wolf_gfx.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+$(ODIR)/wolf_map.o : wolf/wolf_map.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+$(ODIR)/wolf_pal.o : wolf/wolf_pal.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+$(ODIR)/wolf_pm.o : wolf/wolf_pm.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+#
+#	zip/
+#
+$(ODIR)/zipfile.o : zip/zipfile.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+#
+#	zlib/
+#
+$(ODIR)/adler32.o : ../../zlib/adler32.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+$(ODIR)/compress.o : ../../zlib/compress.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+$(ODIR)/crc32.o : ../../zlib/crc32.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+$(ODIR)/deflate.o : ../../zlib/deflate.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+$(ODIR)/trees.o : ../../zlib/trees.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+$(ODIR)/zutil.o : ../../zlib/zutil.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+#
+#
+#
+
+$(ODIR)/hq2x.o : hq2x.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+$(ODIR)/pak.o : pak.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+$(ODIR)/vorbisenc_inter.o : vorbisenc_inter.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+$(ODIR)/main.o : main.c 
+	${COMPILER} $(CFLAGS) -E $? | tr -d '\015' > /tmp/temp.i 
+	${COMPILER} $(CFLAGS) -o $@ /tmp/temp.i
+
+
+
+

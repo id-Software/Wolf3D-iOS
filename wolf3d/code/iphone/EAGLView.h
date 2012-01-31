@@ -1,6 +1,9 @@
 /*
  
- Copyright (C) 2009 Id Software, Inc.
+ Copyright (C) 2009-2011 id Software LLC, a ZeniMax Media company. 
+
+ This file is part of the WOLF3D iOS v2.1 GPL Source Code. 
+
  
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -41,20 +44,17 @@ Note that setting the view non-opaque will only work if the EAGL surface has an 
 	UITextField *textField;
     
 @private
+	EAGLContext *context;
+
     /* The pixel dimensions of the backbuffer */
-    GLint backingWidth;
-    GLint backingHeight;
-    
-    EAGLContext *context;
+    GLint framebufferWidth;
+    GLint framebufferHeight;
     
     /* OpenGL names for the renderbuffer and framebuffers used to render to this view */
-    GLuint viewRenderbuffer, viewFramebuffer;
+    GLuint defaultFramebuffer, colorRenderbuffer;
     
     /* OpenGL name for the depth buffer that is attached to viewFramebuffer, if it exists (0 if it does not exist) */
     GLuint depthRenderbuffer;
-    
-    NSTimer *animationTimer;
-	NSTimeInterval animationInterval;
 	
 	//gsh... an attempt at hacking the volume button
 #ifdef VOLUMEHACK
@@ -66,8 +66,9 @@ Note that setting the view non-opaque will only work if the EAGL surface has an 
 	
 }
 
-@property NSTimeInterval animationInterval;
+@property (nonatomic, retain) EAGLContext *context;
 
-- (void)drawView;
+- (void)setFramebuffer;
+- (BOOL)presentFramebuffer;
 
 @end

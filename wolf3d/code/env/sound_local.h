@@ -106,6 +106,8 @@ extern sfx_t	*Sound_FindSound( const char *name );
 extern _boolean Sound_Device_Setup( void );
 extern void Sound_Device_Shutdown( void );
 
+void AL_CheckErrors();
+void ALC_CheckErrors();
 
 #endif /* __SOUND_LOCAL_H__ */
 

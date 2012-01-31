@@ -131,6 +131,7 @@ typedef struct
 	const char *version_string;
 	const char *extensions_string;
 	_boolean Version_1_2;
+	bool framebuffer_discard;
 
 } glconfig_t;
 

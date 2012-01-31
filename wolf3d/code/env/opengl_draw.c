@@ -93,20 +93,20 @@ PUBLIC void R_Draw_Character( int x, int y, int num, font_t *myfont )
 	R_Bind( myfont->texfont->texnum );
 	
 
-	pfglBegin( GL_QUADS );
+	pfglBegin( GL_TRIANGLE_STRIP );
 
 	
 	pfglTexCoord2f( fcol, frow );							
 	pfglVertex2i( x, y );
+	
+	pfglTexCoord2f( fcol, frow+myfont->hFrac );
+	pfglVertex2i( x, (y+sh*scale) );
 	
 	pfglTexCoord2f( fcol+myfont->wFrac, frow );					
 	pfglVertex2i( x+myfont->nMaxWidth*scale, y );
 	
 	pfglTexCoord2f( fcol+myfont->wFrac, frow+myfont->hFrac );	
 	pfglVertex2i( x+myfont->nMaxWidth*scale, (y+sh*scale) );
-	
-	pfglTexCoord2f( fcol, frow+myfont->hFrac );
-	pfglVertex2i( x, (y+sh*scale) );
 
 
 	
@@ -146,12 +146,12 @@ PUBLIC void R_Draw_StretchPic( int x, int y, int w, int h, const char *pic )
 
 	R_Bind( gl->texnum );
 	
-	pfglBegin( GL_QUADS );
+	pfglBegin( GL_TRIANGLE_STRIP );
 	
 	pfglTexCoord2f( 0.0f, 0.0f );	pfglVertex2i( x, y );
+	pfglTexCoord2f( 0.0f, 1.0f );	pfglVertex2i( x, y+h );
 	pfglTexCoord2f( 1.0f, 0.0f );	pfglVertex2i( x+w, y );
 	pfglTexCoord2f( 1.0f, 1.0f );	pfglVertex2i( x+w, y+h );
-	pfglTexCoord2f( 0.0f, 1.0f );	pfglVertex2i( x, y+h );
 	
 	pfglEnd();
 }
@@ -186,7 +186,7 @@ PUBLIC void R_Draw_Fill( int x, int y, int w, int h, colour3_t c )
 	c4[3] = 255;
 	R_Draw_Blend( x, y, w, h, c4 );
 #else
-	if ( revLand->value ) {
+	if ( deviceOrientation == ORIENTATION_LANDSCAPE_RIGHT ) {
 		qglScissor( x, y, w, h );
 	} else {
 		qglScissor( x, 320-(y+h), w, h );
@@ -203,12 +203,12 @@ PUBLIC void R_Draw_Blend( int x, int y, int w, int h, colour4_t c )
 	pfglDisable( GL_TEXTURE_2D );	
 	pfglColor4ubv( c );
 
-	pfglBegin( GL_QUADS );
+	pfglBegin( GL_TRIANGLE_STRIP );
 	
 	pfglVertex2i( x, y );
+	pfglVertex2i( x, y+h );
 	pfglVertex2i( x+w, y );
 	pfglVertex2i( x+w, y+h );
-	pfglVertex2i( x, y+h );
 	
 	pfglEnd();
 	

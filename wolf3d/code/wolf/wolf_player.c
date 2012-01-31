@@ -585,7 +585,7 @@ PUBLIC void PL_Spawn( placeonplane_t location, LevelData_t *lvl )
 	
 	//gsh
 	iphoneSetLevelNotifyText();
-	/*
+#if 0
 	char str[128];
 	//sprintf( str, "Entering level E%iM%i", currentMap.episode + 1, currentMap.map + 1 );
 	//gsh
@@ -624,10 +624,10 @@ PUBLIC void PL_Spawn( placeonplane_t location, LevelData_t *lvl )
 		}
 	}
 	else 
-		sprintf( str, "Entering level custom %i", /*currentMap.episode+1,* currentMap.map+1 );
+		sprintf( str, "Entering level custom %i", /*currentMap.episode+1,*/ currentMap.map+1 );
 	
 	iphoneSetNotifyText( str );
-	*/
+#endif
 }
 
 /*

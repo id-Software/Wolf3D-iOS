@@ -1,13 +1,9 @@
-//
-//  iphone_downloadSOD.m
-//  wolf3d
-//
-//  Created by Greg Hodges on 6/8/09.
-//  Copyright 2009 id software. All rights reserved.
-//
 /*
  
- Copyright (C) 2009 Id Software, Inc.
+ Copyright (C) 2009-2011 id Software LLC, a ZeniMax Media company. 
+
+ This file is part of the WOLF3D iOS v2.1 GPL Source Code. 
+
  
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -25,15 +21,15 @@
  
  */
 
-
-
 #import "../wolfiphone.h"
 #import "wolf3dAppDelegate.h"
+//#import "zlib.h"
 #import "iphone_alerts.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <unistd.h>
 
+//gsh
 #import <SystemConfiguration/SCNetworkReachability.h>  //this is for testing network availability
 
 //Note: in order to link the zlib library into the build from usr/lib/libz.ylib
@@ -46,6 +42,7 @@ extern  void  Com_Printf(const char* fmt, ... );
 extern  void  my_snprintf( char *dest, size_t size, const char *format, ... );
 
 #ifdef SPEARSTOREKIT
+//extern  int   StartUntgz(char *TGZfile);
 extern void PurchaseSOD();
 extern bool isStorekitAvailable;
 #endif
@@ -178,6 +175,11 @@ void DownloadSOD()
 {
 	menuState = IPM_DOWNLOADPROGRESS; //change the menu to the download screen
 	                                 
+	/*
+	//TODO: alert user that the download is beginning and will take a while
+	*/
+	//iphoneMessageBox("Download in Progress", "You have not been charged.  Purchasing comes at the end of this process.  Download may take several minutes.");
+		
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
 	NSString *documentsDirectory = [paths objectAtIndex:0];
 		
@@ -199,6 +201,20 @@ void DownloadSOD()
 	
 	//after this the control automatically goes back to the appDelegate where it receives the packets of downloaded information
 }
+/*
+//============================
+// AppendData
+// adds a packet of data to our buffer
+//============================
+void AppendData(NSData* data)
+{
+	Com_Printf("appending data\n");
+	
+	NSUInteger length = [data length];
+	NSLog(@"Received %d bytes of data", length);
+	
+//	[receivedData appendData:data];
+}*/
 
 unsigned int dataAmount = 0;
 unsigned int dataTotalAmount = 0;
@@ -216,7 +232,13 @@ void AppendDataToFile(NSData* data)
 	dataAmount = (unsigned int)length;
 	dataTotalAmount += dataAmount;
 	totalDownloaded = dataTotalAmount;  //update the download screen with the total downloaded
-
+/*
+	if (dataTotalAmount > DownloadFileSize * 7/10  && !hasBeenMessaged)
+	{
+		iphoneMessageBox("Extraction in Progress", "SOD is installing.  This may take several minutes.");
+		hasBeenMessaged = 1;
+	}
+*/	
 	//get documents directory
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
 	NSString *documentsDirectory = [paths objectAtIndex:0];
@@ -253,7 +275,162 @@ void DecompressData()
 	
 	char	path[1024];
 	my_snprintf(path, sizeof(path), "%s/downloadedfile.tgz", iphoneDocDirectory);
+	
+//	StartUntgz(path);  //this is where we would normally start decompression.
+						//but we no longer need to decompress anything
+						//so we might as well get rid of our zlib dependencies
 }
+/*
+//================================
+// CopyFolders
+// Copies the contents of the base folder to the SODbase folder
+// One folder at a time... hopefully to allow renderings
+// This allows us to provide a smaller download
+//================================ 
+void CopyFolders()
+{
+	int numberOfFolders = 7;
+	char sourcePath[1024];
+	char destPath[1024];
+	char folderNames[7][8] = {"iphone","lsfx","maps","music","sfx","sprites","walls"};
+	
+	char *appDir;
+	appDir = getenv("CWD");
+	
+	NSString *source;
+	NSString *toPath;
+	
+	//Draw a black colored bar
+	colour4_t backgroundColor = { 10, 10, 10, 255 };
+	R_Draw_Blend( 40, 150, 4*100, 20, backgroundColor );
+	
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	NSError *error;
+	
+	//try creating the base directory
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/", iphoneDocDirectory);
+	toPath = [[NSString alloc] initWithUTF8String:destPath];
+	NSLog(@"creating Directory: %@", toPath);
+	if([fileManager createDirectoryAtPath:toPath attributes:nil])
+		Com_Printf("creating SODbase success!\n");
+	else
+		Com_Printf("creating SODbase failed :(\n");
+	
+	for (int i = 0; i < numberOfFolders; ++i)
+	{
+				
+		my_snprintf(sourcePath, sizeof(sourcePath), "%s/base/%s", appDir, folderNames[i]);
+		//	my_snprintf(destPath, sizeof(destPath), "%s/base/", iphoneDocDirectory);
+		my_snprintf(destPath, sizeof(destPath), "%s/SODbase/%s", iphoneDocDirectory, folderNames[i]);
+	
+		source = [[NSString alloc] initWithUTF8String:sourcePath];
+		toPath = [[NSString alloc] initWithUTF8String:destPath];
+	
+		NSLog(source);
+		NSLog(toPath);
+
+		//attempt the copy
+		if ([fileManager copyItemAtPath:source toPath:toPath error:&error])//;
+			Com_Printf("copy base %s success!\n", folderNames[i]);
+		else
+			Com_Printf("copy %s folder failed :(\n", folderNames[i]);
+	
+		//draw the next iteration
+		colour4_t color = { 255, 0, 0, 255 };
+		R_Draw_Blend( 40, 150, 400*i/numberOfFolders, 20, color );	
+		
+		SysIPhoneSwapBuffers();
+		
+		[source release];
+		[toPath release];
+	}
+	
+	//TODO: delete some of the copied files
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/012.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/017.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/024.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/042.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/046.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/047.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/048.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/050.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/051.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/052.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/053.5551", iphoneDocDirectory);
+	remove(destPath);
+	
+}
+
+
+//================================
+// CopyFolder 
+// Copies the contents of the base folder to the SODbase folder
+// This allows us to provide a smaller download
+// This is all very slow.  The POSIX library might've been faster.
+//================================ 
+void CopyFolder()
+{
+	
+	char sourcePath[1024];
+	char destPath[1024];
+	
+	char *appDir;
+	appDir = getenv("CWD");
+	
+	my_snprintf(sourcePath, sizeof(sourcePath), "%s/base/", appDir);
+	//	my_snprintf(destPath, sizeof(destPath), "%s/base/", iphoneDocDirectory);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/", iphoneDocDirectory);
+	
+	NSString *source = [[NSString alloc] initWithUTF8String:sourcePath];
+	NSString *toPath = [[NSString alloc] initWithUTF8String:destPath];
+	
+	NSLog(source);
+	NSLog(toPath);
+	
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	NSError *error;
+	
+	//attempt the copy
+	if ([fileManager copyItemAtPath:source toPath:toPath error:&error])//;
+		Com_Printf("copy base folder success!\n");
+	else
+		Com_Printf("copy base folder failed :(\n");
+	
+	
+	//TODO: delete some of the copied files
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/012.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/017.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/024.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/042.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/046.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/047.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/048.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/050.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/051.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/052.5551", iphoneDocDirectory);
+	remove(destPath);
+	my_snprintf(destPath, sizeof(destPath), "%s/SODbase/sprites/053.5551", iphoneDocDirectory);
+	remove(destPath);
+}*/
 
 //================================
 // IsSpearPurchased
@@ -337,6 +514,10 @@ void FinalizeDownload()
 	NSString *documentsDirectory = [paths objectAtIndex:0];
 	NSString *fileName = [documentsDirectory stringByAppendingString:@"/downloadedfile.tgz"];
 	
+	
+	//TODO: after save check that the file is of the correct size... if it isn't then something was corrupted
+	//      and we should try again
+
 	//inflate the data and store in its appropriate directory
 	DecompressData();
 	

@@ -133,7 +133,7 @@ PUBLIC char *FS_FindFirst( const char *path, W32 musthave, W32 canthave )
 {
 	struct dirent *d;
 	char *p;
-	p;
+	(void)p;
                                                                                 
 	if( fdir )
 	{

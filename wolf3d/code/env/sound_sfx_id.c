@@ -96,7 +96,10 @@ PRIVATE void Sound_UploadSound( W8 *data, int sample_size, int channels, sfx_t *
 		
 		// Upload the sound
 		pfalGenBuffers( 1, &sfx->bufferNum );
+		AL_CheckErrors();
+		
 		pfalBufferData( sfx->bufferNum, sfx->format, data, size, sfx->rate );
+		AL_CheckErrors();
 	}
 	else 
 	{
@@ -121,7 +124,10 @@ PRIVATE void Sound_UploadSound( W8 *data, int sample_size, int channels, sfx_t *
 		
 		// Upload the sound
 		pfalGenBuffers( 1, &sfx->bufferNum );
+		AL_CheckErrors();
+		
 		pfalBufferData( sfx->bufferNum, sfx->format, d, size * 2, sfx->rate );
+		AL_CheckErrors();
 		free( d );
 	}
 }
@@ -163,7 +169,7 @@ PUBLIC _boolean Sound_LoadSound( sfx_t *sfx )
 		if ( ! LoadOggInfo( name, &data, &info ) ) {
 			sfx->defaulted = true;
 			
-			Com_Printf( "Could not find sound (%s)\n", name );
+			//Com_Printf( "Could not find sound (%s)\n", name );
 			
 			return false;
 		}

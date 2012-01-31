@@ -172,7 +172,16 @@ PRIVATE char **FS_ListFiles( char *findname, int *numfiles, unsigned musthave, u
 */
 PUBLIC void FS_InitFilesystem( void )
 {
-	char *p;
-	p = getenv("CWD");
-	sprintf( fs_gamedir, "%s/base", p );
+#define BASE_DIRECTORY "/base"
+
+	int length = SysIPhoneGetPathToMainBundleLength();
+	
+	// Make sure the path will fit.
+	int fullPathLength = length + strlen( BASE_DIRECTORY ) + 1;
+	
+	assert( fullPathLength < MAX_OSPATH );
+	
+	SysIPhoneGetPathToMainBundle( fs_gamedir, length + 1 );
+
+	strcpy( fs_gamedir + length, BASE_DIRECTORY );
 }

@@ -284,17 +284,23 @@ PUBLIC void Sound_StreamBGTrack( void )
 
 	// Unqueue and delete any processed buffers
 	pfalGetSourcei( s_streamingChannel->sourceName, AL_BUFFERS_PROCESSED, &processed );
+	AL_CheckErrors();
+	
 	if( processed > 0 )
 	{
 		while (processed--)
 		{
 			pfalSourceUnqueueBuffers( s_streamingChannel->sourceName, 1, &buffer );
+			AL_CheckErrors();
+			//printf( "OpenAL unqueued %d, about to delete it!\n", buffer);
 			pfalDeleteBuffers( 1, &buffer );
+			AL_CheckErrors();
 		}
 	}
 
 	// Make sure we always have at least 4 buffers in the queue
 	pfalGetSourcei( s_streamingChannel->sourceName, AL_BUFFERS_QUEUED, &queued );
+	AL_CheckErrors();
 	while( queued < 4 )
 	{
 		size = 0;
@@ -340,20 +346,29 @@ PUBLIC void Sound_StreamBGTrack( void )
 
 		// Upload and queue the new buffer
 		pfalGenBuffers( 1, &buffer );
+		AL_CheckErrors();
+		
 		pfalBufferData( buffer, bgTrack.format, data, size, bgTrack.rate );
+		AL_CheckErrors();
+		
 		pfalSourceQueueBuffers( s_streamingChannel->sourceName, 1, &buffer );
+		AL_CheckErrors();
 
 		queued++;
 	}
 
 	// Update volume
 	pfalSourcef( s_streamingChannel->sourceName, AL_GAIN, s_musicVolume->value );
+	AL_CheckErrors();
 
 	// If not playing, then do so
 	pfalGetSourcei( s_streamingChannel->sourceName, AL_SOURCE_STATE, &state );
+	AL_CheckErrors();
+	
 	if( state != AL_PLAYING )
 	{
 		pfalSourcePlay(s_streamingChannel->sourceName);
+		AL_CheckErrors();
 	}
 }
 
@@ -390,17 +405,28 @@ PUBLIC void Sound_StartStreaming( void )
 
 	// hmmm...
 	pfalDeleteSources( 1, &s_streamingChannel->sourceName );
+	AL_CheckErrors();
+	
 	pfalGenSources( 1, &s_streamingChannel->sourceName );
+	AL_CheckErrors();
 
 	// Set up the source
 	pfalSourcei( s_streamingChannel->sourceName, AL_BUFFER, 0 );
+	AL_CheckErrors();
 	pfalSourcei( s_streamingChannel->sourceName, AL_LOOPING, AL_FALSE );
+	AL_CheckErrors();
 	pfalSourcei( s_streamingChannel->sourceName, AL_SOURCE_RELATIVE, AL_TRUE );
+	AL_CheckErrors();
 	pfalSourcefv( s_streamingChannel->sourceName, AL_POSITION, vec3_origin );
+	AL_CheckErrors();
 	pfalSourcefv( s_streamingChannel->sourceName, AL_VELOCITY, vec3_origin );
+	AL_CheckErrors();
 	pfalSourcef( s_streamingChannel->sourceName, AL_REFERENCE_DISTANCE, 1.0 );
+	AL_CheckErrors();
 	pfalSourcef( s_streamingChannel->sourceName, AL_MAX_DISTANCE, 1.0 );
+	AL_CheckErrors();
 	pfalSourcef( s_streamingChannel->sourceName, AL_ROLLOFF_FACTOR, 0.0 );
+	AL_CheckErrors();
 }
 
 /*
@@ -433,22 +459,30 @@ PUBLIC void Sound_StopStreaming( void )
 
 
 	pfalSourceStop( s_streamingChannel->sourceName );
+	AL_CheckErrors();
 
 	pfalGetSourcei( s_streamingChannel->sourceName, AL_BUFFERS_PROCESSED, &processed );
+	AL_CheckErrors();
 	if( processed > 0 )
 	{
 		while( processed-- )
 		{
 			pfalSourceUnqueueBuffers( s_streamingChannel->sourceName, 1, &buffer );
+			AL_CheckErrors();
 			pfalDeleteBuffers( 1, &buffer );
+			AL_CheckErrors();
 		}
 	}
 
 	pfalSourcei( s_streamingChannel->sourceName, AL_BUFFER, 0 );
-
+	AL_CheckErrors();
+	
 	// hmmm...
 	pfalDeleteSources( 1, &s_streamingChannel->sourceName );
+	AL_CheckErrors();
+	
 	pfalGenSources( 1, &s_streamingChannel->sourceName );
+	AL_CheckErrors();
 
 	s_streamingChannel = NULL;
 }

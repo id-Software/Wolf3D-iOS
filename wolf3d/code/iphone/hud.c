@@ -1,6 +1,9 @@
 /*
  
- Copyright (C) 2009 Id Software, Inc.
+ Copyright (C) 2009-2011 id Software LLC, a ZeniMax Media company. 
+
+ This file is part of the WOLF3D iOS v2.1 GPL Source Code. 
+
  
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -19,6 +22,9 @@
  */
 
 #include "../wolfiphone.h"
+
+extern int BackButton();
+extern int MenuButton();
 
 hud_t	huds;
 
@@ -76,44 +82,102 @@ void HudSetTexnums() {
 #endif	
 }
 
+// HUD element sizes
+#define HUD_FORWARD_STICK_WIDTH		100
+#define HUD_FORWARD_STICK_HEIGHT	100
+
+#define HUD_SIDE_STICK_WIDTH		100
+#define HUD_SIDE_STICK_HEIGHT		100
+
+#define HUD_TURN_STICK_WIDTH		100
+#define HUD_TURN_STICK_HEIGHT		100
+
+#define HUD_FIRE_BUTTON_WIDTH		80
+#define HUD_FIRE_BUTTON_HEIGHT		80
+
+#define HUD_MENU_BUTTON_WIDTH		64
+#define HUD_MENU_BUTTON_HEIGHT		64
+
+#define HUD_MAP_BUTTON_WIDTH		64
+#define HUD_MAP_BUTTON_HEIGHT		64
+
+#define HUD_AMMO_WIDTH				80
+#define HUD_AMMO_HEIGHT				44
+
+
+#define TABLET_STICK_SCALE			0.9f
+
 void HudSetForScheme( int schemeNum ) {
+
+	int forwardWidth = HUD_FORWARD_STICK_WIDTH * screenScale;
+	int forwardHeight = HUD_FORWARD_STICK_HEIGHT * screenScale;
+	
+	int sideWidth = HUD_SIDE_STICK_WIDTH * screenScale;
+	int sideHeight = HUD_SIDE_STICK_HEIGHT * screenScale;
+	
+	int turnWidth = HUD_TURN_STICK_WIDTH * screenScale;
+	int turnHeight = HUD_TURN_STICK_HEIGHT * screenScale;
+
+	int fireWidth = HUD_FIRE_BUTTON_WIDTH * screenScale;
+	int fireHeight = HUD_FIRE_BUTTON_HEIGHT * screenScale;
+
+	int menuWidth = HUD_MENU_BUTTON_WIDTH * screenScale;
+	int menuHeight = HUD_MENU_BUTTON_HEIGHT * screenScale;
+
+	int mapWidth = HUD_MAP_BUTTON_WIDTH * screenScale;
+	int mapHeight = HUD_MAP_BUTTON_HEIGHT * screenScale;
+
+	int ammoWidth = HUD_AMMO_WIDTH * screenScale;
+	int ammoHeight = HUD_AMMO_HEIGHT * screenScale;
+	
+	// Scale the size of the sticks down a bit on the iPad. This helps normalize the
+	// sensitivity and helps with any potential controller attachments :)
+	if ( iphoneGetDeviceType() == DEVICE_TABLET ) {
+		forwardWidth *= TABLET_STICK_SCALE;
+		forwardHeight *= TABLET_STICK_SCALE;
+		sideWidth *= TABLET_STICK_SCALE;
+		sideHeight *= TABLET_STICK_SCALE;
+		turnWidth *= TABLET_STICK_SCALE;
+		turnHeight *= TABLET_STICK_SCALE;
+	}
+
 	switch ( schemeNum ) {
 		default:
 		case 0:
-			SetHudSpot( &huds.forwardStick, 0, 320-100, 100, 100, 0 );
-			SetHudSpot( &huds.sideStick, 0, 320-100, 100, 100, HF_DISABLED );
-			SetHudSpot( &huds.turnStick, 0, 320-100, 100, 100, 0 );
-			SetHudSpot( &huds.fire, 480-80, 320-80, 80, 80, 0 );
-			SetHudSpot( &huds.menu, 480-64, 0, 64, 32, 0 );
-			SetHudSpot( &huds.map, 0, 0, 64, 32, 0 );
-			SetHudSpot( &huds.ammo, 480-80, 320-100-44, 80, 44, 0 );
+			SetHudSpot( &huds.forwardStick, 0, viddef.height-forwardHeight, forwardWidth, forwardHeight, 0 );
+			SetHudSpot( &huds.sideStick, 0, viddef.height-sideHeight, sideWidth, sideHeight, HF_DISABLED );
+			SetHudSpot( &huds.turnStick, 0, viddef.height-turnHeight, turnWidth, turnHeight, 0 );
+			SetHudSpot( &huds.fire, viddef.width-fireWidth, viddef.height-fireHeight, fireWidth, fireHeight, 0 );
+			SetHudSpot( &huds.menu, viddef.width-menuWidth, 0, menuWidth, menuHeight, 0 );
+			SetHudSpot( &huds.map, 0, 0, mapWidth, mapHeight, 0 );
+			SetHudSpot( &huds.ammo, viddef.width-ammoWidth, viddef.height-fireHeight-ammoHeight, ammoWidth, ammoHeight, 0 );
 			break;
 		case 1:
-			SetHudSpot( &huds.forwardStick, 480-100, 320-100, 100, 100, 0 );
-			SetHudSpot( &huds.sideStick, 0, 320-100, 100, 100, HF_DISABLED );
-			SetHudSpot( &huds.turnStick, 480-100, 320-100, 100, 100, 0 );
-			SetHudSpot( &huds.fire, 0, 320-80, 80, 80, 0 );
-			SetHudSpot( &huds.menu, 480-64, 0, 64, 32, 0 );
-			SetHudSpot( &huds.map, 0, 0, 64, 32, 0 );
-			SetHudSpot( &huds.ammo, 480-80, 320-100-44, 80, 44, 0 );
+			SetHudSpot( &huds.forwardStick, viddef.width-forwardWidth, viddef.height-forwardHeight, forwardWidth, forwardHeight, 0 );
+			SetHudSpot( &huds.sideStick, 0, viddef.height-sideHeight, sideWidth, sideHeight, HF_DISABLED );
+			SetHudSpot( &huds.turnStick, viddef.width-turnWidth, viddef.height-turnHeight, turnWidth, turnHeight, 0 );
+			SetHudSpot( &huds.fire, 0, viddef.height-fireHeight, fireWidth, fireHeight, 0 );
+			SetHudSpot( &huds.menu, viddef.width-menuWidth, 0, menuWidth, menuHeight, 0 );
+			SetHudSpot( &huds.map, 0, 0, mapWidth, mapHeight, 0 );
+			SetHudSpot( &huds.ammo, 0, viddef.height-fireHeight-ammoHeight, ammoWidth, ammoHeight, 0 );
 			break;
 		case 2:
-			SetHudSpot( &huds.forwardStick, 0, 320-100, 100, 100, 0 );
-			SetHudSpot( &huds.sideStick, 0, 320-100, 100, 100, 0 );
-			SetHudSpot( &huds.turnStick, 480-100, 320-100, 100, 100, 0 );
-			SetHudSpot( &huds.fire, 480-80, 0, 80, 80, 0 );
-			SetHudSpot( &huds.menu, 0, 32, 64, 32, 0 );
-			SetHudSpot( &huds.map, 0, 0, 64, 32, 0 );
-			SetHudSpot( &huds.ammo, 480-80, 80, 80, 44, 0 );
+			SetHudSpot( &huds.forwardStick, 0, viddef.height-forwardHeight, forwardWidth, forwardHeight, 0 );
+			SetHudSpot( &huds.sideStick, 0, viddef.height-sideHeight, sideWidth, sideHeight, 0 );
+			SetHudSpot( &huds.turnStick, viddef.width-turnWidth, viddef.height-turnHeight, turnWidth, turnHeight, 0 );
+			SetHudSpot( &huds.fire, viddef.width-fireWidth, 0, fireWidth, fireHeight, 0 );
+			SetHudSpot( &huds.menu, 0, mapHeight, menuWidth, menuHeight, 0 );
+			SetHudSpot( &huds.map, 0, 0, mapWidth, mapHeight, 0 );
+			SetHudSpot( &huds.ammo, viddef.width-ammoWidth, fireHeight, ammoWidth, ammoHeight, 0 );
 			break;
 		case 3:
-			SetHudSpot( &huds.forwardStick, 480-100, 320-100, 100, 100, 0 );
-			SetHudSpot( &huds.sideStick, 480-100, 320-100, 100, 100, 0 );
-			SetHudSpot( &huds.turnStick, 0, 320-100, 100, 100, 0 );
-			SetHudSpot( &huds.fire, 480-80, 0, 80, 80, 0 );
-			SetHudSpot( &huds.menu, 0, 32, 64, 32, 0 );
-			SetHudSpot( &huds.map, 0, 0, 64, 32, 0 );
-			SetHudSpot( &huds.ammo, 480-80, 80, 80, 44, 0 );
+			SetHudSpot( &huds.forwardStick, viddef.width-forwardWidth, viddef.height-forwardHeight, forwardWidth, forwardHeight, 0 );
+			SetHudSpot( &huds.sideStick, viddef.width-sideWidth, viddef.height-sideHeight, sideWidth, sideHeight, 0 );
+			SetHudSpot( &huds.turnStick, 0, viddef.height-turnHeight, turnWidth, turnHeight, 0 );
+			SetHudSpot( &huds.fire, viddef.width-fireWidth, 0, fireWidth, fireHeight, 0 );
+			SetHudSpot( &huds.menu, 0, mapHeight, menuWidth, menuHeight, 0 );
+			SetHudSpot( &huds.map, 0, 0, mapWidth, mapHeight, 0 );
+			SetHudSpot( &huds.ammo, viddef.width-ammoWidth, fireHeight, ammoWidth, ammoHeight, 0 );
 			break;
 	}
 	
@@ -192,14 +256,14 @@ void HudEditFrame() {
 		if ( dragHud->x < 0 ) {
 			dragHud->x = 0;
 		}
-		if ( dragHud->x > 480 - dragHud->width ) {
-			dragHud->x = 480 - dragHud->width;
+		if ( dragHud->x > viddef.width - dragHud->width ) {
+			dragHud->x = viddef.width - dragHud->width;
 		}
 		if ( dragHud->y < 0 ) {
 			dragHud->y = 0;
 		}
-		if ( dragHud->y > 320 - dragHud->height ) {
-			dragHud->y = 320 - dragHud->height;
+		if ( dragHud->y > viddef.height - dragHud->height ) {
+			dragHud->y = viddef.height - dragHud->height;
 		}
 	}
 	
@@ -210,7 +274,7 @@ void HudEditFrame() {
 			w += hud->width;
 		}
 	}
-	x = 240 - w / 2;
+	x = (480 / 2) - w / 2;
 	
 	for ( hudPic_t *hud = (hudPic_t *)&huds ; hud != (hudPic_t *)(&huds+1) ; hud++ ) {
 		if ( hud->hudFlags & HF_DISABLED ) {
@@ -242,7 +306,7 @@ void HudEditFrame() {
 	}
 	
 	// draw the done button
-	if ( iphoneDrawPicWithTouch( 240-32, 320-80-32, 64, 32, "iphone/button_back.tga" ) ) {
+	if ( iphoneDrawPicWithTouch( (480 / 2)-32, 320-80-32, 64, 32, "iphone/button_back.tga" ) ) {
 		menuState = IPM_CONTROLS;
 		iphoneSetNotifyText( "" );
 	}
@@ -279,11 +343,16 @@ void ConvertFromImageToScreen(int *x, int *y, rect_t boundsRect)
 	//int boundsUnder = 320-10;
 	int height = boundsUnder - boundsAbove;
 	
+	float windowWidth = 480.0f;
+	float windowHeight = 320.0f;
+	
+	ScalePositionAndSize( NULL, NULL, &windowWidth, &windowHeight );
+	
 	valX -= boundsLeft;
-	valX = 480*valX/width;
+	valX = windowWidth*valX/width;
 	
 	valY -= boundsAbove;
-	valY = 320*valY/height;
+	valY = windowHeight*valY/height;
 	
 	*x = valX;
 	*y = valY;
@@ -295,7 +364,7 @@ void ConvertFromImageToScreen(int *x, int *y, rect_t boundsRect)
 // to the coordinates of the screen of the iphone image
 // gsh
 //-------------------
-void ConvertFromScreenToImage(int *x, int *y, rect_t boundsRect)
+void ConvertFromScreenToImage(int *x, int *y, rect_t boundsRect, float screenWidth, float screenHeight )
 {
 	int boundsLeft = boundsRect.x;
 	int boundsRight = boundsRect.x + boundsRect.width;
@@ -312,11 +381,11 @@ void ConvertFromScreenToImage(int *x, int *y, rect_t boundsRect)
 	//int boundsAbove = 100;
 	//int boundsUnder = 320-10;
 	int height = boundsUnder - boundsAbove;
-	
-	valX = width*valX/480;
+		
+	valX = width*valX/screenWidth;
 	valX += boundsLeft;
 	
-	valY = height*valY/320;
+	valY = height*valY/screenHeight;
 	valY += boundsAbove;
 	
 	*x = valX;
@@ -346,8 +415,13 @@ void ScaleFromScreenToImage(int *width, int *height, rect_t boundsRect)
 	//int boundsUnder = 320-10;
 	int iH = boundsUnder - boundsAbove;
 	
-	w = w*iW/480;
-	h = h*iH/320;
+	float screenWidth = 480.0f;
+	float screenHeight = 320.0f;
+	
+	ScalePositionAndSize( NULL, NULL, &screenWidth, &screenHeight );
+	
+	w = w*iW/screenWidth;
+	h = h*iH/screenHeight;
 	
 	*width = w;
 	*height = h;
@@ -369,8 +443,18 @@ void iphoneHudEditFrame() {
 	int adjustY = 10;
 	
 	rect_t boundsRect = RectMake(86, 80-adjustY, 300, 205);
+	rect_t scaledBoundsRect;
 	
+	scaledBoundsRect.x = boundsRect.x;
+	scaledBoundsRect.y = boundsRect.y;
+	scaledBoundsRect.width = boundsRect.width;
+	scaledBoundsRect.height = boundsRect.height;
 	
+	ScaleRect( &scaledBoundsRect );
+	
+	float scaledScreenWidth = 480.0f;
+	float scaledScreenHeight = 320.0f;
+	ScalePositionAndSize( NULL, NULL, &scaledScreenWidth, &scaledScreenHeight );
 	
 	//iphoneSetNotifyText( "Drag the controls" );
 	
@@ -380,10 +464,22 @@ void iphoneHudEditFrame() {
 		int y = prevTouches[0][1];
 		
 		//convert x, y coordinates from iphone_image to screen coordinates
-		ConvertFromImageToScreen( &x, &y, boundsRect);
+		ConvertFromImageToScreen( &x, &y, scaledBoundsRect);
 		//ConvertFromScreenToImage( &x, &y);
 		
-		if ( x > 120 && x < 360 && y > 80 && y < 240 ) {
+		float disableRegionLeft = 120;
+		float disableRegionRight = REFERENCE_WIDTH - 120;
+		
+		float disableRegionTop = 80;
+		float disableRegionBottom = REFERENCE_HEIGHT - 80;
+		
+		disableRegionTop *= screenScale;
+		disableRegionBottom *= screenScale;
+		disableRegionLeft *= screenScale;
+		disableRegionRight *= screenScale;
+		
+		if ( x > disableRegionLeft && x < disableRegionRight &&
+			 y > disableRegionTop && y < disableRegionBottom ) {
 			dragHud->hudFlags |= HF_DISABLED;			
 		} else {
 			// magnet pull a matchable axis if it is close enough
@@ -408,7 +504,7 @@ void iphoneHudEditFrame() {
 		int y = touches[0][1];
 		
 		//convert x, y coordinates from iphone_image to screen coordinates
-		ConvertFromImageToScreen( &x, &y, boundsRect);
+		ConvertFromImageToScreen( &x, &y, scaledBoundsRect);
 //		ConvertFromScreenToImage( &x, &y);
 		
 		dragHud = NULL;
@@ -416,9 +512,6 @@ void iphoneHudEditFrame() {
 			if ( x >= hud->x && x - hud->x < hud->width && 
 				y >= hud->y && y - hud->y < hud->height ) {
 				dragHud = hud;
-				//int tempDragX = dragHud->x;
-				//int tempDragY = dragHud->y;
-				//ConvertFromImageToScreen(&, <#int * y#>)
 				dragX = dragHud->x - x;
 				dragY = dragHud->y - y;
 				Sound_StartLocalSound( "iphone/bdown_01.wav" );
@@ -432,21 +525,21 @@ void iphoneHudEditFrame() {
 		// adjust the position of the dragHud
 		int x = touches[0][0];
 		int y = touches[0][1];
-		ConvertFromImageToScreen(&x, &y, boundsRect);
+		ConvertFromImageToScreen(&x, &y, scaledBoundsRect);
 		
 		dragHud->x = x + dragX;
 		dragHud->y = y + dragY;
 		if ( dragHud->x < 0 ) {
 			dragHud->x = 0;
 		}
-		if ( dragHud->x > 480 - dragHud->width ) {
-			dragHud->x = 480 - dragHud->width;
+		if ( dragHud->x > scaledScreenWidth - dragHud->width ) {
+			dragHud->x = scaledScreenWidth - dragHud->width;
 		}
 		if ( dragHud->y < 0 ) {
 			dragHud->y = 0;
 		}
-		if ( dragHud->y > 320 - dragHud->height ) {
-			dragHud->y = 320 - dragHud->height;
+		if ( dragHud->y > scaledScreenHeight - dragHud->height ) {
+			dragHud->y = scaledScreenHeight - dragHud->height;
 		}
 	}
 	
@@ -457,12 +550,12 @@ void iphoneHudEditFrame() {
 			w += hud->width;
 		}
 	}
-	x = 240 - w / 2;
+	x = ( viddef.width / 2 ) - ( w / 2 );
 	
 	for ( hudPic_t *hud = (hudPic_t *)&huds ; hud != (hudPic_t *)(&huds+1) ; hud++ ) {
 		if ( hud->hudFlags & HF_DISABLED ) {
 			hud->x = x;
-			hud->y = 160-hud->height/2;
+			hud->y = ( viddef.height / 2 ) - ( hud->height/2 );
 			x += hud->width;
 		}
 	}
@@ -470,20 +563,20 @@ void iphoneHudEditFrame() {
 	// decide where the menu button, map button, and ammo will draw
 	
 	// solid background color and some UI elements for context
-	R_Draw_Fill( 0, 0, 480, 320, gray );	
+	rectFloat_t backgroundFill = MakeScaledRectFloat( 0.0f, 0.0f, 480.0f, 320.0f );
+	R_Draw_Fill( backgroundFill.x, backgroundFill.y, backgroundFill.width, backgroundFill.height, gray );	
 	
-	iphoneDrawPic(0, 0, 480, 320, "iphone/submenus_background_image.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( 0.0f, 0.0f, 480.0f, 320.0f ), "iphone/submenus_background_image.tga");
 	//iphoneDrawPic(240-108, 0, 217, 50, "iphone/header_advanced.tga");
-	iphoneDrawPic(240-108*9/10, 0, 217*9/10, 50*9/10, "iphone/header_advanced.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( 240.0f-108.0f*9/10.0f, 0.0f, 217.0f*9/10.0f, 50.0f*9/10.0f ), "iphone/header_advanced.tga");
 	
 	//gsh
-	iphoneDrawPic(10, 60-adjustY, 462, 250, "iphone/iphone_image.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( 10.0f, 60.0f-adjustY, 462.0f, 250.0f ), "iphone/iphone_image.tga");
 //	iphoneDrawPic(0, 320-240, 480, 240, "iphone/iphone_image.tga");
 
 	
 //	iphoneDrawFace();
 //	iphoneDrawNotifyText();
-	
 	
 	// draw the active items at their current locations
 	for ( hudPic_t *hud = (hudPic_t *)&huds ; hud != (hudPic_t *)(&huds+1) ; hud++ ) {  //nice foreach loop!
@@ -496,8 +589,10 @@ void iphoneHudEditFrame() {
 			int w = 48;
 			int h = 48;
 			
-			ConvertFromScreenToImage(&x, &y, boundsRect);
-			ScaleFromScreenToImage(&w, &h, boundsRect);
+			ConvertFromScreenToImage(&x, &y, scaledBoundsRect, scaledScreenWidth, scaledScreenHeight );
+			ScaleFromScreenToImage(&w, &h, scaledBoundsRect);
+			
+			//ScalePositionAndSizeInt( &x, &y, &w, &h );
 			
 			iphoneDrawNumber( x, y, 99, w, h );
 		} else {
@@ -506,8 +601,10 @@ void iphoneHudEditFrame() {
 			int w = hud->width;
 			int h = hud->height;
 			
-			ConvertFromScreenToImage(&x, &y, boundsRect);
-			ScaleFromScreenToImage(&w, &h, boundsRect);
+			ConvertFromScreenToImage(&x, &y, scaledBoundsRect, scaledScreenWidth, scaledScreenHeight );
+			ScaleFromScreenToImage(&w, &h, scaledBoundsRect);
+			
+			//ScalePositionAndSizeInt( &x, &y, &w, &h );
 			
 			iphoneDrawPicNum( x, y, w, h, hud->glTexNum );
 		}
@@ -519,16 +616,14 @@ void iphoneHudEditFrame() {
 	
 	
 	// draw the back button
-	if ( iphoneDrawPicWithTouch( 0, 0, 64, 36, "iphone/button_back.tga" ) ) {
-		menuState = IPM_CONTROLS;
+	if ( BackButton() ) {
+		iphoneStartPreviousMenu();
 		iphoneSetNotifyText( "" );
 	}
 	
-	//x = 64;
-	//if (revLand->value)
-		x = 480-64;
+	x = 480-64;
 	// draw the menu button
-	if ( iphoneDrawPicWithTouch( x, 0, 64, 36, "iphone/menu.tga" ) ) {
+	if ( MenuButton() ) {
 	//if ( iphoneDrawPicWithTouch( 64, 0, 64, 36, "iphone/button_menu_yellow.tga" ) ) {
 		menuState = IPM_MAIN;
 		iphoneSetNotifyText( "" );
@@ -543,10 +638,6 @@ void iphoneHudEditFrame() {
 	int y = 0;
 	y = 0;
 	x = 480-width;
-	if (revLand->value){
-		y = 320-height;
-		x = 0;
-	}
 	
 	 //gsh
 	if ((int)volumeFireUpSetting->value) {
@@ -560,8 +651,6 @@ void iphoneHudEditFrame() {
 		
 	
 	 x = 480-width-width-5;
-	 if (revLand->value)
-		 x = width+5;
 	 
 	if ((int)volumeFireDownSetting->value) {
 		if (iphoneDrawPicWithTouch( x, y, width, height, "iphone/button_pistol.tga" ))
@@ -574,10 +663,6 @@ void iphoneHudEditFrame() {
 	//-----------------------------------
 	*/
 	//draw the instructions
-	//if (revLand->value)
-	//	iphoneDrawText(x+width+20, 300, 16, 16, "Drag the controls to customize");
-	//else
-//		iphoneCenterText(240, 300, "Drag each element of the controls to customize");
 	iphoneCenterArialText(245, 315, 0.8f, "Drag each element of the controls to customize");
 }
 

@@ -925,14 +925,17 @@ PUBLIC LevelData_t *Level_LoadMap( const char *levelname )
     fhandle = FS_OpenFile( levelname, 0 );
 	if( ! fhandle )
 	{
+		char errBuffer[1024];
+		sprintf( errBuffer, "levelname: %s, could not be found", levelname);
+		iphoneMessageBox("map filename", errBuffer);
 		Com_Printf( "Could not load map (%s)\n", levelname );
-
 		return NULL;
 	}
 	
 	filesize = FS_GetFileSize( fhandle );
 	if( filesize < MAPHEADER_SIZE )
 	{
+		iphoneMessageBox("map header size", "header size of the map is wrong");
 		Com_Printf("Map file size is smaller than mapheader size\n");
 		return NULL;
 	}
@@ -944,6 +947,7 @@ PUBLIC LevelData_t *Level_LoadMap( const char *levelname )
 	FS_ReadFile( &signature, 1, 4, fhandle );
 	if( signature != MAP_SIGNATURE )
 	{
+		iphoneMessageBox("map signature", "signature of the map file is invalid");
 		Com_Printf("File signature does not match MAP_SIGNATURE\n");
 		return NULL;
 	}
@@ -975,6 +979,7 @@ PUBLIC LevelData_t *Level_LoadMap( const char *levelname )
 	if( filesize < (MAPHEADER_SIZE + mapNameLength + musicNameLength +
 			length[ 0 ] + length[ 1 ] + length[ 2 ]) )
 	{
+		iphoneMessageBox("map filesize", "filesize is less than MAPHEADER_SIZE + mapNameLength + musicNameLength + etc");
 		Com_Printf("filesize is less than MAPHEADER_SIZE + mapNameLength + musicNameLength + etc\n");
 		return NULL;	
 	}
@@ -993,6 +998,7 @@ PUBLIC LevelData_t *Level_LoadMap( const char *levelname )
 
 	if( filesize < (MAPHEADER_SIZE + mapNameLength + musicNameLength) )
 	{
+		iphoneMessageBox("map filesize", "filesize is less than MAPHEADER_SIZE + mapNameLength + musicNameLength");
 		Com_Printf("filesize is less than MAPHEADER_SIZE + mapNameLength + musicNameLength\n");
 		return NULL;	
 	}

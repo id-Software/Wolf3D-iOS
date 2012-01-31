@@ -39,6 +39,9 @@
 #ifndef __TEXTURE_MANAGER_H__
 #define __TEXTURE_MANAGER_H__
 
+#include "arch.h"
+#include "filesystem.h"
+
 #define		MAX_TEXTURES	1024
 
 

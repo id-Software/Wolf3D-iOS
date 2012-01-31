@@ -1,6 +1,9 @@
 /*
  
- Copyright (C) 2009 Id Software, Inc.
+ Copyright (C) 2009-2011 id Software LLC, a ZeniMax Media company. 
+
+ This file is part of the WOLF3D iOS v2.1 GPL Source Code. 
+
  
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -19,6 +22,8 @@
  */
 
 #import "wolf3dAppDelegate.h"
+#import "MainMenuViewController.h"
+#import "wolf3dViewController.h"
 #import "EAGLView.h"
 #import <AudioToolbox/AudioServices.h>
 #include "../wolfiphone.h"
@@ -34,6 +39,8 @@ extern void AppendUserDataToFile(NSData* data);
 //used for downloading custom made map
 extern void FinalizeUserDownload();
 
+yesNoBoxType_t currentYesNoBox = YESNO_NONE;
+
 #if SPEARSTOREKIT
 //was used for storekit
 extern void FinalizeDownload();
@@ -45,7 +52,6 @@ extern void GetSpear();
 
 extern void DownloadURLConnection(char *url);
 
-extern int wasCalledFromDownloadInstructionsMenu;
 extern void iphoneSet2D();
 
 
@@ -72,13 +78,51 @@ void SysIPhoneVibrate() {
 @implementation wolf3dAppDelegate
 
 @synthesize window;
-@synthesize glView;
+@synthesize viewController;
+@synthesize navigationController;
+@synthesize waitingView;
+@synthesize player;
 
-
-- (void)applicationDidFinishLaunching:(UIApplication *)application {
-	application.statusBarHidden = YES;
-	application.statusBarOrientation = UIInterfaceOrientationLandscapeLeft;
+- (void)initMenuMusicPlayer {
+	NSString *soundFilePath =
+				[[NSBundle mainBundle] pathForResource: @"wondering"
+												ofType: @"caf"];
+	 
+	NSURL *fileURL = [[NSURL alloc] initFileURLWithPath: soundFilePath];
+	 
+	AVAudioPlayer *newPlayer =
+				[[AVAudioPlayer alloc] initWithContentsOfURL: fileURL
+													   error: nil];
+	[fileURL release];
 	
+	if ( s_masterVolume != NULL ) {
+		newPlayer.volume = s_masterVolume->value * 0.5f;
+	} else {
+		newPlayer.volume = 0.2f;
+	}
+
+	
+	newPlayer.numberOfLoops = -1;
+	
+	self.player = newPlayer;
+	[newPlayer release];
+	 
+	[player prepareToPlay];
+}
+
+- (void)startMenuMusic {
+
+	[player play];
+}
+
+- (void)stopMenuMusic {
+
+	[player stop];
+}
+
+
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 	// get the documents directory, where we will write configs and save games
 	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
 	NSString *documentsDirectory = [paths objectAtIndex:0];
@@ -96,10 +140,11 @@ void SysIPhoneVibrate() {
 	// start the flow of accelerometer events
 	UIAccelerometer *accelerometer = [UIAccelerometer sharedAccelerometer];
 	accelerometer.delegate = self;
-	accelerometer.updateInterval = 0.01;
+	accelerometer.updateInterval = 1.0 / 30.0;
 	
 	// do all the game startup work
-	iphoneStartup();
+	//iphoneStartup();
+	
 	
 #if SPEARSTOREKIT
 	//check if user downloaded spear but didn't purchase
@@ -115,21 +160,149 @@ void SysIPhoneVibrate() {
 	}
 #endif
 	
+	// Sign up for rotation notifications
+	[[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
+	
+	[[NSNotificationCenter defaultCenter] addObserver:self 
+                selector:@selector(didRotate:) 
+                name:UIDeviceOrientationDidChangeNotification
+                object:nil];
+	
+	// Support rendering at native resolution on devices with Retina displays.
+	if ( [[UIScreen mainScreen] respondsToSelector:@selector(scale)] ) {
+		deviceScale = UIScreen.mainScreen.scale;
+		touchCoordinateScale = UIScreen.mainScreen.scale;
+	}
+	
+	// Screen is initially landscape-left.
+	// BEWARE! For UI*Interface*Orientation, Left/Right refers to the location of the home button.
+	// BUT, for UI*Device*Orientation, Left/Right refers to the location of the side OPPOSITE the home button!!
+	[self setScreenForOrientation:UIDeviceOrientationLandscapeRight];
+	
+	// Create the window programmatically instead of loading from a nib file.
+	self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
+	
+	// We will create the OpenGL view here so we can get a context and preload textures, but
+	// don't actually add the view to the window until the player enters a level.
+	wolf3dViewController *vc = [[wolf3dViewController alloc] initWithNibName:nil bundle:nil];
+	self.viewController = vc;
+	[self.viewController setActive:NO];
+	[vc release];
+	
+	MainMenuViewController *rootController = [[MainMenuViewController alloc] initWithNibName:@"MainMenuView" bundle:nil];
+	navigationController = [[UINavigationController alloc] initWithRootViewController:rootController];
+	[navigationController setNavigationBarHidden:YES];
+	[rootController release];
+	
+	[window addSubview:navigationController.view];
+	[window makeKeyAndVisible];
+
+	return YES;
+}
+
+- (void)showOpenGL {
+	// Maybe clearing the OpenGL view before displaying will fix the old frame flashing.
+	// I don't mind if this blocks until a vsync, becasue it's just a menu.
+	[self.viewController clearAndPresentRenderbuffer];
+	
+	[[navigationController view] removeFromSuperview];
+	
+	[self.viewController setActive:YES];
+	[window addSubview:[self.viewController view]];
+
+	[self.viewController startAnimation];
+}
+
+- (void)didRotate:(NSNotification *)notification {
+	UIDeviceOrientation orient = [[UIDevice currentDevice] orientation];
+	
+	[self setScreenForOrientation:orient];
+}
+
+- (void)setScreenForOrientation:(UIDeviceOrientation) orientation {
+	// Note the the UIDeviceOrientations are REVERSED from the UIInterface orientations!
+	switch (orientation) {	
+		case UIDeviceOrientationLandscapeLeft:
+			deviceOrientation = ORIENTATION_LANDSCAPE_RIGHT;
+			viddef.width = [UIScreen mainScreen].bounds.size.height * deviceScale;
+			viddef.height = [UIScreen mainScreen].bounds.size.width * deviceScale;
+			//[UIApplication sharedApplication].statusBarOrientation = UIInterfaceOrientationLandscapeRight;
+			break;
+			
+		case UIDeviceOrientationLandscapeRight:
+			deviceOrientation = ORIENTATION_LANDSCAPE_LEFT;
+			viddef.width = [UIScreen mainScreen].bounds.size.height * deviceScale;
+			viddef.height = [UIScreen mainScreen].bounds.size.width * deviceScale;
+			//[UIApplication sharedApplication].statusBarOrientation = UIInterfaceOrientationLandscapeLeft;
+			break;
+			
+		default:
+			break;
+	}
+	
+	float widthRatio = viddef.width / REFERENCE_WIDTH;
+	float heightRatio = viddef.height / REFERENCE_HEIGHT;
+	
+	if ( widthRatio < heightRatio ) {
+		screenScale = widthRatio;
+	} else {
+		screenScale = heightRatio; 
+	}
 }
 
 //this is so that we can respond to alertView events (messageboxes)
 //but this should only respond to the alertPurchaseSpear
 - (void)alertView:(UIAlertView *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
 {
-	//this is if they clicked yes to going to the map instructions website
-	if (wasCalledFromDownloadInstructionsMenu && buttonIndex == 1) {
-		SysIPhoneOpenURL( "http://www.idsoftware.com/wolfenstein-3d-classic-platinum/mapinstructions/" );
-		return;
+	if (buttonIndex == 1) {
+		switch ( currentYesNoBox ) {
+			case YESNO_BUY_PLATINUM: {
+				// They clicked yes to buy the platinum edition.
+				
+				// Set up a fullscreen view with the activity indicator in the middle while
+				// we wait for the in-app purchase to complete.
+				UIView* topView = [[self.navigationController topViewController] view];
+				CGRect waitFrame = topView.frame;
+				
+				
+				[waitingView release];
+				waitingView = [[UIView alloc] initWithFrame:waitFrame];
+				waitingView.backgroundColor = [UIColor blackColor];
+				waitingView.opaque = NO;
+				waitingView.alpha = 0.75;
+				
+				
+				UIActivityIndicatorView *indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+				[indicator startAnimating];
+				
+				[waitingView addSubview:indicator];
+				// This mask centers the view in its superview
+				indicator.center = indicator.superview.center;
+				[indicator release];
+				
+				[topView addSubview:waitingView];
+				
+				// Start the request to the app store
+				InAppPurchaseSetCallback( inAppPurchaseCallback );
+				InAppPurchaseStartPurchase( PLATINUM_UPGRADE_STRING );
+				
+				break;
+			}
+				
+			case YESNO_GO_TO_WEBSITE:
+				//if they clicked yes to going to the idsoftware website
+				SysIPhoneOpenURL( "http://www.idsoftware.com/wolfenstein-3d-classic-platinum/" );
+				break;
+			
+			case YESNO_DOWNLOAD_INSTRUCTIONS:
+				//this is if they clicked yes to going to the map instructions website
+				SysIPhoneOpenURL( "http://www.idsoftware.com/wolfenstein-3d-classic-platinum/mapinstructions/" );
+				break;
+			
+			default:
+				break;
+		}
 	}
-	
-	//if they clicked yes to going to the idsoftware website
-	if (buttonIndex == 1)
-		SysIPhoneOpenURL( "http://www.idsoftware.com/wolfenstein-3d-classic-platinum/" );
 	
 	/*
 	if (alertPurchaseSpear && (alertPurchaseSpear == actionSheet))
@@ -140,14 +313,35 @@ void SysIPhoneVibrate() {
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
+	[self.viewController stopAnimation]; 
 }
 
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
+	[self.viewController startAnimation];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {
+	[self.viewController stopAnimation];
+	
+	// Save the game.
 	iphoneShutdown();
+}
+
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+	[self.viewController stopAnimation];
+	
+	// Save the game.
+	iphoneShutdown();
+}
+
+
+- (void)dismissWaitingView {
+	if ( waitingView != nil ) {
+		[waitingView removeFromSuperview];
+		[waitingView release];
+		waitingView = nil;
+	}
 }
 
 #if 1
@@ -156,10 +350,10 @@ extern char urlbuffer[1024];
 	// wolf3d:foo should launch wolf3d now... next, add useful URL parameter encoding
 
 	
-#ifdef LITE
-	iphoneMessageBox("Lite version", "This is a Lite version.  You must purchase Wolfenstein3D to get this feature.");
-	return NO;
-#endif
+	if ( SysIPhoneGetContentVersion() == CONTENT_LITE ) {
+		iphoneMessageBox("Lite version", "This is a Lite version.  You must purchase Wolfenstein3D to get this feature.");
+		return NO;
+	}
 	
 	if (!url)
 		return NO;
@@ -217,8 +411,10 @@ extern char urlbuffer[1024];
 
 
 - (void)dealloc {
+	[viewController release];
+	[navigationController release];
 	[window release];
-	[glView release];
+	
 	[super dealloc];
 }
 
@@ -232,7 +428,7 @@ extern char urlbuffer[1024];
 		}
 		UIAccelerometer *accelerometer = [UIAccelerometer sharedAccelerometer];
 		accelerometer.delegate = self;
-		accelerometer.updateInterval = 0.01;
+		accelerometer.updateInterval = 1.0 / 30.0;
 	}
 }
 
@@ -345,7 +541,38 @@ extern char urlbuffer[1024];
     }
 }
 */
+
+- (void)GLtoMainMenu {
+	[self.navigationController popToRootViewControllerAnimated:NO];
+	[viewController setActive:NO];
+	[[viewController view] removeFromSuperview];
+	[window addSubview:navigationController.view];
+}
+
+- (void)GLtoPreviousMenu {
+	[viewController setActive:NO];
+	[[viewController view] removeFromSuperview];
+	[window addSubview:navigationController.view];
+}
+
 @end
 
+void iphoneStartMainMenu() {
+	Sound_StopBGTrack();
+	iphoneStartMenuMusic();
+	numTouches = 0;
+	numPrevTouches = 0;
+	wolf3dAppDelegate *app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+	[app GLtoMainMenu];
+}
 
+void iphoneStartPreviousMenu() {
+	wolf3dAppDelegate *app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+	[app GLtoPreviousMenu ];
+}
+
+void inAppPurchaseCallback( InAppPurchaseResult result ) {
+	wolf3dAppDelegate* app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+	[app dismissWaitingView];
+}
 

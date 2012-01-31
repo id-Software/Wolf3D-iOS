@@ -41,6 +41,7 @@
 #define __WOLF_RENDERER_H__
 
 extern void R_DrawBox( int x, int y, int w, int h, W32 color );
+extern void R_DrawBoxFloat( float x, float y, float w, float h, W32 color );
 
 extern void R_Draw_Door( int x, int y, float z1, float z2, _boolean vertical, _boolean backside, int tex, int amount );
 extern void R_Draw_Wall( float x, float y, float z1, float z2, int type, int tex );

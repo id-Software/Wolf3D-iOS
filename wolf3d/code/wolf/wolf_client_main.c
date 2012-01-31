@@ -133,8 +133,8 @@ PUBLIC void Client_PrepRefresh( const char *r_mapname )
 		levelData.musicName[6 + strlen(source)] = '\0';
 	}*/
 	
-	Com_Printf("Starting Music Track: %s\n", levelData.musicName);
-	Sound_StartBGTrack( levelData.musicName, levelData.musicName );
+	//Com_Printf("Starting Music Track: %s\n", levelData.musicName);
+	//Sound_StartBGTrack( levelData.musicName, levelData.musicName );
 
 	Player.playstate = ex_playing;	
 }

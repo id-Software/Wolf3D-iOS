@@ -76,12 +76,16 @@ W16 numSoundDevices, numDefaultSoundDevice;
 PRIVATE void Sound_Device_getDeviceList( void )
 {
 	char deviceName[ 256 ];
-
+	ALboolean isExtensionPresent = AL_FALSE;
+	
 	my_strlcpy( deviceName, s_device->string, sizeof( deviceName ) );
-	if( pfalcIsExtensionPresent( NULL, (ALubyte*)"ALC_ENUMERATION_EXT") == AL_TRUE ) 
+	isExtensionPresent = pfalcIsExtensionPresent( NULL, (ALubyte*)"ALC_ENUMERATION_EXT");
+	ALC_CheckErrors();
+	if( isExtensionPresent == AL_TRUE ) 
 	{	
 		// try out enumeration extension
 		deviceList = (char *)pfalcGetString( NULL, ALC_DEVICE_SPECIFIER );
+		ALC_CheckErrors();
 		for( numSoundDevices = 0 ; numSoundDevices < 12 ; ++numSoundDevices ) 
 		{
 			sound_devices[ numSoundDevices ] = NULL;
@@ -200,12 +204,14 @@ failed:
 	if( Context )
 	{
 		pfalcDestroyContext( Context );
+		ALC_CheckErrors();
 		Context = NULL;
 	}
 
 	if( Device )
 	{
 		pfalcCloseDevice( Device );
+		ALC_CheckErrors();
 		Device = NULL;
 	}
 	
@@ -230,7 +236,9 @@ PUBLIC void Sound_Device_Shutdown( void )
 	if( Context )
 	{
 		pfalcMakeContextCurrent( NULL );
+		ALC_CheckErrors();
 		pfalcDestroyContext( Context );
+		ALC_CheckErrors();
 
 		Context = NULL;
 	}
@@ -238,6 +246,7 @@ PUBLIC void Sound_Device_Shutdown( void )
 	if( Device )
 	{
 		pfalcCloseDevice( Device );
+		ALC_CheckErrors();
 
 		Device = NULL;
 	}

@@ -1,6 +1,9 @@
 /*
  
- Copyright (C) 2009 Id Software, Inc.
+ Copyright (C) 2009-2011 id Software LLC, a ZeniMax Media company. 
+
+ This file is part of the WOLF3D iOS v2.1 GPL Source Code. 
+
  
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -19,28 +22,11 @@
  */
 
 #import <UIKit/UIKit.h>
-#include <unistd.h>
-#include <string.h>
 
 
 int main(int argc, char *argv[]) {
-
-    {
-		char cwd[256];
-		strcpy( cwd, argv[0] );
-		int len = strlen( cwd );
-		for( int i = len-1; i >= 0; i-- ) {
-			if ( cwd[i] == '/' ) {
-				cwd[i] = 0;
-				break;
-			}
-			cwd[i] = 0;
-		}
-		setenv( "CWD", cwd, 1 );
-	}
-	
     NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-    int retVal = UIApplicationMain(argc, argv, nil, nil);
+    int retVal = UIApplicationMain(argc, argv, nil, @"wolf3dAppDelegate");
     [pool release];
     return retVal;
 }

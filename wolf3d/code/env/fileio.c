@@ -109,11 +109,16 @@ PUBLIC W32 FS_FileSeek( filehandle_t *fhandle, SW32 offset, W32 origin )
 				return 1;
 			}
 
+			/* Commenting this out to avoid a warning - note that this is probably not what was
+			   intended!
+			   
 			// offset is negative 
 			if( (fhandle->filesize + offset) < 0  )
 			{
 				return 1;
 			}
+
+			*/
 
 			// offset is negative 
 			fhandle->ptrCurrent = fhandle->ptrEnd + offset;
@@ -223,7 +228,6 @@ PUBLIC filehandle_t *FS_OpenFile( const char *filename, W32 FlagsAndAttributes )
 	// high performance file mapping path, avoiding stdio
 	fd = open( netpath, O_RDONLY );
 	if ( fd == -1 ) {
-//		return NULL; 
 		//if it couldn't be found in that path then check again in the document directory
 		//gsh
 		//pathBase = FS_ForceGamedir(); 
@@ -231,7 +235,7 @@ PUBLIC filehandle_t *FS_OpenFile( const char *filename, W32 FlagsAndAttributes )
 		pathBase = iphoneDocDirectory;
 		my_snprintf( netpath, sizeof( netpath ), "%s/%s", pathBase, filename );
 		fd = open( netpath, O_RDONLY );
-		if ( fd == -1 ) {  //okay, couldn't find it there either... return null
+		if ( fd == -1 ) {  
 			return NULL;
 		}
 	}

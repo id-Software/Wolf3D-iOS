@@ -1,7 +1,12 @@
 /*
 
+	Copyright (C) 2009-2011 id Software LLC, a ZeniMax Media company. 
 	Copyright (C) 2004-2005 Michael Liebscher <johnnycanuck@users.sourceforge.net>
 	Copyright (C) 1997-2001 Id Software, Inc.
+
+	
+	This file is part of the WOLF3D iOS v2.1 GPL Source Code. 
+
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -28,6 +33,7 @@
  */
 
 #include "../wolfiphone.h"
+#include "iphone_store.h"
 
 cvar_t	*controlScheme;
 cvar_t	*sensitivity;
@@ -55,7 +61,6 @@ cvar_t	*cropSprites;
 cvar_t	*blends;
 cvar_t	*gunFrame;
 cvar_t	*slowAI;
-cvar_t	*revLand;
 cvar_t	*mapScale;
 cvar_t	*hideControls;
 cvar_t	*autoFire;
@@ -111,19 +116,26 @@ void Reset_f() {
 void iphoneStartup() {
 	char	*s;
 	int		start = Sys_Milliseconds();
+	static bool firstInit = true;
+	
+	if ( !firstInit ) {
+		return;
+	}
+	
+	firstInit = false;
 	
 #ifdef STOREKIT
 	//check for storekit framework and set appropriate flags... gsh
 	CheckForStorekitExistence();
 #endif
 	
+	InAppPurchaseInit();
+	
 	// temporary 
 	const char *systemVersion = SysIPhoneGetOSVersion();
 	printf( "systemVersion = %s\n", systemVersion );
 	
 	z_chain.next = z_chain.prev = &z_chain;
-	
-	InitImmediateModeGL();
 	
 	// Prepare enough of the subsystems to handle
 	// cvar and command buffer management.
@@ -170,11 +182,11 @@ void iphoneStartup() {
 	consoleActive = 0;
 	
 	controlScheme = Cvar_Get( "controlScheme", "0", CVAR_ARCHIVE );
-	sensitivity = Cvar_Get( "sensitivity", "0.3", CVAR_ARCHIVE );
-	stickTurnBase = Cvar_Get( "stickTurnBase", "300", CVAR_ARCHIVE );
-	stickTurnScale = Cvar_Get( "stickTurnScale", "500", CVAR_ARCHIVE );
-	stickMoveBase = Cvar_Get( "stickMoveBase", "3000", CVAR_ARCHIVE );
-	stickMoveScale = Cvar_Get( "stickMoveScale", "5000", CVAR_ARCHIVE );
+	sensitivity = Cvar_Get( "sensitivity", "0.5", CVAR_ARCHIVE );
+	stickTurnBase = Cvar_Get( "stickTurnBase", "200", CVAR_ARCHIVE );
+	stickTurnScale = Cvar_Get( "stickTurnScale", "400", CVAR_ARCHIVE );
+	stickMoveBase = Cvar_Get( "stickMoveBase", "2000", CVAR_ARCHIVE );
+	stickMoveScale = Cvar_Get( "stickMoveScale", "4000", CVAR_ARCHIVE );
 	stickDeadBand = Cvar_Get( "stickDeadBand", "0.2", CVAR_ARCHIVE );
 	tiltTurn = Cvar_Get( "tiltTurn", "0", CVAR_ARCHIVE );
 	tiltMove = Cvar_Get( "tiltMove", "0", CVAR_ARCHIVE );
@@ -195,13 +207,13 @@ void iphoneStartup() {
 	blends = Cvar_Get( "blends", "1", 0 );
 	gunFrame = Cvar_Get( "gunFrame", "0", 0 );
 	slowAI = Cvar_Get( "slowAI", "0", 0 );
-	revLand = Cvar_Get( "revLand", "0", CVAR_ARCHIVE );
 	mapScale = Cvar_Get( "mapScale", "10", CVAR_ARCHIVE );
 	hideControls = Cvar_Get( "hideControls", "0", CVAR_ARCHIVE );
 	autoFire = Cvar_Get( "autoFire", "0", 0 );
-	
-	// make sure volume changes and incoming calls draw the right orientation
-	SysIPhoneSetUIKitOrientation( revLand->value );
+	g_version = Cvar_Get( "g_version", "1", CVAR_ARCHIVE );
+	//this call fixes the bug of crashed apps during sod map loads
+	//( it only occured on devices updated from ( 1.1 || 1.0 )->1.2 )
+	Cvar_Set( "g_version", "1" );
 
 	/*  //if we don't preload the ogg files then we have faster start ups... gsh
 	// preload all the ogg FM synth sounds
@@ -246,13 +258,28 @@ void iphoneStartup() {
 	if ( !LoadTheGame() ) {
 		PL_NewGame( &Player );
 		iphoneStartMap( currentMap.episode, currentMap.map, currentMap.skill );
+		HudSetForScheme( 0 );
 	}
-	
 
 	// always start at main menu
 	menuState = IPM_MAIN;
 	
+	// Start menu music
+	iphoneInitMenuMusic();
+	iphoneStartMenuMusic();
+	
 	Com_Printf( "startup time: %i msec\n", Sys_Milliseconds() - start );
+}
+
+/*
+ ===================
+ iphoneStartGameplay
+ 
+ Loads the saved game if there is one, otherwise starts a new game.
+ ===================
+*/
+void iphoneStartGameplay() {
+
 }
 
 /*
@@ -354,9 +381,9 @@ void iphoneWriteConfig( void ) {
  */
 void iphoneShutdown() {
 	Sound_StopAllSounds();
-	Sound_StopBGTrack();
+	//Sound_StopBGTrack();
 	iphoneWriteConfig();
 	SaveTheGame();
-	exit( 0 );
+	//exit( 0 );
 }
 

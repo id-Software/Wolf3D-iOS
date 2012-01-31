@@ -58,11 +58,12 @@
 */
 PUBLIC void GL_SetDefaultState( void )
 {
-	pfglClearColor( 1,0, 0.5 , 0.5 );
-	pfglCullFace( GL_FRONT );
+	pfglViewport( 0,0, viddef.height, viddef.width );
+	pfglClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 	pfglEnable( GL_TEXTURE_2D );
 	pfglDisable( GL_DEPTH_TEST );
-	pfglDisable( GL_CULL_FACE );
+	pfglDisable( GL_ALPHA_TEST );
+	pfglEnable( GL_CULL_FACE );
 	pfglDisable( GL_BLEND );
 	pfglColor4f( 1, 1, 1, 1 );
 	pfglShadeModel( GL_FLAT );
@@ -92,12 +93,12 @@ PUBLIC void R_DrawBox( int x, int y, int w, int h, W32 color )
 
 	pfglColor4ubv( (GLubyte *) & color );
 
-	pfglBegin( GL_QUADS );
+	pfglBegin( GL_TRIANGLE_STRIP );
 
 	pfglVertex2i( x, y );
 	pfglVertex2i( x, y + h);
-	pfglVertex2i( x + w, y + h );
 	pfglVertex2i( x + w, y );
+	pfglVertex2i( x + w, y + h );
 	
 	pfglEnd();
 
@@ -107,6 +108,41 @@ PUBLIC void R_DrawBox( int x, int y, int w, int h, W32 color )
 	pfglEnable( GL_TEXTURE_2D );
 }
 
+/*
+-----------------------------------------------------------------------------
+ Function: R_DrawBoxFloat
+ 
+ Parameters:
+ 
+ Returns:
+ 
+ Notes: 
+
+-----------------------------------------------------------------------------
+*/
+PUBLIC void R_DrawBoxFloat( float x, float y, float w, float h, W32 color )
+{
+	pfglDisable( GL_TEXTURE_2D );
+
+//	pfglEnable( GL_BLEND );
+//	pfglBlendFunc( GL_SRC_COLOR, GL_DST_COLOR );
+
+	pfglColor4ubv( (GLubyte *) & color );
+
+	pfglBegin( GL_TRIANGLE_STRIP );
+
+	pfglVertex2f( x, y );
+	pfglVertex2f( x, y + h);
+	pfglVertex2f( x + w, y + h );
+	pfglVertex2f( x + w, y );
+	
+	pfglEnd();
+
+	pfglColor3f( 1, 1, 1 );
+//	pfglBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+//	pfglDisable( GL_BLEND );
+	pfglEnable( GL_TEXTURE_2D );
+}
 
 /*
  ====================
@@ -211,11 +247,11 @@ PUBLIC void R_Draw_Wall( float x, float y, float z1, float z2, int type, int tex
 
 	LoadWallTexture( tex );
 	
-	pfglBegin( GL_QUADS );
+	pfglBegin( GL_TRIANGLE_STRIP );
 
-	pfglTexCoord2f( 1.0, 0.0 ); pfglVertex3f( x1, z2, y1 );
 	pfglTexCoord2f( 0.0, 0.0 ); pfglVertex3f( x2, z2, y2 );
 	pfglTexCoord2f( 0.0, 1.0 ); pfglVertex3f( x2, z1, y2 );
+	pfglTexCoord2f( 1.0, 0.0 ); pfglVertex3f( x1, z2, y1 );
 	pfglTexCoord2f( 1.0, 1.0 ); pfglVertex3f( x1, z1, y1 );
 	
 	pfglEnd();
@@ -276,11 +312,11 @@ PUBLIC void R_Draw_Door( int x, int y, float z1, float z2, _boolean vertical, _b
 
 	LoadWallTexture( tex );
 
-	pfglBegin( GL_QUADS );
+	pfglBegin( GL_TRIANGLE_STRIP );
 
-	pfglTexCoord2f( backside ? 0.0f : 1.0f, 0.0 ); pfglVertex3f( x1, z2, y1 );
 	pfglTexCoord2f( backside ? 1.0f : 0.0f, 0.0 ); pfglVertex3f( x2, z2, y2 );
 	pfglTexCoord2f( backside ? 1.0f : 0.0f, 1.0 ); pfglVertex3f( x2, z1, y2 );
+	pfglTexCoord2f( backside ? 0.0f : 1.0f, 0.0 ); pfglVertex3f( x1, z2, y1 );
 	pfglTexCoord2f( backside ? 0.0f : 1.0f, 1.0 ); pfglVertex3f( x1, z1, y1 );
 	
 	pfglEnd();
@@ -340,7 +376,7 @@ PUBLIC void R_DrawSprites( void )
 		}
 		R_Bind( twall->texnum );
 		
-		pfglBegin( GL_QUADS );
+		pfglBegin( GL_TRIANGLE_STRIP );
 
 		if ( cropSprites->value && twall->header.numBounds > 0 ) {
 			// draw one or two subrects to avoid blending all the empty space
@@ -367,8 +403,8 @@ PUBLIC void R_DrawSprites( void )
 
 				pfglTexCoord2f( x1, y1 );	pfglVertex3f( Ex - x1 * 2*cosa, -(LOWERZCOORD + (UPPERZCOORD - LOWERZCOORD) * y1), -Ey + x1 * 2*sina );
 				pfglTexCoord2f( x1, y2 );	pfglVertex3f( Ex - x1 * 2*cosa, -(LOWERZCOORD + (UPPERZCOORD - LOWERZCOORD) * y2), -Ey + x1 * 2*sina );				
-				pfglTexCoord2f( x2, y2 );	pfglVertex3f( Ex - x2 * 2*cosa, -(LOWERZCOORD + (UPPERZCOORD - LOWERZCOORD) * y2), -Ey + x2 * 2*sina );
 				pfglTexCoord2f( x2, y1 );	pfglVertex3f( Ex - x2 * 2*cosa, -(LOWERZCOORD + (UPPERZCOORD - LOWERZCOORD) * y1), -Ey + x2 * 2*sina );
+				pfglTexCoord2f( x2, y2 );	pfglVertex3f( Ex - x2 * 2*cosa, -(LOWERZCOORD + (UPPERZCOORD - LOWERZCOORD) * y2), -Ey + x2 * 2*sina );
 			}
 		} else {
 			Ex = Dx = vislist[ n ].x / FLOATTILE;
@@ -378,8 +414,8 @@ PUBLIC void R_DrawSprites( void )
 
 			pfglTexCoord2f( 0.0, 0.0 );	pfglVertex3f( Ex, UPPERZCOORD, -Ey );
 			pfglTexCoord2f( 0.0, 1.0 );	pfglVertex3f( Ex, LOWERZCOORD, -Ey );
-			pfglTexCoord2f( 1.0, 1.0 );	pfglVertex3f( Dx, LOWERZCOORD, -Dy );
 			pfglTexCoord2f( 1.0, 0.0 );	pfglVertex3f( Dx, UPPERZCOORD, -Dy );
+			pfglTexCoord2f( 1.0, 1.0 );	pfglVertex3f( Dx, LOWERZCOORD, -Dy );
 		}
 		
 		pfglEnd();
@@ -429,9 +465,9 @@ PUBLIC void R_DrawNumber( int x, int y, int number )
 		fcol = col * w;		
 		
 		pfglTexCoord2f( fcol,	0 );	pfglVertex2i( x, y );
-		pfglTexCoord2f( fcol+w, 0 );	pfglVertex2i( x+18, y );
-		pfglTexCoord2f( fcol+w, 1 );	pfglVertex2i( x+18, y+32 );
 		pfglTexCoord2f( fcol,	1 );	pfglVertex2i( x, y+32 );
+		pfglTexCoord2f( fcol+w, 1 );	pfglVertex2i( x+18, y+32 );
+		pfglTexCoord2f( fcol+w, 0 );	pfglVertex2i( x+18, y );
 
 		x -= 18;
 	}
@@ -503,9 +539,10 @@ PUBLIC void R_put_line( int x, int y, const char *string )
 
 	
 		pfglTexCoord2f( fcol, frow );		pfglVertex2i( mx, y );
-		pfglTexCoord2f( fcol+w, frow );		pfglVertex2i( mx+32, y );
-		pfglTexCoord2f( fcol+w, frow+h );	pfglVertex2i( mx+32, y+32 );
 		pfglTexCoord2f( fcol, frow+h );		pfglVertex2i( mx, y+32 );
+		pfglTexCoord2f( fcol+w, frow+h );	pfglVertex2i( mx+32, y+32 );
+		pfglTexCoord2f( fcol+w, frow );		pfglVertex2i( mx+32, y );
+		
 	
 	
 			

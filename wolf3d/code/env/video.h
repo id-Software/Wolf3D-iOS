@@ -42,6 +42,8 @@
 #ifndef __VIDEO_H__
 #define __VIDEO_H__
 
+#include "arch.h"
+
 typedef struct vrect_s
 {
 	int	x, y, width, height;

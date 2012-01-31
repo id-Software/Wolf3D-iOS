@@ -3,6 +3,8 @@
 #ifndef _IPHONE_QGL_H_
 #define _IPHONE_QGL_H_
 
+//#define QGL_CHECK_GL_ERRORS
+
 #ifdef QGL_LOG_GL_CALLS
 extern unsigned int QGLLogGLCalls;
 #ifdef __cplusplus 
@@ -1177,8 +1179,8 @@ static inline GLenum  qglGetError(void)
 #endif
     returnValue = glGetError();
 #if !defined(NDEBUG) && defined(QGL_CHECK_GL_ERRORS)
-    if (!QGLBeginStarted)
-        QGLCheckError("glGetError");
+    //if (!QGLBeginStarted)
+       // QGLCheckError("glGetError");
 #endif
     return returnValue;
 }
@@ -2041,8 +2043,7 @@ static inline void  qglViewport(GLint x, GLint y, GLsizei width, GLsizei height)
         fprintf(QGLDebugFile(), "glViewport(x=%ld, y=%ld, width=%ld, height=%ld)\n", x, y, width, height);
 #endif
 //extern glconfig_t glConfig;
-	int vidHeight = 320;
-	glViewport(vidHeight - y - height, x, height, width);
+	glViewport(x, y, width, height);
 #if !defined(NDEBUG) && defined(QGL_CHECK_GL_ERRORS)
     if (!QGLBeginStarted)
         QGLCheckError("glViewport");
@@ -2231,6 +2232,8 @@ static inline void  qglDrawTexfvOES(const GLfloat *coords)
 #endif
 }
 
+/*
+
 // Prevent calls to the 'normal' GL functions
 #define glAlphaFunc CALL_THE_QGL_VERSION_OF_glAlphaFunc
 #define glClearColor CALL_THE_QGL_VERSION_OF_glClearColor
@@ -2388,5 +2391,5 @@ static inline void  qglDrawTexfvOES(const GLfloat *coords)
 #define glDrawTexxvOES CALL_THE_QGL_VERSION_OF_glDrawTexxvOES
 #define glDrawTexfOES CALL_THE_QGL_VERSION_OF_glDrawTexfOES
 #define glDrawTexfvOES CALL_THE_QGL_VERSION_OF_glDrawTexfvOES
-
+*/
 #endif // _IPHONE_QGL_H_

@@ -1,6 +1,9 @@
 /*
  
- Copyright (C) 2009 Id Software, Inc.
+ Copyright (C) 2009-2011 id Software LLC, a ZeniMax Media company. 
+
+ This file is part of the WOLF3D iOS v2.1 GPL Source Code. 
+
  
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -18,12 +21,18 @@
  
  */
 
+#include "video.h"
+#include "texture_manager.h"
+#include "vector.h"
+#include "cvar.h"
+#include "arch.h"
+
 // define this to get only the first episode on selections, and the
 // automatic sell screen at the end of episode 1
 //#define EPISODE_ONE_ONLY
 
 // this is the version number displayed on the menu screen
-#define WOLF_IPHONE_VERSION 1.2//1.1
+#define WOLF_IPHONE_VERSION 2.1
 
 extern viddef_t viddef;
 
@@ -84,6 +93,13 @@ typedef struct {
 } rect_t;
 rect_t RectMake(int x, int y, int width, int height);
 
+typedef struct {
+	float x;
+	float y;
+	float width;
+	float height;
+} rectFloat_t;
+
 extern currentMap_t currentMap;
 
 void iphoneStartMap( int episodeNum, int mapNum, int skillLevel );
@@ -130,15 +146,39 @@ extern cvar_t	*cropSprites;
 extern cvar_t	*blends;
 extern cvar_t	*gunFrame;
 extern cvar_t	*slowAI;
-extern cvar_t	*revLand;
 extern cvar_t	*mapScale;
 extern cvar_t	*hideControls;
 extern cvar_t	*autoFire;
+
+// The size of UI elements will be scaled by this value in order to support different
+// resolutions, such as Retina displays and the iPad.
+extern float screenScale;
 
 // the native iPhone code should set the following each frame:
 extern int	numTouches;
 extern int	touches[5][2];	// [0] = x, [1] = y in landscape mode, raster order with y = 0 at top
 extern int isTouchMoving; //gsh
+
+// On Retina displays, touch coordinates are still reported at "low resolution". Since the game
+// compares touch coordinates directly to the on-screen positions of buttons, we will need to
+// scale the touches on Retina displays.
+extern int touchCoordinateScale;
+
+// Store the device's contentScaleFactor ourselves. This is needed to support iOS
+// versions < 4.0, as the UIView contentScaleFactor property did not exist before then.
+// This should be 1 for all non-Retina displays, and 2 for Retina displays.
+extern float deviceScale;
+
+// The orientation of the device. Currently, we only support both landscape modes.
+// LEFT and RIGHT correspond to the position of the home button as you look at the
+// device from the front.
+typedef enum {
+	ORIENTATION_LANDSCAPE_LEFT,
+	ORIENTATION_LANDSCAPE_RIGHT
+} deviceOrientation_t;
+
+extern deviceOrientation_t deviceOrientation;
+
 extern float	tilt;		// -1.0 to 1.0
 extern float	tiltPitch;
 
@@ -169,7 +209,10 @@ void iphoneDrawMapName( rect_t rect, const char *str ); //gsh
 int iphoneDrawTextInBox( rect_t paragraph, int lineLength, const char *str, rect_t boxRect ); //gsh
 void iphoneDrawNumber( int x, int y, int number, int charWidth, int charHeight );
 void iphoneDrawPic( int x, int y, int w, int h, const char *pic );
+void iphoneDrawPicFloat( float x, float y, float w, float h, const char *pic );
+void iphoneDrawPicRect( rectFloat_t rect, const char * pic );
 int iphoneDrawPicWithTouch( int x, int y, int w, int h, const char *pic );
+int iphoneDrawPicRectWithTouch( rectFloat_t rect, const char *pic );
 void iphoneDrawPicNum( int x, int y, int w, int h, int glTexNum );
 void R_Draw_Blend( int x, int y, int w, int h, colour4_t c );
 void SaveTheGame();
@@ -182,7 +225,15 @@ void iphonePreloadBeforePlay();
 
 void InitImmediateModeGL();
 void iphoneRotateForLandscape();
-void iphoneCheckForLandscapeReverse();
+
+void ScaleToScreen( int * value);
+void ScalePosition( float * x, float * y );
+void ScalePositionInt( int * x, int * y );
+void ScalePositionAndSize( float * x, float * y, float * w, float * h );
+void ScalePositionAndSizeInt( int * x, int * y, int * w, int * h );
+void ScaleRect( rect_t * rect );
+void ScaleRectFloat( rectFloat_t * rect );
+rectFloat_t MakeScaledRectFloat( float x, float y, float width, float height );
 
 extern colour4_t colorPressed;
 
@@ -229,6 +280,13 @@ void HudEditFrame();
 void iphoneHudEditFrame();
 
 
+//---------------------------------------
+// Content version management for Lite and Platinum
+//---------------------------------------
+typedef enum {
+	CONTENT_LITE,
+	CONTENT_PLATINUM
+} contentVersion_t;
 
 //---------------------------------------
 // interfaces from the original game code
@@ -246,13 +304,23 @@ void iphoneSetLevelNotifyText(); //gsh
 void SysIPhoneSwapBuffers();
 void SysIPhoneVibrate();
 void SysIPhoneOpenURL( const char *url );
-void SysIPhoneSetUIKitOrientation( int isLandscapeRight );
 void SysIPhoneLoadJPG( W8* jpegData, int jpegBytes, W8 **pic, W16 *width, W16 *height, W16 *bytes );
 const char * SysIPhoneGetConsoleTextField();
 void SysIPhoneSetConsoleTextField(const char *);
 void SysIPhoneInitAudioSession();
 int SysIPhoneOtherAudioIsPlaying();
 const char *SysIPhoneGetOSVersion();
+contentVersion_t SysIPhoneGetContentVersion();
+int SysIPhoneGetPathToMainBundleLength( void );
+void SysIPhoneGetPathToMainBundle( char * outPath, int maxLength );
+
+void iphoneStartPreviousMenu();
+void iphoneStartMainMenu();
+void iphonePromptToBuyPlatinum();
+
+void iphoneInitMenuMusic();
+void iphoneStartMenuMusic();
+void iphoneStopMenuMusic();
 
 //---------------------------------------
 // interfaces from Objective-C land
@@ -265,4 +333,53 @@ void iphoneTouchEvent( int numTouches, int touches[16] );
 void iphoneActivateConsole();
 void iphoneDeactivateConsole();
 void iphoneExecuteCommandLine();
+void iphoneStartGameplay();
 
+void iphoneResume();
+
+void LoadPNG( const char *filename, W8 **pic, W16 *width, W16 *height, W16 *bytes );
+
+// The width and height the assets were originally designed for. Used in scaling to different
+// resolutions for preserving aspect ratio.
+#define REFERENCE_WIDTH		480.0f
+#define REFERENCE_HEIGHT	320.0f
+
+// Constants for HUD buttons.
+#define BACK_BUTTON_WIDTH	64.0f
+#define BACK_BUTTON_HEIGHT	64.0f
+
+// These variables store the scaled dimensions of certain HUD elements that are needed
+// in various parts of the code.
+extern float faceWidth;
+extern float faceHeight;
+
+extern float weaponWidth;
+extern float weaponHeight;
+
+
+// The following items support in-app purchases.
+#define PLATINUM_UPGRADE_STRING "com.idsoftware.wolf3dlite.platupgrade"
+
+
+// An enum to help keep track of YesNo boxes.
+typedef enum {
+	YESNO_NONE,
+	YESNO_BUY_PLATINUM,
+	YESNO_GO_TO_WEBSITE,
+	YESNO_DOWNLOAD_INSTRUCTIONS
+} yesNoBoxType_t;
+
+extern yesNoBoxType_t currentYesNoBox;
+
+// This determines the default framerate of the game.
+// 1 = 60Hz, 2 = 30Hz, etc.
+#define DEFAULT_FRAME_INTERVAL 1
+
+// Determine phone or tablet device at runtime.
+typedef enum {
+	DEVICE_UNKNOWN,
+	DEVICE_PHONE,
+	DEVICE_TABLET
+} deviceType_t;
+
+deviceType_t iphoneGetDeviceType(void);

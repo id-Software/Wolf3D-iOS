@@ -1,6 +1,9 @@
 /*
  
- Copyright (C) 2009 Id Software, Inc.
+ Copyright (C) 2009-2011 id Software LLC, a ZeniMax Media company. 
+
+ This file is part of the WOLF3D iOS v2.1 GPL Source Code. 
+
  
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -138,10 +141,24 @@ int returnButtonFrameNum = 0;
 // console mode
 int consoleActive;
 
+// The size of UI elements will be scaled by this value in order to support different
+// resolutions, such as Retina displays and the iPad.
+float screenScale = 1.0f;
+
 // the native iPhone code should set the following each frame:
 int	numTouches;
 int	touches[5][2];	// [0] = x, [1] = y in landscape mode, raster order with y = 0 at top
 int isTouchMoving = 0; //gsh
+
+// On Retina displays, touch coordinates are still reported at "low resolution". Since the game
+// compares touch coordinates directly to the on-screen positions of buttons, we will need to
+// scale the touches on Retina displays.
+int touchCoordinateScale = 1;
+
+float deviceScale = 1.0f;
+
+deviceOrientation_t deviceOrientation = ORIENTATION_LANDSCAPE_LEFT;
+
 float	tilt;		// -1.0 to 1.0
 float	tiltPitch;
 
@@ -157,6 +174,10 @@ texture_t *numberPics[10];
 
 //gsh
 texture_t *arialFontTexture;
+
+// Profiling information
+CFAbsoluteTime soundTime = 0.0;
+CFAbsoluteTime menuTime = 0.0;
 
 char *mugshotnames[ NUM_MUGSHOTS ] =
 {
@@ -201,6 +222,20 @@ int bonusFrameNum;
 int attackDirTime[2];
 
 logTime_t	loggedTimes[MAX_LOGGED_TIMES];	// indexed by iphoneFrameNum
+
+
+// Some HUD element constants
+#define HUD_FACE_WIDTH		64.0f
+#define HUD_FACE_HEIGHT		80.0f
+
+#define HUD_WEAPON_WIDTH	128.0f
+#define HUD_WEAPON_HEIGHT	128.0f
+
+float faceWidth = HUD_FACE_WIDTH;
+float faceHeight = HUD_FACE_HEIGHT;
+
+float weaponWidth = HUD_WEAPON_WIDTH;
+float weaponHeight = HUD_WEAPON_HEIGHT;
 
 /*
  ==================
@@ -305,14 +340,14 @@ int iphoneCenterText( int x, int y, const char *str ) {
 		pfglTexCoord2f( fcol, frow );							
 		pfglVertex2i( x, y );
 		
-		pfglTexCoord2f( fcol+myfont->wFrac, frow );					
-		pfglVertex2i( x+scale, y );
+		pfglTexCoord2f( fcol, frow+myfont->hFrac );
+		pfglVertex2i( x, y+scale );	
 		
 		pfglTexCoord2f( fcol+myfont->wFrac, frow+myfont->hFrac );	
 		pfglVertex2i( x+scale, y+scale );
 		
-		pfglTexCoord2f( fcol, frow+myfont->hFrac );
-		pfglVertex2i( x, y+scale );			
+		pfglTexCoord2f( fcol+myfont->wFrac, frow );					
+		pfglVertex2i( x+scale, y );
 	}
 	
 	pfglEnd();
@@ -338,6 +373,8 @@ void iphoneCenterTextWithColor(int x, int y, const char *str, colour4_t color ) 
  ==================
  */
 int iphoneDrawArialText( int x, int y, float scale, const char *str ) {
+	scale *= screenScale;
+	
 	/*
 	int l = strlen( str );
 	int	i;
@@ -392,17 +429,17 @@ int iphoneDrawArialText( int x, int y, float scale, const char *str ) {
 //			pfglVertex2f( fx + xoff, fy + yoff );
 			pfglVertex2i( x, y + yoff);
 			
-			pfglTexCoord2f( x1, y0 );
-//			pfglVertex2f( fx + xoff + width, fy + yoff );
-			pfglVertex2i( x+width, y + yoff);
-			
+			pfglTexCoord2f( x0, y1);
+//			pfglVertex2f( fx + xoff, fy + yoff + height );
+			pfglVertex2i( x, y+height + yoff);	
+						
 			pfglTexCoord2f( x1, y1);
 //			pfglVertex2f( fx + xoff + width, fy + yoff + height );
 			pfglVertex2i( x+width, y+height + yoff );
 			
-			pfglTexCoord2f( x0, y1);
-//			pfglVertex2f( fx + xoff, fy + yoff + height );
-			pfglVertex2i( x, y+height + yoff);			
+			pfglTexCoord2f( x1, y0 );
+//			pfglVertex2f( fx + xoff + width, fy + yoff );
+			pfglVertex2i( x+width, y + yoff);
 			
 			// with our default texture, the difference is negligable
 //			fx += glyph->xadvance * scale;
@@ -439,7 +476,11 @@ int iphoneCenterArialText( int x, int y, float scale, const char *str )
 		++str;
 	}
 	
-	return iphoneDrawArialText( x - width/2, y, scale, strcopy );
+	float scaledX = x - width / 2;
+	float scaledY = y;
+	ScalePosition( &scaledX, &scaledY );
+	
+	return iphoneDrawArialText( scaledX, scaledY, scale, strcopy );
 }
 /*
  ==================
@@ -450,6 +491,7 @@ int iphoneCenterArialText( int x, int y, float scale, const char *str )
  ==================
  */
 int iphoneDrawArialTextInBox( rect_t paragraph, int lineLength, const char *str, rect_t boxRect ) {
+	
 	int l = strlen( str );
 	int	i;
 	
@@ -552,14 +594,14 @@ int iphoneDrawArialTextInBox( rect_t paragraph, int lineLength, const char *str,
 		pfglTexCoord2f( x0, y0 );
 		pfglVertex2i( x, y + yoff);
 		
-		pfglTexCoord2f( x1, y0 );
-		pfglVertex2i( x+width, y + yoff);
+		pfglTexCoord2f( x0, y1);
+		pfglVertex2i( x, y+height + yoff);
 		
 		pfglTexCoord2f( x1, y1);
 		pfglVertex2i( x+width, y+height + yoff );
 		
-		pfglTexCoord2f( x0, y1);
-		pfglVertex2i( x, y+height + yoff);		
+		pfglTexCoord2f( x1, y0 );
+		pfglVertex2i( x+width, y + yoff);
 		
 		x += glyph->xadvance * scale + 1;
 		
@@ -608,14 +650,15 @@ int iphoneDrawText( int x, int y, int width, int height, const char *str ) {
 		pfglTexCoord2f( fcol, frow );							
 		pfglVertex2i( x, y );
 		
-		pfglTexCoord2f( fcol+myfont->wFrac, frow );					
-		pfglVertex2i( x+width, y );
+		pfglTexCoord2f( fcol, frow+myfont->hFrac );
+		pfglVertex2i( x, y+height );	
 		
 		pfglTexCoord2f( fcol+myfont->wFrac, frow+myfont->hFrac );	
 		pfglVertex2i( x+width, y+height );
 		
-		pfglTexCoord2f( fcol, frow+myfont->hFrac );
-		pfglVertex2i( x, y+height );			
+		pfglTexCoord2f( fcol+myfont->wFrac, frow );					
+		pfglVertex2i( x+width, y );
+				
 	}
 	
 	pfglEnd();
@@ -644,8 +687,11 @@ void iphoneDrawTextWithColor( rect_t rect, const char *str, float colors[4] ) {
  */
 void iphoneDrawMapName( rect_t rect, const char *str ) {
 	
+	
 	rect.y += 25;
 	rect.x += 110;//80;
+	
+	rectFloat_t rectFloat = MakeScaledRectFloat( rect.x, rect.y, rect.width, rect.height );
 	/*
 	float colors[4] =  { 0, 0, 0, 1 };
 	iphoneDrawTextWithColor(RectMake(rect.x+1, rect.y+1, rect.width, rect.height), str, colors);
@@ -657,11 +703,11 @@ void iphoneDrawMapName( rect_t rect, const char *str ) {
 	*/
 	
 	pfglColor4f(0, 0, 0, 1);
-	iphoneDrawArialText(rect.x + 1, rect.y + 1, 0.9f, str);
-	iphoneDrawArialText(rect.x + 2, rect.y + 2, 0.9f, str);
+	iphoneDrawArialText(rectFloat.x + 1, rectFloat.y + 1, 0.9f, str);
+	iphoneDrawArialText(rectFloat.x + 2, rectFloat.y + 2, 0.9f, str);
 	pfglColor4f(225.0f/255, 166.0f/255, 0, 1);
 	pfglColor4f(225.0f/255, 242.0f/255, 0, 1);
-	iphoneDrawArialText(rect.x, rect.y, 0.9f, str);
+	iphoneDrawArialText(rectFloat.x, rectFloat.y, 0.9f, str);
 	pfglColor4f(1, 1, 1, 1);
 }
 
@@ -737,14 +783,14 @@ int iphoneDrawTextInBox( rect_t paragraph, int lineLength, const char *str, rect
 		pfglTexCoord2f( fcol, frow );							
 		pfglVertex2i( x, y );
 		
-		pfglTexCoord2f( fcol+myfont->wFrac, frow );					
-		pfglVertex2i( x+width, y );
+		pfglTexCoord2f( fcol, frow+myfont->hFrac );
+		pfglVertex2i( x, y+height );
 		
 		pfglTexCoord2f( fcol+myfont->wFrac, frow+myfont->hFrac );	
 		pfglVertex2i( x+width, y+height );
 		
-		pfglTexCoord2f( fcol, frow+myfont->hFrac );
-		pfglVertex2i( x, y+height );			
+		pfglTexCoord2f( fcol+myfont->wFrac, frow );					
+		pfglVertex2i( x+width, y );
 	}
 	
 	pfglEnd();
@@ -752,7 +798,136 @@ int iphoneDrawTextInBox( rect_t paragraph, int lineLength, const char *str, rect
 	return l * step;
 }
 
+/*
+ ==================
+ ScaleToScreen
+ 
+ Scales a value for the current resolution.
+ ==================
+ */
+void ScaleToScreen( int * value ) {
+	if ( value ) {
+		*value *= screenScale;
+	}
+}
 
+/*
+ ==================
+ ScalePosition
+ 
+ Scales an x, y position for the current resolution.
+ ==================
+ */
+void ScalePosition( float * x, float * y ) {
+	if ( x ) {
+		*x *= screenScale;
+		*x += ( viddef.width - ( REFERENCE_WIDTH * screenScale ) ) / 2.0f; 
+	}
+	
+	if ( y ) {
+		*y *= screenScale;
+		*y += ( viddef.height - ( REFERENCE_HEIGHT * screenScale ) ) / 2.0f;
+	}
+}
+
+/*
+ ==================
+ ScalePositionInt
+ 
+ Scales an x, y position for the current resolution.
+ ==================
+ */
+void ScalePositionInt( int * x, int * y ) {
+	if ( x ) {
+		*x *= screenScale;
+		*x += ( viddef.width - ( REFERENCE_WIDTH * screenScale ) ) / 2.0f; 
+	}
+	
+	if ( y ) {
+		*y *= screenScale;
+		*y += ( viddef.height - ( REFERENCE_HEIGHT * screenScale ) ) / 2.0f;
+	}	
+}
+
+/*
+ ==================
+ ScalePositionAndSize
+ 
+ Scales an x, y, width, and height set for the current resolution.
+ ==================
+ */
+void ScalePositionAndSize( float * x, float * y, float * w, float * h ) {	
+	ScalePosition( x, y );
+	
+	if ( w ) {
+		*w *= screenScale;
+	}
+	
+	if ( h ) {
+		*h *= screenScale;
+	}
+}
+
+/*
+ ==================
+ ScalePositionAndSizeInt
+ 
+ Scales an x, y, width, and height set for the current resolution.
+ ==================
+ */
+void ScalePositionAndSizeInt( int * x, int * y, int * w, int * h ) {	
+	ScalePositionInt( x, y );
+	
+	if ( w ) {
+		*w *= screenScale;
+	}
+	
+	if ( h ) {
+		*h *= screenScale;
+	}
+}
+
+/*
+ ==================
+ ScaleRect
+ 
+ Scales a rect for the current resolution.
+ ==================
+ */
+void ScaleRect( rect_t * rect ) {
+	if ( rect ) {
+		ScalePositionInt( &(rect->x), &(rect->y) );
+		rect->width *= screenScale;
+		rect->height *= screenScale;
+	}
+}
+
+
+/*
+ ==================
+ ScaleRectFloat
+ 
+ Scales a rect for the current resolution.
+ ==================
+ */
+void ScaleRectFloat( rectFloat_t * rect ) {
+	if ( rect ) {
+		ScalePositionAndSize( &rect->x, &rect->y, &rect->width, &rect->height );
+	}
+}
+
+/*
+ ==================
+ MakeScaledRectFloat
+ 
+ Produces a scaled rect for the current resolution.
+ ==================
+ */
+rectFloat_t MakeScaledRectFloat( float x, float y, float width, float height ) {
+	rectFloat_t rect = { x, y, width, height };
+	ScaleRectFloat( &rect );
+	return rect;
+}
 
 /*
  ==================
@@ -762,6 +937,8 @@ int iphoneDrawTextInBox( rect_t paragraph, int lineLength, const char *str, rect
  ==================
  */
 int	TouchDown( int x, int y, int w, int h ) {
+	//ScalePositionAndSize( &x, &y, &w, &h );
+	
 	int	i;
 	for ( i = 0 ; i < numTouches ; i++ ) {
 		if ( touches[i][0] >= x && touches[i][1] >= y
@@ -781,6 +958,8 @@ int	TouchDown( int x, int y, int w, int h ) {
  ==================
  */
 int	TouchReleased( int x, int y, int w, int h ) {
+	//ScalePositionAndSize( &x, &y, &w, &h );
+	
 	int	i;
 	int	downPrev = 0;
 	int downNow = 0;
@@ -830,40 +1009,28 @@ int	TouchReleased( int x, int y, int w, int h ) {
 
 /*
  ==================
- iphoneRotateForLandscape
- 
- ==================
- */
-void iphoneRotateForLandscape() {
-	if ( revLand->value ) {
-		// reverse landscape mode
-		pfglRotatef( -90, 0, 0, 1 );
-	} else {
-		pfglRotatef( 90, 0, 0, 1 );
-	}
-}
-
-/*
- ==================
  iphoneSet2D
  
  ==================
  */
 void iphoneSet2D( void ) {
-	pfglViewport( 0,0, 480, 320 );
 	pfglMatrixMode( GL_MODELVIEW );
     pfglLoadIdentity();
 	pfglDisable( GL_DEPTH_TEST );
-	pfglDisable( GL_CULL_FACE );
-	pfglEnable( GL_BLEND );
-	pfglBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-	pfglDisable( GL_ALPHA_TEST );
+	
+	static bool doBlending = true;
+	if ( doBlending ) {
+		pfglEnable( GL_BLEND );
+	} else {
+		pfglDisable( GL_BLEND );
+	}
+	
 	pfglColor4f( 1,1,1,1 );
 	
 	pfglMatrixMode( GL_PROJECTION );
     pfglLoadIdentity();
 	iphoneRotateForLandscape();
-	pfglOrtho( 0, 480, 320, 0, -99999, 99999 );
+	pfglOrtho( 0, viddef.width, viddef.height, 0, -99999, 99999 );
 }
 
 
@@ -902,6 +1069,9 @@ float	AxisHit( hudPic_t *hud ) {
 	int y = hud->y;
 	int width = hud->width;
 	int height = hud->width;
+	
+	//ScalePositionAndSize( &x, &y, &width, &height );
+	
 	float activeFraction = 0.8f;
 	int	i;
 	int isXaxis = ( hud != &huds.forwardStick );
@@ -955,33 +1125,6 @@ float	AxisHit( hudPic_t *hud ) {
 	return 0;
 }
 
-void iphoneTouchEvent( int _numTouches, int _touches[16] ) {
-	numTouches = _numTouches;
-	for ( int i = 0 ; i < numTouches ; i++ ) {
-		if ( revLand->value ) {
-			touches[i][0] = _touches[i*2+1];
-			touches[i][1] = 319 - _touches[i*2+0];
-		} else {
-			touches[i][0] = 479 - _touches[i*2+1];
-			touches[i][1] = _touches[i*2+0];
-		}
-	}
-}
-
-void iphoneCheckForLandscapeReverse() {
-	static int reverseCount;
-	
-	// if we stay significantly negative for half a second, flip orientation
-	if ( tiltPitch < -0.35 ) {
-		if ( ++reverseCount > 10 ) {
-			Cvar_SetValue( revLand->name, !revLand->value );
-			SysIPhoneSetUIKitOrientation( revLand->value );
-		}
-	} else {
-		reverseCount = 0;
-	}
-}
-
 void iphoneTiltEvent( float *tilts ) {
 	int		i;
 	int		j;
@@ -989,7 +1132,7 @@ void iphoneTiltEvent( float *tilts ) {
 	float	sum[3];
 	static float prevTime;
 
-	if ( revLand->value ) {
+	if ( deviceOrientation == ORIENTATION_LANDSCAPE_RIGHT ) {
 		tilts[1] = -tilts[1];
 		tilts[0] = -tilts[0];
 	}
@@ -1087,7 +1230,7 @@ PRIVATE void CreateIphoneUserCmd()
 	float	stickTurnValue;
 	float	stickMoveValue;
 	
-	stickTurnValue = stickTurnBase->value + stickTurnScale->value * sensitivity->value;
+	stickTurnValue = ( stickTurnBase->value + stickTurnScale->value * sensitivity->value );
 	stickMoveValue = stickMoveBase->value + stickMoveScale->value * sensitivity->value;
 	
 	usercmd_t *cmd = &Player.cmd;
@@ -1122,18 +1265,38 @@ PRIVATE void CreateIphoneUserCmd()
 	}
 #endif
 
+	int weaponSwitchWidth = weaponWidth * 0.625f;   
+
 	// tapping the weapon issues the nextWeapon impulse
-	if ( TouchReleased( 240 - 40, 320 - 80 - 64, 80, 64 ) ) {
+	if ( TouchReleased( (viddef.width / 2) - ( weaponSwitchWidth / 2 ),
+						viddef.height - faceHeight - ( weaponHeight / 2 ),
+						weaponSwitchWidth,
+						weaponHeight / 2 ) ) {
 		cmd->buttons |= BUTTON_CHANGE_WEAPON;
 	}
 	
-	cmd->forwardmove = -stickMoveValue * AxisHit( &huds.forwardStick );
-	cmd->sidemove = stickMoveValue * AxisHit( &huds.sideStick );
-	Player.position.angle += -stickTurnValue * AxisHit( &huds.turnStick );
+	float forwardAxisHit = AxisHit( &huds.forwardStick );
+	float sideAxisHit = AxisHit( &huds.sideStick );
+	float turnAxisHit = AxisHit( &huds.turnStick );
+	
+	static bool printSticks = false;
+	
+	if ( printSticks ) {
+		printf( "Forward: %.4f \nSide: %.4f\nTurn: %.4f\n", forwardAxisHit, sideAxisHit, turnAxisHit );
+	}
+	
+	cmd->forwardmove = -stickMoveValue * forwardAxisHit;
+	cmd->sidemove = stickMoveValue * sideAxisHit;
+	Player.position.angle += -stickTurnValue * turnAxisHit * tics;
 
 	// accelerometer tilting
 	cmd->sidemove += tiltMove->value * DeadBandAdjust( tilt, tiltDeadBand->value );
-	Player.position.angle -= tiltTurn->value * DeadBandAdjust( tilt, tiltDeadBand->value );
+	
+	
+	// Multiply by 0.5 and tics because the original calculation was for 30Hz.
+	// The multiplication allows this calculation to scale with different framerates while
+	// maintaining the same behavior at 30Hz.
+	Player.position.angle -= tiltTurn->value * DeadBandAdjust( tilt, tiltDeadBand->value ) * 0.5f * tics;
 	
 	// always use
 	if ( iphoneFrameNum & 1 ) {
@@ -1171,11 +1334,14 @@ void iphoneHighlightPicNumWhenTouched( int x, int y, int w, int h, int glTexNum 
 void iphoneDrawWeapon( void ) {
 	char name[ 32 ];
 	texture_t *tex;	
-	static int w = 128;
-	static int h = 128;
-	int x = (viddef.width - w ) >> 1;
-	int y = viddef.height - 80 - h;
+	float w = 128 * screenScale;
+	float h = 128 * screenScale;
+	float x = (viddef.width - w ) / 2.0f;
+	float y = viddef.height - ( HUD_FACE_HEIGHT * screenScale ) - h;
 	int	frame;
+	
+	weaponWidth = w;
+	weaponHeight = h;
 	
 	if ( gunFrame->value ) {
 		// screenshots look better with the muzzle flash
@@ -1189,12 +1355,12 @@ void iphoneDrawWeapon( void ) {
 
 	R_Bind( tex->texnum );
 
-	pfglBegin( GL_QUADS );
+	pfglBegin( GL_TRIANGLE_STRIP );
 	
-	pfglTexCoord2f( 0.01f, 0.01f );	pfglVertex2i( x, y );
-	pfglTexCoord2f( 0.99f, 0.01f );	pfglVertex2i( x + w, y );
-	pfglTexCoord2f( 0.99f, 0.99f );	pfglVertex2i( x + w, y + h );
-	pfglTexCoord2f( 0.01f, 0.99f );	pfglVertex2i( x, y + h );
+	pfglTexCoord2f( 0.01f, 0.01f );	pfglVertex2f( x, y );
+	pfglTexCoord2f( 0.01f, 0.99f );	pfglVertex2f( x, y + h );
+	pfglTexCoord2f( 0.99f, 0.01f );	pfglVertex2f( x + w, y );
+	pfglTexCoord2f( 0.99f, 0.99f );	pfglVertex2f( x + w, y + h );
 	
 	pfglEnd();
 }
@@ -1207,6 +1373,8 @@ void iphoneDrawWeapon( void ) {
  ==================
  */
 void iphoneDrawNumber( int x, int y, int number, int charWidth, int charHeight ) {	
+	//ScalePositionAndSize( &x, &y, &charWidth, &charHeight );
+	
 	texture_t *tex;
 	int i;
 	char string[ 20 ];
@@ -1226,12 +1394,12 @@ void iphoneDrawNumber( int x, int y, int number, int charWidth, int charHeight )
 		tex = numberPics[digit];
 		
 		R_Bind( tex->texnum );
-		pfglBegin( GL_QUADS );
+		pfglBegin( GL_TRIANGLE_STRIP );
 		
 		pfglTexCoord2f( 0, 0 );	pfglVertex2i( x, y );
+		pfglTexCoord2f( 0, 1 );	pfglVertex2i( x, y+charHeight );
 		pfglTexCoord2f( 1, 0 );	pfglVertex2i( x+charWidth, y );
 		pfglTexCoord2f( 1, 1 );	pfglVertex2i( x+charWidth, y+charHeight );
-		pfglTexCoord2f( 0, 1 );	pfglVertex2i( x, y+charHeight );
 		
 		pfglEnd();
 		x += charStep;
@@ -1247,22 +1415,31 @@ void iphoneDrawNumber( int x, int y, int number, int charWidth, int charHeight )
  */
 void iphoneDrawFace() {
 	int i;
-	int w = 64;
-	int h = 80;
-	int x = (viddef.width - w ) >> 1;
-	int y = viddef.height - h;
+	float w = HUD_FACE_WIDTH * screenScale;
+	float h = HUD_FACE_HEIGHT * screenScale;
 	const char *pic;
+	const int halfScreenWidth = viddef.width / 2.0f;
 
+	faceWidth = 128.0f * screenScale;
+	float halfFaceWidth = faceWidth / 2.0f;
+	faceHeight = 80.0f * screenScale;
+
+	float keyY = 72.0f * screenScale;
+	float keyWidth = 32.0f * screenScale;
+	float keyHeight = 64.0f * screenScale;
+	
+	float damageWidth = 40.0f * screenScale;
+	
 	// solid background
-	iphoneDrawPic( 240 - 64, 320 - 80, 128, 80, "iphone/status_hud.tga" );
+	iphoneDrawPicFloat( halfScreenWidth - halfFaceWidth, viddef.height - faceHeight, faceWidth, faceHeight, "iphone/status_hud.tga" );
 
 	// keys on the side
 	if( Player.items & ITEM_KEY_1 ) {
-		iphoneDrawPic( 240-64, 320-72, 32, 64, "iphone/gold_key.tga" );
+		iphoneDrawPicFloat( halfScreenWidth - halfFaceWidth, viddef.height - keyY, keyWidth, keyHeight, "iphone/gold_key.tga" );
 	}
 	
 	if( Player.items & ITEM_KEY_2 ) {
-		iphoneDrawPic( 240+32, 320-72, 32, 64, "iphone/silver_key.tga" );
+		iphoneDrawPicFloat( halfScreenWidth + halfFaceWidth - keyWidth, viddef.height - keyY, keyWidth, keyHeight, "iphone/silver_key.tga" );
 	}
 	
 	
@@ -1312,7 +1489,7 @@ void iphoneDrawFace() {
 		pic = mugshotnames[ 21 ];
 	}
 
-	iphoneDrawPic( x, y, w, h, pic );
+	iphoneDrawPicFloat( halfScreenWidth - w / 2.0f, (float)(viddef.height) - faceHeight, w, h, pic );
 		
 	// blend the right / left damage indicators on the side
 	for ( i = 0 ; i < 2 ; i++ ) {
@@ -1332,15 +1509,22 @@ void iphoneDrawFace() {
 		}
 		pfglColor4f( 1, 1, 1, f );
 		if ( i == 0 ) {
-			iphoneDrawPic( 240 - 64, 320 - 80, 40, 80, "iphone/L_damage.tga" );
+			iphoneDrawPicFloat( halfScreenWidth - halfFaceWidth,
+								(float)(viddef.height) - faceHeight,
+								damageWidth, faceHeight, "iphone/L_damage.tga" );
 		} else {
-			iphoneDrawPic( 240 + 64 - 40, 320 - 80, 40, 80, "iphone/R_damage.tga" );
+			iphoneDrawPicFloat( halfScreenWidth + halfFaceWidth - damageWidth,
+								(float)viddef.height - faceHeight,
+								damageWidth, faceHeight, "iphone/R_damage.tga" );
 		}
 		pfglColor4f( 1, 1, 1, 1 );
 	}
 	
+	float healthWidth = 16 * screenScale;
+	float healthHeight = 16 * screenScale;
+	
 	// draw the tiny health numbers on top of the face
-	iphoneDrawNumber( 240, 304, Player.health, 16, 16 );
+	iphoneDrawNumber( halfScreenWidth, viddef.height - healthHeight, Player.health, healthWidth, healthHeight );
 }
 
 /*
@@ -1422,7 +1606,8 @@ void iphoneDrawReturnButton() {
 		f = 0.5f;
 
 	pfglColor4f( 1, 1, 1, f );
-	if (iphoneDrawPicWithTouch( 240-32, 32, 64, 48, "iphone/button_back.tga")) {//int x, int y, int w, int h, const char *pic )) {
+	if (iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 240.0f-32.0f, 32.0f, BACK_BUTTON_WIDTH, BACK_BUTTON_HEIGHT ),
+									"iphone/button_back.tga")) {//int x, int y, int w, int h, const char *pic )) {
 		menuState = IPM_MAPS;
 		returnButtonFrameNum = 0;
 		
@@ -1445,6 +1630,8 @@ void iphoneDrawReturnButton() {
 				episode->value = 9;
 			}
 		}
+		
+		iphoneStartPreviousMenu();
 	}
 	pfglColor4f( 1, 1, 1, 1 );
 	
@@ -1552,6 +1739,10 @@ iphoneFrame
 ==================
 */
 void iphoneFrame() {
+	// clear depth buffer
+	qglDepthMask( GL_TRUE );
+	pfglClear( GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT );
+	
 	unsigned char blendColor[4] = { 0, 0, 0, 0 };
 	
 	iphoneFrameNum++;
@@ -1566,14 +1757,16 @@ void iphoneFrame() {
 	
 	// toggle / scroll down the console
 	Client_Screen_RunConsole();
-
-	// check for flipping the phone orientation
-	iphoneCheckForLandscapeReverse();
 	
-	// fixed frame timing, assume we go 30hz
-	tics = 2;		// wolf's global rate counter
+	// fixed frame timing, assume we go 60Hz
+	tics = DEFAULT_FRAME_INTERVAL;		// wolf's global rate counter
 	
+	CFAbsoluteTime soundStartTime = CFAbsoluteTimeGetCurrent();
 	Sound_Update( vnull, vnull, vnull, vnull );
+	CFAbsoluteTime soundEndTime = CFAbsoluteTimeGetCurrent();
+	soundTime = soundEndTime - soundStartTime;
+	
+	//printf( "Sound_Update took %0.8f seconds.\n", soundTime );
 	
 	if ( consoleActive ) {	
 		iphoneSet2D();	
@@ -1581,16 +1774,20 @@ void iphoneFrame() {
 		Client_Screen_DrawConsole();	
 		
 		iphoneSavePrevTouches();
-		SysIPhoneSwapBuffers();
+		//SysIPhoneSwapBuffers();
 		return;
 	}
 	if ( menuState != IPM_GAME ) {
 		iphoneSet2D();
 		
-		iphoneDrawMenus();
+		CFAbsoluteTime menuStartTime = CFAbsoluteTimeGetCurrent();
+		iphoneDrawMenus( vnull, vnull, vnull, vnull );
+		CFAbsoluteTime menuEndTime = CFAbsoluteTimeGetCurrent();
+		menuTime = menuEndTime - menuStartTime;
+	
+		//printf( "iphoneDrawMenus took %0.8f seconds.\n", menuTime );
 	
 		iphoneSavePrevTouches();
-		SysIPhoneSwapBuffers();
 		return;
 	}
 
@@ -1620,10 +1817,6 @@ void iphoneFrame() {
 		
 		levelstate.time += tics;
 	}
-	
-	// clear depth buffer
-	qglDepthMask( GL_TRUE );
-	pfglClear( GL_DEPTH_BUFFER_BIT );
 
 	// fill the floor and ceiling
 	pfglDisable( GL_BLEND );
@@ -1633,7 +1826,7 @@ void iphoneFrame() {
 	pfglMatrixMode( GL_PROJECTION );
     pfglLoadIdentity();
 	iphoneRotateForLandscape();
-	pfglOrtho( 0, 480, 320, 0, -99999, 99999 );
+	pfglOrtho( 0, viddef.width, viddef.height, 0, -99999, 99999 );
 	R_Draw_Fill( 0, 0, viddef.width, viddef.height >> 1, r_world->ceilingColour );
 	R_Draw_Fill( 0, viddef.height >> 1, viddef.width, viddef.height, r_world->floorColour );
 	
@@ -1644,7 +1837,6 @@ void iphoneFrame() {
 	cur_x_fov = 75;
 	cur_y_fov = CalcFov( cur_x_fov, (float)viddef.width, (float)viddef.height );
 	
-	pfglMatrixMode( GL_PROJECTION );
 	pfglLoadIdentity();
 	iphoneRotateForLandscape();
 	MYgluPerspective( cur_y_fov - 2.0f, ratio, 0.2f, 64.0f );	// tweak fov in to avoid edge tile clips
@@ -1653,13 +1845,8 @@ void iphoneFrame() {
 	
 	pfglRotatef( (float)(90 - FINE2DEG( Player.position.angle )), 0, 1, 0 );
 	pfglTranslatef( -Player.position.origin[ 0 ] / FLOATTILE, 0, Player.position.origin[ 1 ] / FLOATTILE );
-
-	pfglCullFace( GL_BACK );
 	
 	pfglEnable( GL_DEPTH_TEST );
-	pfglEnable( GL_CULL_FACE );
-	pfglDisable( GL_BLEND );
-	pfglDisable( GL_ALPHA_TEST );
 	
 	// find and draw all the walls
 	R_RayCast( Player.position, r_world );
@@ -1668,7 +1855,7 @@ void iphoneFrame() {
 	R_DrawSprites();
 
 	// draw 2D overlays
-	iphoneSet2D();	
+	iphoneSet2D();
 	
 	// do a full screen blend for damage, death, and bonus pickup
 	if( Player.playstate == ex_dead ) {
@@ -1733,6 +1920,7 @@ void iphoneFrame() {
 	
 	if ( iphoneDrawHudButton( &huds.menu ) ) {
 		menuState = IPM_MAIN;
+		iphoneStartMainMenu();
 	}
 	if ( iphoneDrawHudButton( &huds.map ) ) {
 		iphoneOpenAutomap();
@@ -1745,7 +1933,7 @@ void iphoneFrame() {
 	
 	iphoneSavePrevTouches();
 	
-	SysIPhoneSwapBuffers();	// do the swapbuffers
+	//SysIPhoneSwapBuffers();	// do the swapbuffers
 	
 }
 
@@ -1759,7 +1947,7 @@ void iphoneDrawLoading()
 	//draw stuff here
 	iphoneDrawText(100, 100, 16, 16, "Drawing Loading!");//, <#int y#>, <#int width#>, <#int height#>, <#const char * str#>)
 	
-	SysIPhoneSwapBuffers();	// do the swapbuffers	
+	//SysIPhoneSwapBuffers();	// do the swapbuffers	
 }
 
 

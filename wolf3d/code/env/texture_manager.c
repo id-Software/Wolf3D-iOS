@@ -349,6 +349,19 @@ PUBLIC texture_t *TM_LoadTexture( const char *name, W8 *data, int width, int hei
 		TM_ResampleTexture( data, tex->width, tex->height, scaled, scaled_width, scaled_height, tex->bytes, INTERPOLATION_NONE );
 	}
 	
+	pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, WrapToGL( tex->WrapS ) );
+	pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, WrapToGL( tex->WrapT ) );
+	pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, MinFilterToGL( tex->MipMap, tex->MinFilter ) );
+	pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, MagFilterToGL( tex->MagFilter ) );		
+	
+#ifdef IPHONE
+	if ( type == TT_Wall ) {
+		pfglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2.0f );
+	} else {
+		pfglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f );
+	}
+#endif
+	
 	{
 		// upload base image	
 		GLenum internalFormat[] = { GL_LUMINANCE, GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA };
@@ -379,20 +392,6 @@ PUBLIC texture_t *TM_LoadTexture( const char *name, W8 *data, int width, int hei
 	if ( scaled != data ) {
 		Z_Free( scaled );
 	}
-	
-	pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, WrapToGL( tex->WrapS ) );
-	pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, WrapToGL( tex->WrapT ) );
-	pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, MinFilterToGL( tex->MipMap, tex->MinFilter ) );
-	pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, MagFilterToGL( tex->MagFilter ) );		
-	
-#ifdef IPHONE
-	if ( type == TT_Wall ) {
-		pfglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2.0f );
-	} else {
-		pfglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 0 );
-	}
-#endif
-	
 
 	return tex;
 }
@@ -486,7 +485,8 @@ PUBLIC texture_t *TM_FindTexture( const char *name, texturetype_t type )
 	// load the texture from disk
 	//
 	data = NULL;
-	if( strcmp( name + len - 4, ".tga" ) ) {
+	const char* const extension = name + len - 4;
+	if( strcmp( extension, ".tga" ) && strcmp( extension, ".png" ) ) {
 		return r_notexture;
 	}
 
@@ -537,6 +537,23 @@ PUBLIC texture_t *TM_FindTexture( const char *name, texturetype_t type )
 		tx->maxS = (float)ph->srcWidth / ph->uploadWidth;
 		tx->maxT = (float)ph->srcHeight / ph->uploadHeight;
 		unsigned char *s = (unsigned char *)(ph+1);
+		
+		if ( noMips ) {
+			pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		} else {
+			pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST );
+		}
+		pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		
+		if ( type == TT_Wall ) {
+			pfglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2.0f );
+			pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+		} else {
+			pfglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 1.0f );
+			pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		}
+		pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+		
 		while( 1 ) {
 			int	size = (w*h*fi->bpp)/8;
 			if ( fi->bpp < 16 ) {
@@ -568,26 +585,27 @@ PUBLIC texture_t *TM_FindTexture( const char *name, texturetype_t type )
 		   }
 		}
 		FS_CloseFile( fh );
-		if ( noMips ) {
-			pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-		} else {
-			pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
-		}
-		pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		
-		if ( type == TT_Wall ) {
-			pfglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 2.0f );
-			pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-		} else {
-			pfglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 0 );
-			pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-		}
-		pfglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 		return tx;
 	}
 
-	// load a normal TGA
-	LoadTGA( name, &data, &width, &height, &bytes );
+	// load a normal PNG or TGA. Prioritize PNGs, if not found, fall back to TGA.
+	size_t filenameLength = strlen( name );
+	char * pngName = MM_MALLOC( filenameLength );
+	strcpy( pngName, name );
+	strcpy( pngName + filenameLength - 3, "png" );
+	
+	// Try to load a PNG version.
+	LoadPNG( pngName, &data, &width, &height, &bytes );
+	
+	MM_FREE( pngName );
+	pngName = NULL;
+	
+	//  Try finding a TGA if the PNG load failed.
+	if ( ( data == NULL ) && strcmp( extension, ".tga" ) == 0 ) {
+		LoadTGA( name, &data, &width, &height, &bytes );
+	}
+	
 	if ( data ) {
 		tex = TM_LoadTexture( name, data, width, height, type, bytes );
 		MM_FREE( data );

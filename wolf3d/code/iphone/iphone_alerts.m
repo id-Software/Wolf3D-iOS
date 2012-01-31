@@ -1,14 +1,9 @@
 /*
- *  iphone_alerts.c
- *  wolf3d
- *
- *  Created by Greg Hodges on 7/14/09.
- *  Copyright 2009 id software. All rights reserved.
- *
- */
-/*
  
- Copyright (C) 2009 Id Software, Inc.
+ Copyright (C) 2009-2011 id Software LLC, a ZeniMax Media company. 
+
+ This file is part of the WOLF3D iOS v2.1 GPL Source Code. 
+
  
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -25,7 +20,6 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  
  */
-
 
 #import "iphone_alerts.h"
 #import "wolf3dAppDelegate.h"
@@ -70,6 +64,34 @@ void iphoneKillMessageBox()
 {
 	[alert dismissWithClickedButtonIndex:alert.cancelButtonIndex animated:NO];
 }
+
+/*
+ ========================
+ iphoneNewMessageBox()
+ creates a new message box without
+ drestroying the old one
+ ========================
+ */
+void iphoneNewMessageBox(char *title, char *message)
+{
+	UIAlertView *newAlert;
+	newAlert = [[UIAlertView alloc] initWithTitle:@"Title" 
+									   message:@"Message"
+									  delegate:nil 
+							 cancelButtonTitle:@"OK" 
+							 otherButtonTitles: nil];
+	
+	
+	NSString *nsTitle = [[NSString alloc] initWithCString:title];
+	NSString *nsMessage = [[NSString alloc] initWithCString:message];
+	
+	newAlert.title = nsTitle;
+	newAlert.message = nsMessage;
+	
+	[newAlert show];
+	[newAlert release];
+}
+
 
 #if 1
 /*

@@ -1,6 +1,9 @@
 /*
  
- Copyright (C) 2009 Id Software, Inc.
+ Copyright (C) 2009-2011 id Software LLC, a ZeniMax Media company. 
+
+ This file is part of the WOLF3D iOS v2.1 GPL Source Code. 
+
  
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -17,10 +20,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  
  */
+ 
+ 
+
 //gsh
 //#define NUM_TOUCHFRAME 10
 
 #include "../wolfiphone.h"
+#include "iphone_store.h"
 
 int		intermissionStartFrameNum;
 int		hasReleased;
@@ -39,7 +46,6 @@ extern const unsigned int DownloadUserFileSize;
 //--------------
 //gsh
 int wasDLInstructionsCalledFromEpisodeMenu = 0;
-int wasCalledFromDownloadInstructionsMenu = 0;
 /*
  =========================
  iphoneSetLevelNotifyText
@@ -113,16 +119,84 @@ rect_t RectMake(int x, int y, int width, int height)
  ==================
  */
 void iphoneDrawPicNum( int x, int y, int w, int h, int glTexNum ) {
+	//ScalePositionAndSize( &x, &y, &w, &h );
+	
 	R_Bind( glTexNum );
-	pfglBegin( GL_QUADS );
+	pfglBegin( GL_TRIANGLE_STRIP );
 
 	pfglTexCoord2f( 0.0f, 0.0f );	pfglVertex2i( x, y );
+	pfglTexCoord2f( 0.0f, 1.0f );	pfglVertex2i( x, y+h );
 	pfglTexCoord2f( 1.0f, 0.0f );	pfglVertex2i( x+w, y );
 	pfglTexCoord2f( 1.0f, 1.0f );	pfglVertex2i( x+w, y+h );
-	pfglTexCoord2f( 0.0f, 1.0f );	pfglVertex2i( x, y+h );
 
 	pfglEnd();
 }
+
+typedef struct drawPicTiming_tag {
+	CFAbsoluteTime totalTime;
+	CFAbsoluteTime bindTime;
+	CFAbsoluteTime endTime;
+	CFAbsoluteTime findTexTime;
+	const char * pic;
+} drawPicTiming;
+
+#define NUM_PIC_TIMINGS 16
+
+static drawPicTiming picTimings[NUM_PIC_TIMINGS];
+int curPic = 0;
+
+void picTimingPrint() {
+	for ( int i = 0; i < NUM_PIC_TIMINGS; ++i) {
+		if ( picTimings[i].pic != NULL ) {
+			printf( "  iphoneDrawPic took %0.6f seconds. %s\n", picTimings[i].totalTime, picTimings[i].pic );
+			if ( picTimings[i].totalTime > 0.01 ) {
+				printf( "    R_Bind took %0.6f seconds.\n", picTimings[i].bindTime );
+				printf( "    pfglEnd took %0.6f seconds.\n", picTimings[i].endTime );
+				printf( "    TM_FindTexture took %0.6f seconds.\n", picTimings[i].findTexTime );
+			}
+		}
+	}
+}
+
+void picTimingClear() {
+	for ( int i = 0; i < NUM_PIC_TIMINGS; ++i) {
+		picTimings[i].pic = NULL;
+	}
+	
+	curPic = 0;
+}
+
+/*
+ ==================
+ iphoneDrawPicFloat
+ 
+ ==================
+ */
+void iphoneDrawPicFloat( float x, float y, float w, float h, const char *pic ) {
+	texture_t *gl;
+	
+	gl = TM_FindTexture( pic, TT_Pic );
+	
+	if( ! gl ) {
+		Com_Printf( "Can't find pic: %s\n", pic );
+		return;
+	}
+
+	R_Bind( gl->texnum );
+	
+	pfglBegin( GL_TRIANGLE_STRIP );
+	
+	pfglTexCoord2f( 0.0f, 0.0f );	pfglVertex2f( x, y );
+	pfglTexCoord2f( 0.0f, gl->maxT );	pfglVertex2f( x, y+h );
+	pfglTexCoord2f( gl->maxS, 0.0f );	pfglVertex2f( x+w, y );
+	pfglTexCoord2f( gl->maxS, gl->maxT );	pfglVertex2f( x+w, y+h );
+	
+	pfglEnd();
+}
+
+#define DRAWPIC_PROFILING 0
+//#define DRAWPIC_PROFILING 1
+
 
 /*
  ==================
@@ -131,23 +205,77 @@ void iphoneDrawPicNum( int x, int y, int w, int h, int glTexNum ) {
  ==================
  */
 void iphoneDrawPic( int x, int y, int w, int h, const char *pic ) {
+		
 	texture_t *gl;
-	
+
+#if DRAWPIC_PROFILING
+	CFAbsoluteTime picStartTime = CFAbsoluteTimeGetCurrent();
+	CFAbsoluteTime texStartTime = CFAbsoluteTimeGetCurrent();
+#endif
+
 	gl = TM_FindTexture( pic, TT_Pic );
+
+#if DRAWPIC_PROFILING
+	CFAbsoluteTime texEndTime = CFAbsoluteTimeGetCurrent();
+	CFAbsoluteTime texTime = texEndTime - texStartTime;
+#endif
+
 	if( ! gl ) {
 		Com_Printf( "Can't find pic: %s\n", pic );
 		return;
 	}
 
+#if DRAWPIC_PROFILING
+	CFAbsoluteTime bindStartTime = CFAbsoluteTimeGetCurrent();
+#endif
+
 	R_Bind( gl->texnum );
-	pfglBegin( GL_QUADS );
+	
+#if DRAWPIC_PROFILING
+	CFAbsoluteTime bindEndTime = CFAbsoluteTimeGetCurrent();
+	CFAbsoluteTime bindTime = bindEndTime - bindStartTime;
+#endif
+
+	pfglBegin( GL_TRIANGLE_STRIP );
 	
 	pfglTexCoord2f( 0.0f, 0.0f );	pfglVertex2i( x, y );
+	pfglTexCoord2f( 0.0f, gl->maxT );	pfglVertex2i( x, y+h );
 	pfglTexCoord2f( gl->maxS, 0.0f );	pfglVertex2i( x+w, y );
 	pfglTexCoord2f( gl->maxS, gl->maxT );	pfglVertex2i( x+w, y+h );
-	pfglTexCoord2f( 0.0f, gl->maxT );	pfglVertex2i( x, y+h );
 	
+
+#if DRAWPIC_PROFILING	
+	CFAbsoluteTime endStartTime = CFAbsoluteTimeGetCurrent();
+#endif
+
 	pfglEnd();
+	
+#if DRAWPIC_PROFILING
+	CFAbsoluteTime endEndTime = CFAbsoluteTimeGetCurrent();
+	CFAbsoluteTime endTime = endEndTime - endStartTime;
+	
+	CFAbsoluteTime picEndTime = CFAbsoluteTimeGetCurrent();
+	CFAbsoluteTime picTime = picEndTime - picStartTime;
+	
+	if ( curPic < NUM_PIC_TIMINGS ) {
+		picTimings[curPic].totalTime = picTime;
+		picTimings[curPic].bindTime = bindTime;
+		picTimings[curPic].endTime = endTime;
+		picTimings[curPic].findTexTime = texTime;
+		picTimings[curPic].pic = pic;
+		curPic++;
+	}
+#endif
+}
+
+/*
+ ==================
+ iphoneDrawPicRect
+ 
+ ==================
+ */
+void iphoneDrawPicRect( rectFloat_t rect, const char *pic ) {
+	iphoneDrawPic( rect.x, rect.y, rect.width, rect.height, pic );
 }
 
 //gsh
@@ -203,15 +331,15 @@ void iphoneDrawPicInBox( rect_t drawRect, const char *pic, rect_t boxRect )
 	
 		
 	R_Bind( gl->texnum );
-	pfglBegin( GL_QUADS );
+	pfglBegin( GL_TRIANGLE_STRIP );
 	
 	//float u, v;
 	//u = ((float)newX)/((float)x);
 	//v = ((float)newY)/((float)y);
 	pfglTexCoord2f( u0, v0 );	pfglVertex2i( newX, newY );
+	pfglTexCoord2f( u0, v1 );	pfglVertex2i( newX, newY+newH );
 	pfglTexCoord2f( u1, v0 );	pfglVertex2i( newX+newW, newY );
 	pfglTexCoord2f( u1, v1 );	pfglVertex2i( newX+newW, newY+newH );
-	pfglTexCoord2f( u0, v1 );	pfglVertex2i( newX, newY+newH );
 	
 	pfglEnd();	
 }
@@ -238,6 +366,16 @@ int iphoneDrawPicWithTouch( int x, int y, int w, int h, const char *pic ) {
 	return r;
 }
 
+/*
+ ==================
+ iphoneDrawPicRectWithTouch
+ 
+ ==================
+ */
+int iphoneDrawPicRectWithTouch( rectFloat_t rect, const char *pic ) {
+	return iphoneDrawPicWithTouch( rect.x, rect.y, rect.width, rect.height, pic );
+}
+
 //gsh
 int iphoneDrawPicWithTouchSpecified( rect_t drawRect, rect_t touchRect,  const char *pic) {//int x, int y, int w, int h, int touchX, int touchY, int touchW, int touchH, const char *pic ) {
 	int	r = TouchReleased( touchRect.x, touchRect.y, touchRect.width, touchRect.height );
@@ -256,6 +394,9 @@ int iphoneDrawPicWithTouchSpecified( rect_t drawRect, rect_t touchRect,  const c
 }
 //gsh
 int iphoneDrawPicInBoxWithTouchSpecified( rect_t drawRect, rect_t touchRect, const char *pic, rect_t boundingRect ) {
+	ScaleRect( &drawRect );
+	ScaleRect( &touchRect );
+	ScaleRect( &boundingRect );
 	
 	//make sure touches are in drawing bounds
 	if (touchRect.x < boundingRect.x) {
@@ -290,7 +431,7 @@ int iphoneDrawPicInBoxWithTouchSpecified( rect_t drawRect, rect_t touchRect, con
 }
 
 //gsh
-int iphoneDrawPicInBoxWithTouchAndVelocity( rect_t drawRect, rect_t touchRect, const char *pic, rect_t boundingRect, int dragVelocity ) {
+int iphoneDrawPicInBoxWithTouchAndVelocity( rectFloat_t drawRect, rectFloat_t touchRect, const char *pic, rectFloat_t boundingRect, int dragVelocity ) {
 	
 	//make sure touches are in drawing bounds
 	if (touchRect.x < boundingRect.x) {
@@ -319,7 +460,9 @@ int iphoneDrawPicInBoxWithTouchAndVelocity( rect_t drawRect, rect_t touchRect, c
 	}
 	//	iphoneDrawPic( x, y, w, h, pic );
 	//	iphoneDrawPicInBox( x, y, w, h, pic, boxX, boxY, boxW, boxH  );
-	iphoneDrawPicInBox( drawRect, pic, boundingRect );
+	rect_t drawRectInt = RectMake( drawRect.x, drawRect.y, drawRect.width, drawRect.height );
+	rect_t boundingRectInt = RectMake( boundingRect.x, boundingRect.y, boundingRect.width, boundingRect.height );
+	iphoneDrawPicInBox( drawRectInt, pic, boundingRectInt );
 	//	iphoneDrawPicInBox( int x, int y, int w, int h, const char *pic, int boxX, int boxY, int boxW, int boxH )
 	if ( TouchDown( touchRect.x, touchRect.y, touchRect.width, touchRect.height ) && !dragVelocity) {
 		colour4_t color = { 255, 255, 255, 64 };
@@ -366,7 +509,7 @@ int iphoneDrawPicInBoxWithTouchSpecifiedAndColor( rect_t drawRect, rect_t touchR
 }
 
 //gsh
-int iphoneDrawPicInBoxWithTouchColorAndVelocity( rect_t drawRect, rect_t touchRect, const char *pic, rect_t boundingRect, colour4_t color, int dragVelocity ) {
+int iphoneDrawPicInBoxWithTouchColorAndVelocity( rectFloat_t drawRect, rectFloat_t touchRect, const char *pic, rectFloat_t boundingRect, colour4_t color, int dragVelocity ) {
 	
 	//make sure touches are in drawing bounds
 	if (touchRect.x < boundingRect.x) {
@@ -394,7 +537,10 @@ int iphoneDrawPicInBoxWithTouchColorAndVelocity( rect_t drawRect, rect_t touchRe
 	}
 	//	iphoneDrawPic( x, y, w, h, pic );
 	//	iphoneDrawPicInBox( x, y, w, h, pic, boxX, boxY, boxW, boxH  );
-	iphoneDrawPicInBox( drawRect, pic, boundingRect );
+	rect_t drawRectInt = RectMake( drawRect.x, drawRect.y, drawRect.width, drawRect.height );
+	rect_t boundingRectInt = RectMake( boundingRect.x, boundingRect.y, boundingRect.width, boundingRect.height );
+	
+	iphoneDrawPicInBox( drawRectInt, pic, boundingRectInt );
 	R_Draw_Blend( touchRect.x, touchRect.y, touchRect.width, touchRect.height, color );
 	//	iphoneDrawPicInBox( int x, int y, int w, int h, const char *pic, int boxX, int boxY, int boxW, int boxH )
 	if ( TouchDown( touchRect.x, touchRect.y, touchRect.width, touchRect.height ) && !dragVelocity ) {
@@ -505,12 +651,13 @@ void iphoneSlider( int x, int y, int w, int h, const char *title, cvar_t *cvar,
 	gl = TM_FindTexture( "iphone/slider_bar.tga", TT_Pic );//stat_bar_1.tga", TT_Pic );
 	assert( gl );
 	R_Bind( gl->texnum );
-	pfglBegin( GL_QUADS );
+	pfglBegin( GL_TRIANGLE_STRIP );
 	
 	pfglTexCoord2f( 0.0f, 0.0f );	pfglVertex2i( x, y );
+	pfglTexCoord2f( 0.0f, 1.0f );	pfglVertex2i( x, y+h );
 	pfglTexCoord2f( f, 0.0f );	pfglVertex2i( x+w*f, y );
 	pfglTexCoord2f( f, 1.0f );	pfglVertex2i( x+w*f, y+h );
-	pfglTexCoord2f( 0.0f, 1.0f );	pfglVertex2i( x, y+h );
+	
 	
 	pfglEnd();
 	
@@ -568,7 +715,7 @@ void iphoneSlider( int x, int y, int w, int h, const char *title, cvar_t *cvar,
  ==================
  */
 int BackButton() {	
-	if ( iphoneDrawPicWithTouch( 0, 0, 64, 36, "iphone/button_back.tga" ) ) {
+	if ( iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 0.0f, 0.0f, BACK_BUTTON_WIDTH, BACK_BUTTON_HEIGHT ), "iphone/button_back.tga" ) ) {
 		return 1;
 	}
 	return 0;
@@ -576,7 +723,7 @@ int BackButton() {
 
 //gsh... a back button on the other side of the screen
 int BackButton2() {	
-	if ( iphoneDrawPicWithTouch( 480-64, 0, 64, 36, "iphone/button_back.tga" ) ) {
+	if ( iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 480.0f-64.0f, 0.0f, 64.0f, 36.0f ), "iphone/button_back.tga" ) ) {
 		return 1;
 	}
 	return 0;
@@ -584,11 +731,11 @@ int BackButton2() {
 
 //gsh
 int BackButton3( int x, int y ) {	
-	if ( iphoneDrawPicWithTouch( x, y, 64, 36, "iphone/button_back.tga" ) ) {
+	if ( iphoneDrawPicRectWithTouch( MakeScaledRectFloat( x, y, 64.0f, 36.0f ), "iphone/button_back.tga" ) ) {
 		return 1;
 	}
 	return 0;
-}	
+}
 
 /*
  ==================
@@ -597,9 +744,10 @@ int BackButton3( int x, int y ) {
  ==================
  */
 int MenuButton() {	
-	if ( iphoneDrawPicWithTouch( 480-64, 0, 64, 36, "iphone/menu.tga" ) ) {
+	if ( iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 480.0f-64.0f, 0.0f, 64.0f, 64.0f ), "iphone/menu.tga" ) ) {
 //	if ( iphoneDrawPicWithTouch( 64, 0, 64, 36, "iphone/menu.tga" ) ) {
 //	if ( iphoneDrawPicWithTouch( 64, 0, 64, 36, "iphone/button_menu_yellow.tga" ) ) {
+		iphoneStartMainMenu();
 		return 1;
 	}
 	return 0;
@@ -607,7 +755,7 @@ int MenuButton() {
 
 
 void GetMoreLevels( int x, int y ) {
-	if ( iphoneDrawPicWithTouch( x, y, 128, 64, "iphone/button_levels.tga" ) ) {
+	if ( iphoneDrawPicRectWithTouch( MakeScaledRectFloat( x, y, 128.0f, 64.0f ), "iphone/button_levels.tga" ) ) {
 		// directly to the app store for more levels
 		SysIPhoneOpenURL( "http://phobos.apple.com/WebObjects/MZStore.woa/wa/viewSoftware?id=309470478" );
 	}
@@ -688,11 +836,17 @@ void SaveTheGame() {
 	}
 	
 	// turn the r_world->Doors.doors from pointers to indexes
-	// ok to be destructive, because we are quiting
-	for ( i = 0 ; i < r_world->Doors.doornum ; i++ ) {
+	// Can't be destructive anymore, because the app can be suspended in the background now.
+	
+	// Quick fix for non-destructiveness: Just make a copy of the levelData, convert the
+	// pointers to indices in the copy, and write the copy to the save data. Leave the actual
+	// current levelData alone.
+	LevelData_t copiedLevelData = levelData;
+	
+	for ( i = 0 ; i < copiedLevelData.Doors.doornum ; i++ ) {
 		int	index = r_world->Doors.Doors[i] - &r_world->Doors.DoorMap[0][0];
 		assert( index >= 0 && index < 4096 );
-		r_world->Doors.Doors[i] = (void *)index;
+		copiedLevelData.Doors.Doors[i] = (void *)index;
 	}
 	
 	// this is only used for the mutant death face, so just
@@ -704,7 +858,7 @@ void SaveTheGame() {
 	
 	fwrite( &huds, 1,sizeof(huds), f);
 		
-	fwrite( &levelData, 1,sizeof(levelData), f );
+	fwrite( &copiedLevelData, 1,sizeof(levelData), f );
 	fwrite( &LevelRatios, 1,sizeof(LevelRatios), f );
 	fwrite( &levelstate, 1,sizeof(levelstate), f );
 	fwrite( Guards, 1,sizeof(Guards), f );
@@ -817,7 +971,7 @@ int iphoneGetUserMapName(int mapNumber, char *mapName)
 	
 	if (dp != NULL)
 	{
-		while (ep = readdir (dp))
+		while ( ( ep = readdir (dp) ) )
 		{/*
 			//if you find a .DS_Store file... ignore it!
 			if ( strcmp(ep->d_name, ".DS_Store") == 0 )
@@ -877,7 +1031,7 @@ int iphoneGetUserMapLevelByName(const char *mapName)
 	
 	if (dp != NULL)
 	{
-		while (ep = readdir (dp))
+		while ( ( ep = readdir (dp) ) )
 		{
 			if (strcmp(ep->d_name, mapName) == 0)
 			{
@@ -988,7 +1142,11 @@ void iphoneStartUserMap( int episodeNum, int mapNum, int skillLevel, char *mapNa
 	Com_Printf("command: %s\n", command);
 	Client_PrepRefresh( command );	
 	
-	menuState = IPM_GAME;
+	if ( r_world != NULL ) {
+		menuState = IPM_GAME;
+	} else {
+		menuState = IPM_MAIN;
+	}
 }
 
 /*
@@ -1038,7 +1196,44 @@ void iphoneStartMap( int episodeNum, int mapNum, int skillLevel ) {
 	Com_Printf("command: %s\n", command);
 	Client_PrepRefresh( command );	
 	
-	menuState = IPM_GAME;
+	if ( r_world != NULL ) {
+		menuState = IPM_GAME;
+	} else {
+		menuState = IPM_MAIN;
+	}
+}
+
+extern int notifyFrameNum; //gsh
+
+/*
+ ==================
+ iphoneResume
+ 
+ ==================
+ */
+void iphoneResume() {
+	iphoneStopMenuMusic();
+	
+	//iphoneStartGameplay();
+	iphonePreloadBeforePlay();
+	
+	Sound_StartBGTrack( levelData.musicName, levelData.musicName );
+	
+	// if the game was saved at the intermission screen, immediately
+	// bring it back up when it is loaded
+	if ( currentMap.levelCompleted ) {
+		iphoneStartIntermission( 0 );
+	} else {
+		//reset the notification so that we can see which level we've loaded.. gsh
+		iphoneSetLevelNotifyText();
+		iphoneFrameNum = 0;
+		notifyFrameNum = 60;
+		if ( r_world != NULL ) {
+			menuState = IPM_GAME;
+		} else {
+			menuState = IPM_MAIN;
+		}
+	}
 }
 
 /*
@@ -1047,14 +1242,15 @@ void iphoneStartMap( int episodeNum, int mapNum, int skillLevel ) {
  
  ==================
  */
-extern int notifyFrameNum; //gsh
 void iphoneMainMenu() {	
 	char	str[80];
 	float	scale = 40 / 32.0;
 	
 	//iphoneDrawPic( 480-256, 0, 256, 128, "iphone/wolf_logo.tga" );
 	//iphoneDrawPic( 0, 0, 480, 320, "iphone/background_main.tga" ); //gsh
-	iphoneDrawPic(0, 0, 264, 250, "iphone/wolfplatinum_logo.tga");
+	
+	//iphoneDrawPicRect( MakeScaledRectFloat( 0.0f, 0.0f, 264.0f, 250.0f ), "iphone/wolfplatinum_logo.tga");
+	
 	/*gsh
 #ifdef LITE
 	iphoneDrawPic( -20, 0, 256, 64, "iphone/ep_1.tga" );
@@ -1071,20 +1267,9 @@ void iphoneMainMenu() {
 	// iphoneDrawPic( 0, 320 - 128, 128, 128, "iphone/id_logo.tga" );
 	
 //	if ( iphoneDrawPicWithTouch( 300 - 64*scale, 80, 128*scale, 64*scale, "iphone/button_resume.tga" ) ) {
-	if ( iphoneDrawPicWithTouch( 360 - 64*scale, 20, 128*scale, 32*scale, "iphone/button_resume.tga" ) ) { //gsh
-		iphonePreloadBeforePlay();
-		
-		// if the game was saved at the intermission screen, immediately
-		// bring it back up when it is loaded
-		if ( currentMap.levelCompleted ) {
-			iphoneStartIntermission( 0 );
-		} else {
-			//reset the notification so that we can see which level we've loaded.. gsh
-			iphoneSetLevelNotifyText();
-			iphoneFrameNum = 0;
-			notifyFrameNum = 60;
-			menuState = IPM_GAME;
-		}
+	if ( iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 360 - 64*scale, 20, 128*scale, 32*scale ),
+									 "iphone/button_resume.tga" ) ) { //gsh
+		iphoneResume();
 	}
 	
 	//gsh
@@ -1097,22 +1282,22 @@ void iphoneMainMenu() {
 //	iphoneCenterText( 360, 34*scale, str ); //gsh
 	
 //	if ( iphoneDrawPicWithTouch( 300 - 64*scale, 170, 128*scale, 32*scale, "iphone/button_control.tga" ) ) {
-	if ( iphoneDrawPicWithTouch( 360 - 64*scale, 120, 128*scale, 32*scale, "iphone/button_settings.tga" ) ) { //gsh
+	if ( iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 360 - 64*scale, 120, 128*scale, 32*scale ), "iphone/button_settings.tga" ) ) { //gsh
 		menuState = IPM_CONTROLS;
 	}
 //	if ( iphoneDrawPicWithTouch( 300 - 64*scale, 220, 128*scale, 32*scale, "iphone/button_new.tga" ) ) {
-	if ( iphoneDrawPicWithTouch( 360 - 64*scale, 70, 128*scale, 32*scale, "iphone/button_new.tga" ) ) { //gsh
+	if ( iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 360 - 64*scale, 70, 128*scale, 32*scale ), "iphone/button_new.tga" ) ) { //gsh
 		menuState = IPM_SKILL;//IPM_MAPSELECTOR;//IPM_SKILL; //gsh
 	}
 //	if ( iphoneDrawPicWithTouch( 300 - 64*scale, 270, 128*scale, 32*scale, "iphone/button_web.tga" ) ) {
-	if ( iphoneDrawPicWithTouch( 100 - 64*scale, 250, 64, 64, "iphone/id_logo.tga" ) ) { //gsh
-		wasCalledFromDownloadInstructionsMenu = 0;
-		iphoneYesNoBox("Website", "This will navigate you to idsoftware.com.  Continue?");
+	//if ( iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 100 - 64*scale, 250, 64, 64 ), "iphone/id_logo.tga" ) ) { //gsh
+	//	currentYesNoBox = YESNO_GO_TO_WEBSITE;
+	//	iphoneYesNoBox("Website", "This will navigate you to idsoftware.com.  Continue?");
 //		SysIPhoneOpenURL( "http://www.idsoftware.com/wolfenstein3dclassic/" );
-	}
+	//}
 	//gsh
 //	if (iphoneDrawPicWithTouch(100 - 64*scale, 270, 128*scale, 32*scale, "iphone/button_control.tga" ) ) {
-	if (iphoneDrawPicWithTouch(360 - 64*scale, 220, 128*scale, 32*scale, "iphone/button_more.tga" ) ) { //gsh
+	if (iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 360 - 64*scale, 220, 128*scale, 32*scale ), "iphone/button_more.tga" ) ) { //gsh
 		menuState = IPM_MORE;//IPM_TRIVIA;
 	}
 
@@ -1120,17 +1305,17 @@ void iphoneMainMenu() {
 	int y = 170;
 	if ( SysIPhoneOtherAudioIsPlaying() ) {
 //		iphoneDrawPic( 480 - 64, 220, 64, 64, "iphone/music_off.tga" );
-		iphoneDrawPic( x - 64*scale, y, 128*scale, 32*scale, "iphone/music_off.tga" ); //gsh
+		iphoneDrawPicRect( MakeScaledRectFloat( x - 64*scale, y, 128*scale, 32*scale ), "iphone/music_off.tga" ); //gsh
 	} else {
 		if ( music->value ) {
 			//if ( iphoneDrawPicWithTouch( 480 - 64, 220, 64, 64, "iphone/music_on.tga" ) ) {
-			if ( iphoneDrawPicWithTouch( x - 64*scale, y, 128*scale, 32*scale, "iphone/music_on.tga" ) ) { //gsh
+			if ( iphoneDrawPicRectWithTouch( MakeScaledRectFloat( x - 64*scale, y, 128*scale, 32*scale ), "iphone/music_on.tga" ) ) { //gsh
 				Cvar_SetValue( music->name, 0 );
 				Sound_StopBGTrack();
 			}
 		} else {
 			//if ( iphoneDrawPicWithTouch( 480 - 64, 220, 64, 64, "iphone/music_off.tga" ) ) {
-			if ( iphoneDrawPicWithTouch( x - 64*scale, y, 128*scale, 32*scale, "iphone/music_off.tga" ) ) { //gsh
+			if ( iphoneDrawPicRectWithTouch( MakeScaledRectFloat( x - 64*scale, y, 128*scale, 32*scale ), "iphone/music_off.tga" ) ) { //gsh
 				Cvar_SetValue( music->name, 1 );
 				Sound_StartBGTrack( levelData.musicName, levelData.musicName );
 			}
@@ -1138,7 +1323,10 @@ void iphoneMainMenu() {
 	}
 	
 	sprintf( str, "v%3.1f", WOLF_IPHONE_VERSION );
-	iphoneCenterText( 460, 300, str );	
+	float versionX = 460.0f;
+	float versionY = 300.0f;
+	ScalePosition( &versionX, &versionY );
+	iphoneCenterText( versionX, versionY, str );	
 }
 
 //==========================================
@@ -1362,6 +1550,10 @@ void iphoneControlMenu() {
 	iphoneSlider( sliderX, sliderY, sliderWidth, sliderHeight, "hud alpha", hudAlpha, 0, 1 );
 	sliderY += sliderHeight + sliderSpacing;
 
+
+#ifdef VOLUMEHACK
+	//Draw volume up/down settings... gsh
+	
 	y = 0;
 	x = 480-74;
 	if (revLand->value)
@@ -1369,9 +1561,6 @@ void iphoneControlMenu() {
 		y = 320-32;
 		x = 74-64;
 	}
-	
-#ifdef VOLUMEHACK
-	//Draw volume up/down settings... gsh
 	
 	if ( iphoneDrawPicWithTouch( x, y, 64, 32, "iphone/button_pistol.tga" ) ) {
 		if ((int)volumeFireUpSetting->value)
@@ -1403,6 +1592,8 @@ void iphoneControlMenu() {
 #endif
 }
 #endif
+
+#if 0
 /*
  ==================
  iphoneControlMenu
@@ -1415,21 +1606,25 @@ void iphoneControlMenu() {
 	int x = 0;
 	int y = 0;
 	
-	iphoneDrawPic(x, y, 480, 320, "iphone/submenus_background_image.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( x, y, 480.0f, 320.0f ), "iphone/submenus_background_image.tga");
 	
 	if ( BackButton() ) {
 		menuState = IPM_MAIN;
+		iphoneStartMainMenu();
 	}
 	
 	x = 480-128*9/10;	
-	if ( iphoneDrawPicWithTouch( x, y, 128*9/10, 36, "iphone/advanced_button.tga" ) ) {
+	
+	/* Advanced controls are now accessed by the new menu system
+	if ( iphoneDrawPicRectWithTouch( MakeScaledRectFloat( x, y, 128.0f*9/10.0f, 36.0f ), "iphone/advanced_button.tga" ) ) {
 		Cvar_SetValue( controlScheme->name, -1 );
 		iphonePreloadBeforePlay();	// make sure all the hud textures are loaded	
 		menuState = IPM_HUDEDIT;
 	}
+	*/
 	
 	x = 240-108*9/10;
-	iphoneDrawPic(x, y, 217*9/10, 50*9/10, "iphone/header_settings.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( x, y, 217.0f*9/10.0f, 50*9/10.0f ), "iphone/header_settings.tga");
 	
 	//update the position of the control settings
 	const int startPosition = 70;	
@@ -1445,7 +1640,7 @@ void iphoneControlMenu() {
 	static int moveRight = 0;
 	
 	//move right or left, depending on button pushed
-	if (iphoneDrawPicWithTouch(9, y+60, 64, 64, "iphone/button_left.tga") ) {
+	if (iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 9.0f, y+60.0f, 64.0f, 64.0f ), "iphone/button_left.tga") ) {
 		moveRight = 0;
 		++currentPreset;
 		if (currentPreset > numPresets-1) {
@@ -1453,7 +1648,7 @@ void iphoneControlMenu() {
 			
 		}
 	}
-	if (iphoneDrawPicWithTouch(411, y+60, 64, 64, "iphone/button_right.tga") ) {
+	if (iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 411.0f, y+60.0f, 64.0f, 64.0f ), "iphone/button_right.tga") ) {
 		moveRight = 1;
 		--currentPreset;
 		if (currentPreset < 0) {
@@ -1532,22 +1727,40 @@ void iphoneControlMenu() {
 		char buffer[32];
 		sprintf(buffer, "Preset %i", i+1);
 		
+		rect_t textBoxRect = RectMake( 70, 0, 480-140+10, 320 );
+		ScaleRect( &textBoxRect );
+		
+		rect_t paragraphBox1 = RectMake(thisX+35+1, y+125+1, 16, 16);
+		ScaleRect( &paragraphBox1 );
+		
+		rect_t paragraphBox2 = RectMake(thisX+35+2, y+125+2, 16, 16);
+		ScaleRect( &paragraphBox2 );
+		
+		rect_t paragraphBox3 = RectMake(thisX+35+3, y+125+3, 16, 16);
+		ScaleRect( &paragraphBox3 );
+		
+		rect_t paragraphBox4 = RectMake(thisX+35, y+125, 16, 16);
+		ScaleRect( &paragraphBox4 );
+		
+		
 		pfglColor3f( 0, 0, 0 );
-		iphoneDrawTextInBox( RectMake(thisX+35+1, y+125+1, 16, 16), 480, buffer, RectMake(70, 0, 480-140+10, 320) );
-		iphoneDrawTextInBox( RectMake(thisX+35+2, y+125+2, 16, 16), 480, buffer, RectMake(70, 0, 480-140+10, 320) );
-		iphoneDrawTextInBox( RectMake(thisX+35+3, y+125+3, 16, 16), 480, buffer, RectMake(70, 0, 480-140+10, 320) );
+		
+		iphoneDrawTextInBox( paragraphBox1, 480*screenScale, buffer, textBoxRect );
+		iphoneDrawTextInBox( paragraphBox2, 480*screenScale, buffer, textBoxRect );
+		iphoneDrawTextInBox( paragraphBox3, 480*screenScale, buffer, textBoxRect );
 		pfglColor3f( 1, 1, 1 );
-		iphoneDrawTextInBox( RectMake(thisX+35, y+125, 16, 16), 480, buffer, RectMake(70, 0, 480-140+10, 320) );
+		iphoneDrawTextInBox( paragraphBox4, 480*screenScale, buffer, textBoxRect );
 	}
 	
 	
-	int sliderHeight = 25;//35;
+	float sliderHeight = 25;//35;
 	int sliderSpacing = 10;
-	int sliderY = y + size;// - 13;//190;//170;
-	int sliderX = 80;//20;
-	int sliderWidth = 320;//440;
+	float sliderY = y + size;// - 13;//190;//170;
+	float sliderX = 80;//20;
+	float sliderWidth = 320;//440;
 	
 	//sensitivity slider
+	ScalePositionAndSize( &sliderX, &sliderY, &sliderWidth, &sliderHeight );
 	iphoneSlider( sliderX, sliderY, sliderWidth, sliderHeight, "sensitivity", sensitivity, 0, 1 );
 	sliderY += sliderHeight + sliderSpacing;
 	
@@ -1575,6 +1788,9 @@ void iphoneControlMenu() {
 	iphoneSlider( sliderX, sliderY, sliderWidth, sliderHeight, "hud alpha", hudAlpha, 0, 1 );
 	sliderY += sliderHeight + sliderSpacing;
 	
+#ifdef VOLUMEHACK
+	//Draw volume up/down settings... gsh
+	
 	y = 0;
 	x = 480-74;
 	if (revLand->value)
@@ -1582,9 +1798,6 @@ void iphoneControlMenu() {
 		y = 320-32;
 		x = 74-64;
 	}
-	
-#ifdef VOLUMEHACK
-	//Draw volume up/down settings... gsh
 	
 	if ( iphoneDrawPicWithTouch( x, y, 64, 32, "iphone/button_pistol.tga" ) ) {
 		if ((int)volumeFireUpSetting->value)
@@ -1629,13 +1842,14 @@ void iphoneSkillMenu() {
 	char	str[64];
 	
 	//gsh
-	iphoneDrawPic(0, 0, 480, 320, "iphone/submenus_background_image.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( 0.0f, 0.0f, 480.0f, 320.0f ), "iphone/submenus_background_image.tga");
 	
 	//gsh
-	iphoneDrawPic(0, 0, 480, 48, "iphone/header_how_tough_are_you.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( 0.0f, 0.0f, 480.0f, 48.0f ), "iphone/header_how_tough_are_you.tga");
 
 	if ( BackButton() ) {
 		menuState = IPM_MAIN;
+		iphoneStartMainMenu();
 	}
 	
 	// highlight the current skill selection
@@ -1649,7 +1863,7 @@ void iphoneSkillMenu() {
 			pfglColor3f( 0.5, 0.5, 0.5 );
 		}
 		//if ( iphoneDrawPicWithTouch( 112, 40+64*s, 256, 64, str ) ) {
-		if ( iphoneDrawPicWithTouch( 112, 60+64*s, 256, 64, str ) ) {
+		if ( iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 112.0f, 60.0f+64.0f*s, 256.0f, 64.0f ), str ) ) {
 			Cvar_SetValue( skill->name, s );
 			menuState = IPM_EPISODE;
 		}
@@ -1667,14 +1881,11 @@ void iphoneSkillMenu() {
 void iphoneEpisodeMenu() {
 	int		e;
 	char	str[64];
-#ifdef LITE
-	int		numE = 1;
-#else
 	int		numE = 6;
 	//gsh
 	if (g_version->value == SPEAROFDESTINY)
 		numE = 9;
-#endif
+
 	
 	if ( BackButton() ) {
 		menuState = IPM_SKILL;
@@ -1692,8 +1903,8 @@ void iphoneEpisodeMenu() {
 		if ( e != (int)episode->value ) {
 			pfglColor3f( 0.5, 0.5, 0.5 );
 		}
-		int height = 32;//48;//gsh... 96x32
-		if ( iphoneDrawPicWithTouch( 48, 32+height*e, 384, height, str ) ) {
+		float height = 32.0f;//48;//gsh... 96x32
+		if ( iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 48.0f, 32.0f+height*e, 384.0f, height), str ) ) {
 			Cvar_SetValue( episode->name, e ); 
 			menuState = IPM_MAPS;
 		}/*gsh
@@ -1703,16 +1914,6 @@ void iphoneEpisodeMenu() {
 		}*/
 		pfglColor3f( 1, 1, 1 );
 	}
-
-#ifdef LITE
-	// buy more episodes button
-	GetMoreLevels( 240 - 64, 200 );	
-#else
-	#if 0
-	if (g_version->value != SPEAROFDESTINY)  //gsh
-		GetSpearOfDestiny( 240 - 64, 232 );
-	#endif
-#endif	
 }	
 
 /*
@@ -1722,19 +1923,19 @@ void iphoneEpisodeMenu() {
  ==================
  */
 //int scrollingFlags = 0;
-void iphoneUpdateScrollingDrags(int *dragPosition, int *dragVelocity, int upperLimit, int lowerLimit, int padding, rect_t touchRect)
+void iphoneUpdateScrollingDrags(int *dragPosition, int *dragVelocity, int upperLimit, int lowerLimit, int padding )
 {
 	static int oldVelocity = 0;
 	
 	
 	//if Touch is in touchable area
 //	if (TouchDown(touchRect.x, touchRect.y, touchRect.width, touchRect.height))
-	if (TouchDown( 0, 0, 480, 320) )//|| isTouchMoving)
+	if (TouchDown( 0, 0, viddef.width, viddef.height ) )//|| isTouchMoving)
 	{
 		if (!numPrevTouches)
 			prevTouches[0][1] = touches[0][1];
 		else if (numTouches == 1)
-			*dragVelocity = touches[0][1] - prevTouches[0][1];
+			*dragVelocity = ((float)(touches[0][1]) - prevTouches[0][1]) * ( 1.0f / screenScale );
 		
 		//if (*dragVelocity < 3)
 		//	isTouchMoving = 0;
@@ -1750,8 +1951,8 @@ void iphoneUpdateScrollingDrags(int *dragPosition, int *dragVelocity, int upperL
 	else if (abs(*dragVelocity) < 5)  //this returns the position to a node position
 	{
 		int startPosition = 70 - 10;
-		int height = 48;
-		int spacing = 20;
+		int height = 48 * screenScale;
+		int spacing = 20 * screenScale;
 		int nodePosition = upperLimit + padding;
 		
 		
@@ -1759,7 +1960,7 @@ void iphoneUpdateScrollingDrags(int *dragPosition, int *dragVelocity, int upperL
 		
 		nodePosition = n*(height+spacing) + startPosition;// - 5;
 /*		if (nodePosition != *dragPosition)
-		{/*
+		{
 			int nodePositionPlus = nodePosition + (height+spacing);
 			int nodePositionMinus = nodePosition - (height+spacing);
 			int distMinus = abs(nodePositionMinus - *dragPosition);
@@ -1871,6 +2072,56 @@ void iphoneUpdateScrollingDrags(int *dragPosition, int *dragVelocity, int upperL
 	
 }
 
+#endif
+
+/*
+ ==================
+ iphoneDrawLoadingIndicator
+ ==================
+ */
+void iphoneDrawLoadingIndicator() {
+	//int loadingWidth = 128;
+	//int loadingHeight = 128;
+	
+	//int halfWidth = loadingWidth / 2;
+	//int halfHeight = loadingWidth / 2;
+	
+	// Keep track of ticks so we can rotate the indicator periodically.
+	static int ticks = 0;
+	
+	// The graphic is designed on 45-degree angles, so that's how we want to rotate.
+	float rotateInterval = 45.0f;
+	
+	// Rotate by rotateInterval degrees every tickInterval.
+	int tickInterval = 10;
+	
+	static float rotateDegrees = 0.0f;
+	
+	if ( ticks >= tickInterval ) {
+		rotateDegrees += rotateInterval;
+		
+		if ( rotateDegrees > 360.0f ) {
+			rotateDegrees -= 360.0f;
+		}
+		
+		ticks = 0;
+	}	
+	
+	pfglTranslatef( (viddef.width / 2.0f),
+					(viddef.height / 2.0f),
+				    0.0f );
+	pfglRotatef( rotateDegrees, 0.0f, 0.0f, 1.0f );
+ 
+	
+	//iphoneDrawPic( -halfWidth, -halfHeight, loadingWidth, loadingHeight, "iphone/loading.tga" );
+	
+	++ticks;
+	
+	return;
+}
+
+#if 0
+
 /*
  ==================
  iphoneScrollingEpisodeMenu
@@ -1887,9 +2138,6 @@ void iphoneScrollingEpisodeMenu() {
 	static int touchedFrameNum = 0;
 	static int lastTouchFrame = 0;
 	
-#ifdef LITE
-	int		numE = 1;
-#else
 	int		numE = 11;//10;
 	
 	//check for user maps
@@ -1913,13 +2161,20 @@ void iphoneScrollingEpisodeMenu() {
 	//gsh
 	//if (g_version->value == SPEAROFDESTINY)
 	//	numE = 9;
-#endif
 		
 	
 	
-	iphoneDrawPic(0, 0, 480, 320, "iphone/submenus_background_image.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( 0.0f, 0.0f, 480.0f, 320.0f ), "iphone/submenus_background_image.tga");
 	
-	iphoneDrawPic( 0, 0, 480, 48, "iphone/header_episodes.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( 0.0f, 0.0f, 480.0f, 48.0f ), "iphone/header_episodes.tga");
+	
+	// If waiting for an in-app purchase, show the user an activity indicator.
+	if ( InAppPurchaseIsInProgress() ) {
+		iphoneDrawLoadingIndicator();
+					   
+		return;
+	}
+	
 	
 	if ( BackButton() ) {
 		menuState = IPM_SKILL;
@@ -1940,7 +2195,7 @@ void iphoneScrollingEpisodeMenu() {
 */	
 	int lowerLimit = -320;
 	lowerLimit = 70-(11-4)*(48+20);
-	iphoneUpdateScrollingDrags(&dragPosition, &dragVelocity, 55, lowerLimit, 0, RectMake(0, 48, 480-48, 320-64));
+	iphoneUpdateScrollingDrags(&dragPosition, &dragVelocity, 55, lowerLimit, 0 );
 	
 	// 96 x 48 images
 	for ( e = 0 ; e < numE ; e++ ) {
@@ -1993,10 +2248,10 @@ void iphoneScrollingEpisodeMenu() {
 											     && !dragVelocity
 												 && !isTouchMoving )//touchedFrameNum >= NUM_TOUCHFRAME ) //must hold finger down for 10 frames
 *///			iphoneDrawPicInBoxWithTouchAndVelocity
-			if (iphoneDrawPicInBoxWithTouchAndVelocity(RectMake(0, dragPosition+(height+spacing)*e, 480, height), 
-													 RectMake(0, dragPosition+(height+spacing)*e, 480, height),
-													 str, 
-													 RectMake(0, 48, 480, 320-48), dragVelocity | isTouchMoving ) )//RectMake(0, 42, 480, 238) )
+		if (iphoneDrawPicInBoxWithTouchAndVelocity(MakeScaledRectFloat(0.0f, dragPosition+(height+spacing)*e, 480.0f, height), 
+												   MakeScaledRectFloat(0.0f, dragPosition+(height+spacing)*e, 480.0f, height),
+												   str, 
+												   MakeScaledRectFloat(0.0f, 48.0f, 480.0f, 320.0f-48.0f), dragVelocity | isTouchMoving ) )//RectMake(0, 42, 480, 238) )
 				//&& !dragVelocity
 				//&& !isTouchMoving )
 		{
@@ -2008,8 +2263,18 @@ void iphoneScrollingEpisodeMenu() {
 				pfglColor3f( 1, 1, 1 );
 				break;
 			}
-			Cvar_SetValue( episode->name, e ); 
-			menuState = IPM_MAPS;
+			
+			// If they have the Lite version, only allow episode 1.
+			if ( SysIPhoneGetContentVersion() == CONTENT_PLATINUM || e == 0 ) {			
+				Cvar_SetValue( episode->name, e ); 
+				menuState = IPM_MAPS;
+			} else {
+				// Lite version, but user chose an episode that was not episode 1.
+				// Prompt in-app purchase for platinum.
+				// TODO: this.
+				InAppPurchaseStartPurchase( PLATINUM_UPGRADE_STRING );
+			}
+
 		}
 		pfglColor3f( 1, 1, 1 );
 	}
@@ -2024,20 +2289,19 @@ void iphoneScrollingEpisodeMenu() {
 	}
 	lastTouchFrame = iphoneFrameNum;
 	
-#ifdef LITE
-	// buy more episodes button
-	GetMoreLevels( 240 - 64, 200 );	
-#else
+
 #ifdef SPEARSTOREKIT
 	if (g_version->value != SPEAROFDESTINY)  //gsh
 		GetSpearOfDestiny( 240 - 64, 232 );
 #endif
-#endif	
 	
 	if ( MenuButton() ) {
 		menuState = IPM_MAIN;
 	}
 }	
+
+#endif
+
 //gsh
 extern void iphoneDrawRewards(int m, int s, int x, int y);
 //gsh
@@ -2056,6 +2320,8 @@ colour4_t colorNoTry = { 0, 0, 0, 150 };
 colour4_t colorTried = { 80, 80, 80, 40 };
 colour4_t colorCompleted = { 0, 120, 0, 80 };
 
+#if 0
+
 /*
  ========================
  iphoneDrawWolf3dMaps
@@ -2071,8 +2337,6 @@ void iphoneDrawWolf3dMaps(int dragPosition, int dragVelocity, int e, int s, int 
 	colour4_t colorTried = { 80, 80, 0, 100 };
 	colour4_t colorCompleted = { 0, 80, 0, 100 };
 	*/
-	
-	
 	
 	// draw the individual maps
 	for ( int m = 0 ; m < 10; m++ ) {
@@ -2119,7 +2383,7 @@ void iphoneDrawWolf3dMaps(int dragPosition, int dragVelocity, int e, int s, int 
 			case 3: color = colorNoTry; break;
 		}*/
 		
-		rect_t box = RectMake(0, 48, 480, 320-48);
+		rectFloat_t box = MakeScaledRectFloat(0.0f, 48.0f, 480.0f, 320.0f-48.0f);
 		int borderWidth = 40;
 /*		if (iphoneDrawPicInBoxWithTouchSpecifiedAndColor(RectMake(borderWidth, y - 9, 480-2*borderWidth, height),
 														 RectMake(borderWidth, y - 9, 480-2*borderWidth, height),
@@ -2127,22 +2391,31 @@ void iphoneDrawWolf3dMaps(int dragPosition, int dragVelocity, int e, int s, int 
 														 box,
 														 color) && !dragVelocity
 														 && !isTouchMoving)//touchedFrameNum >= 10)
-*/			if (iphoneDrawPicInBoxWithTouchColorAndVelocity(RectMake(borderWidth, y - 9, 480-2*borderWidth, height),
-															 RectMake(borderWidth, y - 9, 480-2*borderWidth, height),
+*/			if (iphoneDrawPicInBoxWithTouchColorAndVelocity( MakeScaledRectFloat(borderWidth, y - 9.0f, 480.0f-2*borderWidth, height),
+															 MakeScaledRectFloat(borderWidth, y - 9.0f, 480.0f-2*borderWidth, height),
 															 "iphone/menu_bar.tga",
 															 box,
 															 color, dragVelocity | isTouchMoving) )// && !dragVelocity
 				//&& !isTouchMoving)
 		{
-			// don't let them go to the secret level unless they earned it
-			if ( m == 9  && !( ch & MF_TRIED ) )
-				continue;
-			
-			PL_NewGame( &Player );
-			iphoneStartMap( e, m, s );
-			iphoneFrameNum = 0;
-			returnButtonFrameNum = 100;
-			iphonePreloadBeforePlay();			
+			// Only allow access to the first three levels if they have the Lite version.
+			if ( SysIPhoneGetContentVersion() == CONTENT_PLATINUM || m < 3 ) {
+				// don't let them go to the secret level unless they earned it
+				if ( m == 9  && !( ch & MF_TRIED ) )
+					continue;
+				
+				PL_NewGame( &Player );
+				iphoneStartMap( e, m, s );
+				iphoneFrameNum = 0;
+				returnButtonFrameNum = 100;
+				iphonePreloadBeforePlay();
+			} else {
+				// User has chosen a level he does not have acces to in the Lite version.
+				// Prompt the user to buy Platinum with an in-app purchase.
+				// TODO: This.
+				InAppPurchaseStartPurchase( PLATINUM_UPGRADE_STRING );
+			}
+
 		}
 		
 		//draw the rewards
@@ -2280,7 +2553,7 @@ void iphoneDrawSpearMaps(int dragPosition, int dragVelocity, int fakeEpisode, in
 			color = colorNoTry;
 		}
 		
-		rect_t box = RectMake(0, 48, 480, 320-48);
+		rectFloat_t box = MakeScaledRectFloat(0, 48, 480, 320-48);
 		int borderWidth = 40;
 /*		if (iphoneDrawPicInBoxWithTouchSpecifiedAndColor(RectMake(borderWidth, y - 9, 480-2*borderWidth, height),
 														 RectMake(borderWidth, y - 9, 480-2*borderWidth, height),
@@ -2288,27 +2561,33 @@ void iphoneDrawSpearMaps(int dragPosition, int dragVelocity, int fakeEpisode, in
 														 box,
 														 color) && !dragVelocity
 														 && !isTouchMoving)//touchedFrameNum >= NUM_TOUCHFRAME)
-*/			if (iphoneDrawPicInBoxWithTouchColorAndVelocity(RectMake(borderWidth, y - 9, 480-2*borderWidth, height),
-															 RectMake(borderWidth, y - 9, 480-2*borderWidth, height),
+*/			if (iphoneDrawPicInBoxWithTouchColorAndVelocity(MakeScaledRectFloat(borderWidth, y - 9, 480-2*borderWidth, height),
+															 MakeScaledRectFloat(borderWidth, y - 9, 480-2*borderWidth, height),
 															 "iphone/menu_bar.tga",
 															 box,
 															 color, dragVelocity | isTouchMoving ) )
 				//&& !isTouchMoving)
 		{
-			//diagnostic info
-			Com_Printf("fakeEpisode: %i  fakeMap: %i\n", fakeEpisode, fakeMap);
-			Com_Printf("e: %i  m: %i\n", e, m);
-			
-			// don't let them go to the secret level unless they earned it
-			if ( (levelNum == 78 || levelNum == 79)  && !( ch & MF_TRIED ) )
-				continue;
+			if ( SysIPhoneGetContentVersion() == CONTENT_PLATINUM ) {
+				//diagnostic info
+				Com_Printf("fakeEpisode: %i  fakeMap: %i\n", fakeEpisode, fakeMap);
+				Com_Printf("e: %i  m: %i\n", e, m);
+				
+				// don't let them go to the secret level unless they earned it
+				if ( (levelNum == 78 || levelNum == 79)  && !( ch & MF_TRIED ) )
+					continue;
 
-			PL_NewGame( &Player );
-			iphonePreloadBeforePlay();
-			iphoneStartMap(e, m, s);
-			iphoneFrameNum = 0;
-			returnButtonFrameNum = 100;
-			break;  //break the loop... no need to keep looping
+				PL_NewGame( &Player );
+				iphonePreloadBeforePlay();
+				iphoneStartMap(e, m, s);
+				iphoneFrameNum = 0;
+				returnButtonFrameNum = 100;
+				break;  //break the loop... no need to keep looping
+			} else {
+				// User hasn't purchased platinum, prompt them to buy.
+				InAppPurchaseStartPurchase( PLATINUM_UPGRADE_STRING );
+			}
+
 		}
 		
 		//draw the rewards
@@ -2357,7 +2636,7 @@ int iphoneDrawUserCreatedMaps(int dragPosition, int dragVelocity, /*int fakeEpis
 		
 		Com_Printf("y: %i\n", y);
 		
-		while (ep = readdir (dp))
+		while ( ( ep = readdir (dp) ) )
 		{
 			//if you find a .DS_Store file... ignore it!
 			if ( strcmp(ep->d_name, ".DS_Store") == 0 )
@@ -2399,12 +2678,12 @@ int iphoneDrawUserCreatedMaps(int dragPosition, int dragVelocity, /*int fakeEpis
 				}
 				
 				int borderWidth = 40;
-				rect_t box = RectMake(0, 48, 480, 320-48);
-				if (iphoneDrawPicInBoxWithTouchColorAndVelocity(RectMake(borderWidth, y - 9, 480-2*borderWidth, height),
-																RectMake(borderWidth, y - 9, 480-2*borderWidth, height),
-																"iphone/menu_bar.tga",
-																box,
-																color, dragVelocity | isTouchMoving) )
+				rectFloat_t box = MakeScaledRectFloat(0.0f, 48.0f, 480.0f, 320.0f-48.0f);
+				if (iphoneDrawPicInBoxWithTouchColorAndVelocity( MakeScaledRectFloat(borderWidth, y - 9.0f, 480.0f-2.0f*borderWidth, height),
+																 MakeScaledRectFloat(borderWidth, y - 9.0f, 480.0f-2.0f*borderWidth, height),
+																 "iphone/menu_bar.tga",
+																 box,
+																 color, dragVelocity | isTouchMoving) )
 				{
 					//reset the player to new
 					PL_NewGame( &Player );
@@ -2444,6 +2723,10 @@ int iphoneDrawUserCreatedMaps(int dragPosition, int dragVelocity, /*int fakeEpis
 	return numMaps;
 }
 
+#endif
+
+#if 0
+
 /*
  ==================
  iphoneScrollingMapMenu
@@ -2453,13 +2736,9 @@ int iphoneDrawUserCreatedMaps(int dragPosition, int dragVelocity, /*int fakeEpis
 extern int forceDrawRewards;
 void iphoneScrollingMapMenu()
 {
-#ifdef LITE	
-# define NUM_MAPS 3
-#else
+
 # define NUM_MAPS 10
-#endif
-	
-		
+
 	//used for preventing accidental touches
 	//user must hold touch down for 10 frames in order to load map
 	static int touchedFrameNum = 0;
@@ -2474,7 +2753,15 @@ void iphoneScrollingMapMenu()
 	static int dragPosition = 70;
 	static int dragVelocity = 0;
 	
-	iphoneDrawPic(0, 0, 480, 320, "iphone/submenus_background_image.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( 0.0f, 0.0f, 480.0f, 320.0f ), "iphone/submenus_background_image.tga");
+	
+	// If waiting for an in-app purchase, show the user an activity indicator.
+	if ( InAppPurchaseIsInProgress() ) {
+		iphoneDrawLoadingIndicator();
+		
+		return;
+	}
+	
 /*	
 	//static int forceDrawRewards = 0;
 	//This is only for debugging/testing out the look of the medals
@@ -2560,7 +2847,7 @@ void iphoneScrollingMapMenu()
 	if ( e == 8 )
 		lowerLimit = -85;
 	*/
-	iphoneUpdateScrollingDrags(&dragPosition, &dragVelocity, 65, lowerLimit, 0, RectMake(0, 48, 480-48, 320-64));
+	iphoneUpdateScrollingDrags( &dragPosition, &dragVelocity, 65, lowerLimit, 0 );
 	//----------------------------
 
 	if ( e < 6 )
@@ -2592,7 +2879,7 @@ void iphoneScrollingMapMenu()
 
 	// draw the header for the episode
 	my_snprintf( str, sizeof( str ), "iphone/header_ep%i.tga", e+1 );
-	iphoneDrawPic( 0, 0, 480, 48, str );
+	iphoneDrawPicRect( MakeScaledRectFloat( 0.0f, 0.0f, 480.0f, 48.0f ), str );
 	
 	if ( BackButton() ) {
 		menuState = IPM_EPISODE;
@@ -2608,11 +2895,8 @@ void iphoneScrollingMapMenu()
  ==================
  */
 void iphoneMapMenu() {
-#ifdef LITE	
-# define NUM_MAPS 3
-#else
+
 # define NUM_MAPS 10
-#endif
 	int		e, m, s;
 	char	str[64];
 	
@@ -2736,6 +3020,8 @@ void iphoneMapMenu() {
 	}
 }
 
+#endif
+
 /*
  ==================
  iphoneStartIntermission
@@ -2787,13 +3073,22 @@ void iphoneStartIntermission( int framesFromNow ) {
  ==================
  */
 void DrawDigit( int x, int y, int digit ) {	
-	R_Bind( numberPics[digit]->texnum );
-	pfglBegin( GL_QUADS );
+	float width = 32.0f;
+	float height = 32.0f;
 	
-	pfglTexCoord2f( 0, 0 );	pfglVertex2i( x, y );
-	pfglTexCoord2f( 1, 0 );	pfglVertex2i( x+32, y );
-	pfglTexCoord2f( 1, 1 );	pfglVertex2i( x+32, y+32 );
-	pfglTexCoord2f( 0, 1 );	pfglVertex2i( x, y+32 );
+	float xFloat = (float)x;
+	float yFloat = (float)y;
+	
+	ScalePositionAndSize( &xFloat, &yFloat, &width, &height );
+	
+	R_Bind( numberPics[digit]->texnum );
+	pfglBegin( GL_TRIANGLE_STRIP );
+	
+	pfglTexCoord2f( 0, 0 );	pfglVertex2f( xFloat,		yFloat );
+	pfglTexCoord2f( 0, 1 );	pfglVertex2f( xFloat,		yFloat+height );
+	pfglTexCoord2f( 1, 0 );	pfglVertex2f( xFloat+width,	yFloat );
+	pfglTexCoord2f( 1, 1 );	pfglVertex2f( xFloat+width,	yFloat+height );
+	
 	
 	pfglEnd();
 }
@@ -2831,7 +3126,7 @@ void DrawRatio( int y, int got, int total, const char *bonusPic ) {
 	
 	// draw the award icon
 	if ( got == total ) {
-		iphoneDrawPic( 480 - 40, y, 32, 32, bonusPic );
+		iphoneDrawPicRect( MakeScaledRectFloat( 480.0f - 40.0f, y, 32.0f, 32.0f ), bonusPic );
 	}
 }
 
@@ -2847,7 +3142,7 @@ void DrawIntermissionStats() {
 	
 	//gsh
 //	iphoneDrawPic( 0, 0, 480, 320, "iphone/intermission_256.tga" );
-	iphoneDrawPic( 0, 0, 480, 320, "iphone/intermission.tga" );
+	iphoneDrawPicRect( MakeScaledRectFloat( 0.0f, 0.0f, 480.0f, 320.0f ), "iphone/intermission.tga" );
 
 	// episode
 	//if (currentMap.episode < 10)//6)   //gsh added the check for SOD
@@ -2889,41 +3184,49 @@ void DrawIntermissionStats() {
 	
 //	iphoneDrawPic( 0, 0, 384, 48, str );
 //	iphoneDrawPic( -104, 0, 480, 48, str ); //gsh
-	iphoneDrawPic( 0, 0, 480, 48, str ); //gsh
+	iphoneDrawPicRect( MakeScaledRectFloat( 0.0f, 0.0f, 480.0f, 48.0f), str ); //gsh
 
 	// level
 //	iphoneDrawNumber( 430, 0, currentMap.map + 1, 48, 48 );
 //	iphoneDrawNumber( 430-48, 50, currentMap.map + 1, 48, 48 ); //gsh
 	
 	//display the appropriate mission number
+	float missionWidth = 48.0f;
+	float missionHeight = 48.0f;
+	
+	float missionX = 430.0f - missionWidth;
+	float missionY = 50.0f;
+	
+	ScalePositionAndSize( &missionX, &missionY, &missionWidth, &missionHeight );
+	
 	if (currentMap.episode < 6)
-		iphoneDrawNumber( 430-48, 50, currentMap.map + 1, 48, 48 );
+		iphoneDrawNumber( missionX, missionY, currentMap.map + 1, missionWidth, missionHeight );
 	else if (currentMap.episode < 10) {
 		int currentLevel = currentMap.episode * 10 + currentMap.map;
 		switch (currentLevel) {
 			case 60: case 61: case 62: case 63: case 64:
-				iphoneDrawNumber( 430-48, 50, currentLevel - 60 + 1, 48, 48 );
+				iphoneDrawNumber( missionX, missionY, currentLevel - 60 + 1, missionWidth, missionHeight );
 				break;
 			case 78:
-				iphoneDrawNumber( 430-48, 50, 6, 48, 48 );
+				iphoneDrawNumber( missionX, missionY, 6, 48, 48 );
 				break;
 			case 65: case 66: case 67: case 68: case 69:
-				iphoneDrawNumber( 430-48, 50, currentLevel - 65 + 1, 48, 48 );
+				iphoneDrawNumber( missionX, missionY, currentLevel - 65 + 1, missionWidth, missionHeight );
 				break;
 			case 79:
-				iphoneDrawNumber( 430-48, 50, 6, 48, 48 );
+				iphoneDrawNumber( missionX, missionY, 6, 48, 48 );
 				break;
 			case 70: case 71: case 72: case 73: case 74: case 75:
-				iphoneDrawNumber( 430-48, 50, currentLevel - 70 + 1, 48, 48 );
+				iphoneDrawNumber( missionX, missionY, currentLevel - 70 + 1, missionWidth, missionHeight );
 				break;
 			case 76:
-				iphoneDrawNumber( 430-48, 50, 1, 48, 48 );
+				iphoneDrawNumber( missionX, missionY, 1, missionWidth, missionHeight );
 				break;
 			case 77:
-				iphoneDrawNumber( 430-48, 50, 2, 48, 48 );
+				iphoneDrawNumber( missionX, missionY, 2, missionWidth, missionHeight );
 				break;
 			case 80:
-				iphoneDrawNumber( 430-48, 50, 3, 48, 48 );
+				iphoneDrawNumber( missionX, missionY, 3, missionWidth, missionHeight );
 				break;
 			default:
 				sprintf( str, "  ");
@@ -2931,15 +3234,16 @@ void DrawIntermissionStats() {
 		}
 	}
 	else
-		iphoneDrawNumber( 430-48, 50, currentMap.map + 1, 48, 48 );
+		iphoneDrawNumber( missionX, missionY, currentMap.map + 1, missionWidth, missionHeight );
 	
 
 	// par / time
-	int offset = 50;
+	float offset = 50.0f;
 	DrawTime( 51, 63+offset, levelstate.fpartime * 60 );	// fpartime is in minutes
 	DrawTime( 285, 63+offset, levelstate.time / 60 );	// levelstate.time is in tics
 	if ( levelstate.time/60 <= levelstate.fpartime * 60 ) {
-		iphoneDrawPic( 480 - 40, 63+offset, 32, 32, "iphone/partime.tga" );
+		iphoneDrawPicRect( MakeScaledRectFloat( 480.0f - 40.0f, 63.0f+offset, 32.0f, 32.0f ),
+						   "iphone/partime.tga" );
 	}
 	
 	// ratios
@@ -2972,7 +3276,7 @@ void iphoneIntermission() {
 	//----------------------
 	// tap for next level
 	//----------------------
-	if ( !TouchReleased( 0, 0, 480, 320 ) ) {
+	if ( !TouchReleased( 0, 0, viddef.width, viddef.height ) ) {
 		return;
 	}
 	
@@ -3011,47 +3315,47 @@ void iphoneIntermission() {
 	{
 		int		currentLevel = currentMap.episode * 10 + currentMap.map;
 		
-#ifdef LITE
-		switch ( currentLevel ) {
-			case 2:
-				// go back to the episode select screen
-				menuState = IPM_VICTORY;
-				Sound_StartBGTrack( "music/URAHERO.ogg", "music/URAHERO.ogg" );
-				return;
-			default: nextLevel = currentLevel + 1; break;
-		}		
-#else		
-		if( Player.playstate == ex_secretlevel ) {
-			switch( currentLevel ) {
-				case 0: nextLevel = 9; break;
-				case 10: nextLevel = 19; break;
-				case 26: nextLevel = 29; break;
-				case 32: nextLevel = 39; break;
-				case 44: nextLevel = 49; break;
-				case 52: nextLevel = 59; break;
-			}
-		} else {
+		if ( SysIPhoneGetContentVersion() == CONTENT_LITE ) {
 			switch ( currentLevel ) {
-				case 8:
-				case 18:
-				case 28:
-				case 38:
-				case 48:
-				case 58:
+				case 2:
 					// go back to the episode select screen
 					menuState = IPM_VICTORY;
 					Sound_StartBGTrack( "music/URAHERO.ogg", "music/URAHERO.ogg" );
 					return;
-				case 9: nextLevel = 1; break;
-				case 19: nextLevel = 11; break;
-				case 29: nextLevel = 27; break;
-				case 39: nextLevel = 33; break;
-				case 49: nextLevel = 44; break;
-				case 59: nextLevel = 53; break;
 				default: nextLevel = currentLevel + 1; break;
+			}		
+		} else { // Content is Platinum
+			if( Player.playstate == ex_secretlevel ) {
+				switch( currentLevel ) {
+					case 0: nextLevel = 9; break;
+					case 10: nextLevel = 19; break;
+					case 26: nextLevel = 29; break;
+					case 32: nextLevel = 39; break;
+					case 44: nextLevel = 49; break;
+					case 52: nextLevel = 59; break;
+				}
+			} else {
+				switch ( currentLevel ) {
+					case 8:
+					case 18:
+					case 28:
+					case 38:
+					case 48:
+					case 58:
+						// go back to the episode select screen
+						menuState = IPM_VICTORY;
+						Sound_StartBGTrack( "music/URAHERO.ogg", "music/URAHERO.ogg" );
+						return;
+					case 9: nextLevel = 1; break;
+					case 19: nextLevel = 11; break;
+					case 29: nextLevel = 27; break;
+					case 39: nextLevel = 33; break;
+					case 49: nextLevel = 44; break;
+					case 59: nextLevel = 53; break;
+					default: nextLevel = currentLevel + 1; break;
+				}
 			}
 		}
-#endif
 	}
 	else  //they just defeated a custom map... gsh
 	{
@@ -3072,11 +3376,13 @@ void iphoneIntermission() {
  ==================
  */
 void iphoneVictory() {
-	iphoneDrawPic( 0, 0, 480, 320, "iphone/victory_256.tga" );
-	if ( !TouchReleased( 0, 0, 480, 320 ) ) {
+	iphoneDrawPicRect( MakeScaledRectFloat( 0.0f, 0.0f, 480.0f, 320.0f ),
+					   "iphone/victory_256.tga" );
+	if ( !TouchReleased( 0, 0, viddef.width, viddef.height ) ) {
 		return;
 	}
 	menuState = IPM_EPISODE;
+	iphoneStartMainMenu();
 //gsh	menuState = IPM_MAPSELECTOR;
 }
 
@@ -3225,9 +3531,11 @@ void iphoneOpenAutomap() {
 }
 
 void iphoneAutomap() {
+	int halfWidth = viddef.width / 2;
+	int halfHeight = viddef.height / 2;
 	
 	//draw the new background... gsh
-	iphoneDrawPic(0, 0, 480, 320, "iphone/map_background.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( 0, 0, 480, 320 ), "iphone/map_background.tga");
 	
 	
 	mapTile_t	*mt;
@@ -3333,8 +3641,8 @@ void iphoneAutomap() {
 				zoom = 1;
 				//need to translate tap/screen coordinate to map coordinate
 				
-				int Xrelative2screenorigin = tapX - 240;
-				int Yrelative2screenorigin = 160 - tapY;
+				int Xrelative2screenorigin = tapX - halfWidth;
+				int Yrelative2screenorigin = halfHeight - tapY;
 				float scaledX = Xrelative2screenorigin / scale;
 				float scaledY = Yrelative2screenorigin / scale;
 				float camSpaceX = scaledX + mapOrigin[0];
@@ -3391,14 +3699,13 @@ void iphoneAutomap() {
 		
 		Cvar_SetValue( mapScale->name, scale );
 	}
-	
-	
+
 	// set up matrix for drawing in tile units
 	pfglMatrixMode( GL_PROJECTION );
     pfglLoadIdentity();
 	iphoneRotateForLandscape();
-	pfglOrtho( mapOrigin[0]-240.0 / scale, mapOrigin[0]+240.0 / scale,
-			  mapOrigin[1]-160.0 / scale, mapOrigin[1]+160.0 / scale, -99999, 99999 );
+	pfglOrtho( mapOrigin[0]-halfWidth / scale, mapOrigin[0]+halfWidth / scale,
+			  mapOrigin[1]-halfHeight / scale, mapOrigin[1]+halfHeight / scale, -99999, 99999 );
 
 	mt = mapTiles;
 	texnum = 99999;
@@ -3458,14 +3765,14 @@ void iphoneAutomap() {
 	pfglMatrixMode( GL_PROJECTION );
     pfglLoadIdentity();
 	iphoneRotateForLandscape();
-	pfglOrtho( 0, 480, 320, 0, -99999, 99999 );
+	pfglOrtho( 0, viddef.width, viddef.height, 0, -99999, 99999 );
 	if ( BackButton() ) {
 		menuState = IPM_GAME;
 	}
 	
 	// stats button for stats display
 	//if ( iphoneDrawPicWithTouch( 64, 0, 64, 36, "iphone/stats.tga" ) ) {
-	if ( iphoneDrawPicWithTouch( 64, 0, 120, 36, "iphone/stats_large.tga" ) ) {
+	if ( iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 64.0f, 0.0f, 120.0f, 36.0f ), "iphone/stats_large.tga" ) ) {
 		menuState = IPM_STATS;
 	}
 	//gsh
@@ -3518,7 +3825,7 @@ void iphoneDownloadSpearProgressBar()
 	y += 17*scale;
 	
 	//draw "Spear of Destiny" at the top
-	iphoneDrawPic(90, 20, 256, 128, "iphone/spear_logo.tga");
+	//iphoneDrawPic(90, 20, 256, 128, "iphone/spear_logo.tga");
 
 	//draw the progress bar
 	iphoneDrawPic( 40, 150, 400, barHeight, "iphone/menu_bar.tga" );
@@ -3529,11 +3836,14 @@ void iphoneDownloadSpearProgressBar()
 }
 #endif
 
+char urlbuffer[1024];
+
+#if 0
+
 //==========================
 // iphoneDownloadMenu
 //gsh
 //==========================
-char urlbuffer[1024];
 void iphoneDownloadMenu()
 {	
 	char str[80];
@@ -3541,7 +3851,7 @@ void iphoneDownloadMenu()
 	int barHeight = 30;
 	
 	//draw the background
-	iphoneDrawPic(0, 0, 480, 320, "iphone/download_background.tga");
+	//iphoneDrawPic(0, 0, 480, 320, "iphone/download_background.tga");
 	
 	//draw the url
 	iphoneCenterText(240, 120, urlbuffer);
@@ -3572,6 +3882,8 @@ void iphoneDownloadMenu()
 	iphoneDrawPic(pos, 150+34/2-22/2, 60, 22, "iphone/download_bullet.tga");
 }
 
+#endif
+
 /*
 //==========================================
 //  iphoneUpdateTriviaDrags()
@@ -3584,21 +3896,21 @@ void iphoneUpdateTriviaAndInstructionsDrags(int numEnteries, int x, int y, int w
 	//Update drag/touch info
 	//	int x = 0;
 	//	int w = 480;// - skillSides - 64;
-	/*
+	
 	if (TouchDown(x, y, w, h))
 	{
 		if (!numPrevTouches)
 			prevTouches[0][0] = touches[0][0];
 		else if (numTouches == 1)
 			*dragVelocity = touches[0][0] - prevTouches[0][0];
-	}*
+	}
 	
 	
 	
 	
 	//update the drags
 	*dragPosition += *dragVelocity;
-	/*
+	
 	//int rightBoundary = 240 - 2*width;//480/2 - (numPresets*width/2 + spacing);
 	if (*dragPosition < -(numTrivia-1)*480-10)//270-10)//(numPresets*(width+spacing))/2 )
 		*dragPosition = -(numTrivia-1)*480-10;//270-10;//(numPresets*(width+spacing))/2;
@@ -3609,7 +3921,7 @@ void iphoneUpdateTriviaAndInstructionsDrags(int numEnteries, int x, int y, int w
 		*dragVelocity = 2;
 	else if (*dragPosition > x)
 		*dragVelocity = -2;
-	*
+	
 	
 	//retard the velocity
 	if (*dragVelocity > 0)
@@ -3673,8 +3985,8 @@ void iphoneTriviaMenu()
 	//get number of trivia
 	int numTrivia = sizeof(triviaText)/(sizeof(char) * 1024);
 	
-	iphoneDrawPic(0, 0, 480, 320, "iphone/submenus_background_image.tga");
-	iphoneDrawPic(240-108*9/10, 0, 217*9/10, 50*9/10, "iphone/header_trivia.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( 0.0f, 0.0f, 480.0f, 320.0f ), "iphone/submenus_background_image.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( 240.0f-108*9/10.0f, 0.0f, 217.0f*9/10.0f, 50.0f*9/10.0f ), "iphone/header_trivia.tga");
 	
 	if (BackButton()) {
 		menuState = IPM_MORE;
@@ -3699,7 +4011,7 @@ void iphoneTriviaMenu()
 	//if (revLand->value)
 	//	y = -20;
 	
-	if (iphoneDrawPicWithTouch(9, y+60+16, 64, 64, "iphone/button_left.tga") ){//&& !dragVelocity) {
+	if (iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 9.0f, y+60.0f+16, 64.0f, 64.0f ), "iphone/button_left.tga") ){//&& !dragVelocity) {
 		dragVelocity += -25;//-18;
 		
 		if (dragVelocity < -50)
@@ -3708,7 +4020,7 @@ void iphoneTriviaMenu()
 		if (currentLocation >= numTrivia)
 			currentLocation = 0;//numTrivia-1;
 */	}
-	if (iphoneDrawPicWithTouch(411, y+60+16, 64, 64, "iphone/button_right.tga") ){//&& !dragVelocity) {
+	if (iphoneDrawPicRectWithTouch( MakeScaledRectFloaT( 411.0f, y+60.0f+16, 64.0f, 64.0f ), "iphone/button_right.tga") ){//&& !dragVelocity) {
 		dragVelocity += 25;//18;
 		if (dragVelocity > 50)
 			dragVelocity = 50;
@@ -3807,6 +4119,7 @@ void iphoneTriviaMenu()
 }
 #endif
 
+#if 0
 //This is a different implementation of the one above
 //gsh
 void iphoneTriviaMenu()
@@ -3835,11 +4148,12 @@ void iphoneTriviaMenu()
 	//get number of trivia
 	int numTrivia = sizeof(triviaText)/(sizeof(char) * 1024);
 	
-	iphoneDrawPic(0, 0, 480, 320, "iphone/submenus_background_image.tga");
-	iphoneDrawPic(240-108*9/10, 0, 217*9/10, 50*9/10, "iphone/header_trivia.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( 0.0f, 0.0f, 480.0f, 320.0f ), "iphone/submenus_background_image.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( 240.0f-108.0f*9/10.0f, 0.0f, 217.0f*9/10.0f, 50.0f*9/10.0f ), "iphone/header_trivia.tga");
 	
 	if (BackButton()) {
 		menuState = IPM_MORE;
+		iphoneStartMainMenu();
 		return;
 	}
 	
@@ -3862,7 +4176,7 @@ void iphoneTriviaMenu()
 	static int moveRight = 0;
 	
 	//move right or left, depending on button pushed
-	if (iphoneDrawPicWithTouch(9, y+60+16, 64, 64, "iphone/button_left.tga") ) {
+	if (iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 9.0f, y+60.0f+16.0f, 64.0f, 64.0f ), "iphone/button_left.tga") ) {
 		moveRight = 0;
 		++currentTrivia;
 		if (currentTrivia > numTrivia-1) {
@@ -3870,7 +4184,7 @@ void iphoneTriviaMenu()
 
 		}
 	}
-	if (iphoneDrawPicWithTouch(411, y+60+16, 64, 64, "iphone/button_right.tga") ) {
+	if (iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 411.0f, y+60.0f+16.0f, 64.0f, 64.0f ), "iphone/button_right.tga") ) {
 		moveRight = 1;
 		--currentTrivia;
 		if (currentTrivia < 0) {
@@ -3949,8 +4263,8 @@ void iphoneTriviaMenu()
 	
 	
 	//	int x = 0;
-	y = 50;
-	int w = 305;
+	// y = 50;
+	int w = 305 * screenScale;
 	int h = 250;
 	colour4_t color = { 0, 0, 0, 255 };
 	colour4_t colorWhite = { 255, 255, 255, 255 };
@@ -3963,16 +4277,27 @@ void iphoneTriviaMenu()
 		if (Position < lowerLimit )//startPosition - numTrivia*480)
 			Position = startPosition;// - (width+spacing);
 		
-		x = Position + (width+spacing)*i;
+		float xFloat = Position + (width+spacing)*i;
+		float yFloat = 50;
 		
-		if (x > 480 || x + width < 0)
+		if (xFloat > 480 || xFloat + width < 0)
 			continue;
 		
-		DrawBlendInBox( x-2, y-2, w+4, h+4, colorWhite, 71, 410-70);
-		DrawBlendInBox( x-1, y-1, w+2, h+2, colorGrey,  71, 410-70);
-		DrawBlendInBox( x,   y,   w,   h,   color,      71, 410-70);
+		ScalePosition( &xFloat, &yFloat );
+		
+		x = (int)xFloat;
+		y = (int)yFloat;
+		
+		int boxWidth = (410-70) * screenScale;
+		
+		DrawBlendInBox( x-2, y-2, w+4, h+4, colorWhite, 71 * screenScale, boxWidth);
+		DrawBlendInBox( x-1, y-1, w+2, h+2, colorGrey,  71 * screenScale, boxWidth);
+		DrawBlendInBox( x,   y,   w,   h,   color,      71 * screenScale, boxWidth);
 		//iphoneDrawTextInBox(RectMake(x, y+16, 16, 16), 410-70-32-16, triviaText[i], RectMake(71, 0, 320, 410-70));
-		iphoneDrawArialTextInBox(RectMake(x, y+16, 16, 16), 410-70-32-16, triviaText[i], RectMake(71, 0, 320, 410-70));
+		rect_t boxRect = RectMake(71, 0, 320, 410-70);
+		ScaleRect( &boxRect );
+		
+		iphoneDrawArialTextInBox(RectMake(x, y+16, 16, 16), (410-70-32-16) * screenScale, triviaText[i], boxRect );
 	}
 }
 
@@ -3984,20 +4309,21 @@ void iphoneMoreMenu()
 {
 	wasDLInstructionsCalledFromEpisodeMenu = 0;
 	
-	iphoneDrawPic(0, 0, 480, 320, "iphone/submenus_background_image.tga");
-	iphoneDrawPic(240-108*9/10, 0, 217*9/10, 50*9/10, "iphone/header_more.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( 0.0f, 0.0f, 480.0f, 320.0f ), "iphone/submenus_background_image.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( 240.0f-108*9/10.0f, 0.0f, 217.0f*9/10.0f, 50.0f*9/10.0f ), "iphone/header_more.tga");
 	
 	float scale =  40 / 32.0;
 	
 	if (BackButton()) {
 		menuState = IPM_MAIN;
+		iphoneStartMainMenu();
 	}
 	
-	if (iphoneDrawPicWithTouch(240-64*scale, 120, 128*scale, 32*scale, "iphone/button_trivia.tga")) {
+	if (iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 240-64*scale, 120, 128*scale, 32*scale ), "iphone/button_trivia.tga")) {
 		menuState = IPM_TRIVIA;
 	}
 	
-	if (iphoneDrawPicWithTouch(240-64*scale, 170, 128*scale, 32*scale, "iphone/button_downloads.tga")) {
+	if (iphoneDrawPicRectWithTouch( MakeScaledRectFloat( 240-64*scale, 170, 128*scale, 32*scale ), "iphone/button_downloads.tga")) {
 		menuState = IPM_DOWNLOADINSTRUCTIONS;
 	}
 }
@@ -4008,8 +4334,8 @@ void iphoneMoreMenu()
 //-----------------------------------
 void iphoneDownloadInstructionsMenu()
 {
-	iphoneDrawPic(0, 0, 480, 320, "iphone/submenus_background_image.tga");
-	iphoneDrawPic(240-108*9/10, 0, 217*9/10, 50*9/10, "iphone/header_downloads.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( 0.0f, 0.0f, 480.0f, 320.0f ), "iphone/submenus_background_image.tga");
+	iphoneDrawPicRect( MakeScaledRectFloat( 240.0f-108*9/10.0f, 0.0f, 217.0f*9/10.0f, 50.0f*9/10.0f ), "iphone/header_downloads.tga");
 	
 	if (BackButton())
 	{
@@ -4026,7 +4352,7 @@ void iphoneDownloadInstructionsMenu()
 	}
 	/*
 	if ( iphoneDrawPicWithTouch( 64, 0, 64, 36, "iphone/button_web.tga" ) ) { 
-		wasCalledFromDownloadInstructionsMenu = 1;
+		currentYesNoBox = ESNO_DOWNLOAD_INSTRUCTIONS;
 		iphoneYesNoBox("Website", "This will navigate you to idsoftware.com/iphone/wolf3dInstructions.html.  Continue?");
 	}*/
 	
@@ -4035,14 +4361,19 @@ void iphoneDownloadInstructionsMenu()
 							"  For details, go to:\n\nhttp://www.idsoftware.com/wolfenstein\n"
 							"-3d-classic-platinum/mapinstructions/";
 	
-	int x = 20;
-	int y = 100;
-	int w = 480-40;
-	int h = 150;
+	float x = 20;
+	float y = 100;
+	float w = 480-40;
+	float h = 150;
 	colour4_t color = { 0, 0, 0, 255 };
 	colour4_t colorGrey = { 100, 100, 100, 255 };
 	colour4_t colorWhite = { 255, 255, 255, 255 };
 	
+	x = ( viddef.width * 0.5f ) - ( w / 2.0f );
+	float contentHeight = REFERENCE_HEIGHT - 45.0f;
+	y = ( contentHeight * 0.5f ) - ( h / 2.0f );
+	
+	ScalePosition( NULL, &y );
 
 	//draw a background, behind the text, with a white border
 	R_Draw_Blend( x-2, y-2, w+4, h+4, colorWhite);
@@ -4050,12 +4381,15 @@ void iphoneDownloadInstructionsMenu()
 	R_Draw_Blend( x,   y,   w,   h,   color);
 
 	//draw arial text
-	iphoneDrawArialTextInBox(RectMake(x, y+16, 16, 16), 400, instructions, RectMake(10, 0, 480-40, 320));
+	rect_t boxRect = RectMake(10, 0, 480-40, 320);
+	ScaleRect( &boxRect );
+	
+	iphoneDrawArialTextInBox(RectMake(x, y+16, 16, 16), 400, instructions, boxRect );
 	
 	//check for touch events on the text itself
 	int	r = TouchReleased( x, y, w, h );
 	if ( r ) {
-		wasCalledFromDownloadInstructionsMenu = 1;
+		currentYesNoBox = YESNO_DOWNLOAD_INSTRUCTIONS;
 		iphoneYesNoBox("Website", "This will navigate you to idsoftware.com/wolfenstein-3d-classic-platinum/mapinstructions/  Continue?");
 	}
 	if ( TouchDown( x, y, w, h ) ) {
@@ -4064,7 +4398,7 @@ void iphoneDownloadInstructionsMenu()
 	}
 }
 
-
+#endif
 
 //gsh
 extern void iphoneSelectMapMenu();
@@ -4074,29 +4408,39 @@ extern void iphoneStoreKit();
 
 void iphoneDrawMenus() {
 //	iphoneDrawPic( 0, 0, 480, 320, "iphone/background_main_sepia.tga" );
-	iphoneDrawPic( 0, 0, 480, 320, "iphone/background_main_hued.tga" ); //gsh
+	//iphoneDrawPicRect( MakeScaledRectFloat( 0, 0, 480, 320 ), "iphone/background_main_hued.tga" ); //gsh
 	
 	switch ( menuState ) {
 		case IPM_MAIN: iphoneMainMenu(); break;
-		case IPM_SKILL: iphoneSkillMenu(); break;
-		case IPM_EPISODE: iphoneScrollingEpisodeMenu(); break;//gsh //iphoneEpisodeMenu(); break;
-		case IPM_MAPS: iphoneScrollingMapMenu(); break; //gsh iphoneMapMenu(); break;
+		case IPM_SKILL: /* iphoneSkillMenu(); */ break;
+		case IPM_EPISODE: /* iphoneScrollingEpisodeMenu(); */ break;//gsh //iphoneEpisodeMenu(); break;
+		case IPM_MAPS: /* iphoneScrollingMapMenu(); */ break; //gsh iphoneMapMenu(); break;
 	//	case IPM_MAPSELECTOR: iphoneSelectMapMenu(); break;  //gsh
-		case IPM_CONTROLS: iphoneControlMenu(); break;
+		case IPM_CONTROLS: /* iphoneControlMenu(); */ break;
 		case IPM_INTERMISSION: iphoneIntermission(); break;
 		case IPM_VICTORY: iphoneVictory(); break;
 		case IPM_AUTOMAP: iphoneAutomap(); break;
 		case IPM_STATS: iphoneStats(); break;
 		case IPM_HUDEDIT: iphoneHudEditFrame(); break;//gsh HudEditFrame(); break;
-		case IPM_DOWNLOADPROGRESS: iphoneDownloadMenu(); break; //gsh
+		case IPM_DOWNLOADPROGRESS: /* iphoneDownloadMenu(); */ break; //gsh
 #if SPEARSTOREKIT
 		case IPM_STOREKIT: iphoneStoreKit(); break; //gsh
 #endif
 //		case IPM_LOADING: iphoneLoadingMenu(); //gsh
-		case IPM_TRIVIA: iphoneTriviaMenu(); break;//gsh
-		case IPM_MORE: iphoneMoreMenu(); break;//gsh
-		case IPM_DOWNLOADINSTRUCTIONS: iphoneDownloadInstructionsMenu(); break; //gsh
+		case IPM_TRIVIA: /* iphoneTriviaMenu(); */ break;//gsh
+		case IPM_MORE: /* iphoneMoreMenu(); */ break;//gsh
+		case IPM_DOWNLOADINSTRUCTIONS: /* iphoneDownloadInstructionsMenu(); */ break; //gsh
+		default: break;
 	}
+	
+	// Draw letterbox bars. Some of the items in the level select menu spill beyond the scaled
+	// viewport, this is a quick way to hide them.
+	float contentHeight = REFERENCE_HEIGHT * screenScale;
+	float boxWidth = viddef.width;
+	float boxHeight = ( viddef.height - contentHeight ) / 2.0f;
+	R_DrawBox( 0, 0, boxWidth, boxHeight, 0xFF000000 );
+	// The lower box is adjusted to cover rows of pixels lost to floating-point truncation.
+	R_DrawBox( 0, boxHeight + contentHeight - 1, boxWidth, boxHeight + 2, 0xFF000000 );
 }
 
 
