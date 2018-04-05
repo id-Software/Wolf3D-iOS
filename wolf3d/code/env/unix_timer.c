@@ -57,7 +57,7 @@ PUBLIC W32 Sys_Milliseconds( void )
 	
 	if( ! secbase )
 	{
-		secbase = tp.tv_sec;
+		secbase = (int)tp.tv_sec;
 		return tp.tv_usec / 1000;
 	}
 

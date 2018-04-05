@@ -289,8 +289,8 @@ PUBLIC channel_t *Sound_PickChannel( W32 entNum, W32 entChannel )
 
 	ch = &s_channels[ firstToDie ];
 	
-	ch->entNum = entNum;
-	ch->entChannel = entChannel;
+	ch->entNum = (int)entNum;
+	ch->entChannel = (int)entChannel;
 	ch->startTime = iphoneFrameNum;
 
 	// Make sure this channel is stopped

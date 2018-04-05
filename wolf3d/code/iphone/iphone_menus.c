@@ -844,9 +844,9 @@ void SaveTheGame() {
 	LevelData_t copiedLevelData = levelData;
 	
 	for ( i = 0 ; i < copiedLevelData.Doors.doornum ; i++ ) {
-		int	index = r_world->Doors.Doors[i] - &r_world->Doors.DoorMap[0][0];
+		int	index = (int)(r_world->Doors.Doors[i] - &r_world->Doors.DoorMap[0][0]);
 		assert( index >= 0 && index < 4096 );
-		copiedLevelData.Doors.Doors[i] = (void *)index;
+		copiedLevelData.Doors.Doors[i] = (void *)(intptr_t)index;
 	}
 	
 	// this is only used for the mutant death face, so just
@@ -963,7 +963,7 @@ int iphoneGetUserMapName(int mapNumber, char *mapName)
 	struct dirent *ep;
 	char mapBuffer[1024];
 	
-	int length = strlen(iphoneDocDirectory);
+	int length = (int)strlen(iphoneDocDirectory);
 	strcpy(mapBuffer, iphoneDocDirectory);
 	strcpy(mapBuffer + length, "/usermaps/");
 	
@@ -1023,7 +1023,7 @@ int iphoneGetUserMapLevelByName(const char *mapName)
 	struct dirent *ep;
 	char mapBuffer[1024];
 	
-	int length = strlen(iphoneDocDirectory);
+	int length = (int)strlen(iphoneDocDirectory);
 	strcpy(mapBuffer, iphoneDocDirectory);
 	strcpy(mapBuffer + length, "/usermaps/");
 	
@@ -3248,9 +3248,9 @@ void DrawIntermissionStats() {
 	
 	// ratios
 	int correction = 8;
-	DrawRatio( 124+offset-1*correction, levelstate.killed_monsters, levelstate.total_monsters, "iphone/kills.tga" );
-	DrawRatio( 189+offset-2*correction, levelstate.found_secrets, levelstate.total_secrets, "iphone/secrets.tga" );
-	DrawRatio( 255+offset-3*correction, levelstate.found_treasure, levelstate.total_treasure, "iphone/treasure.tga" );
+	DrawRatio( 124+offset-1*correction, (int)levelstate.killed_monsters, (int)levelstate.total_monsters, "iphone/kills.tga" );
+	DrawRatio( 189+offset-2*correction, (int)levelstate.found_secrets, (int)levelstate.total_secrets, "iphone/secrets.tga" );
+	DrawRatio( 255+offset-3*correction, (int)levelstate.found_treasure, (int)levelstate.total_treasure, "iphone/treasure.tga" );
 }
 
 /*
@@ -3525,7 +3525,7 @@ void iphoneOpenAutomap() {
 	}
 
 	// sort the tiles to be drawn by texture
-	numMapTiles = mt - mapTiles;
+	numMapTiles = (int)(mt - mapTiles);
 	
 	qsort( mapTiles, numMapTiles, sizeof( mapTiles[0] ), MapTileSort );	
 }
@@ -3598,7 +3598,7 @@ void iphoneAutomap() {
 		
 	//touch down
 	if ( numTouches == 1 && numPrevTouches == 0) {
-		timeTouchDown = Sys_Milliseconds();
+		timeTouchDown = (int)Sys_Milliseconds();
 		prevTapX = tapX;
 		prevTapY = tapY;
 		tapX = touches[0][0];
@@ -3606,7 +3606,7 @@ void iphoneAutomap() {
 	}
 	//touch up
 	if ( numTouches == 0  && numPrevTouches == 1 ) {
-		unsigned int currentTime = Sys_Milliseconds();
+		unsigned int currentTime = (int)Sys_Milliseconds();
 		
 		//check if time between last tap and current time is too long
 		if (Sys_Milliseconds() - lastTapTime > 500 || zoom)
@@ -3617,7 +3617,7 @@ void iphoneAutomap() {
 
 			//record tap time if first tap
 			if (numTaps < 1)
-				lastTapTime = Sys_Milliseconds();
+				lastTapTime = (int)Sys_Milliseconds();
 			
 			++numTaps;
 			/*
@@ -3689,7 +3689,7 @@ void iphoneAutomap() {
 		//Com_Printf("dist: %f\n\n", dist);
 		
 		float tolerance = 0.5f;//3;
-		if ( abs(mapOrigin[0] - TargetX) < tolerance && abs(mapOrigin[1] - TargetY) < tolerance && abs(scale - TargetZoom) < tolerance/2)
+		if ( abs((int)mapOrigin[0] - (int)TargetX) < tolerance && abs((int)mapOrigin[1] - (int)TargetY) < tolerance && abs((int)scale - (int)TargetZoom) < tolerance/2)
 		{
 			mapOrigin[0] = TargetX;
 			mapOrigin[1] = TargetY;
@@ -4401,7 +4401,7 @@ void iphoneDownloadInstructionsMenu()
 #endif
 
 //gsh
-extern void iphoneSelectMapMenu();
+extern void iphoneSelectMapMenu(void);
 #if SPEARSTOREKIT
 extern void iphoneStoreKit();
 #endif

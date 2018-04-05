@@ -37,27 +37,39 @@ void interruptionListener( void *inUserData, UInt32 inInterruption)
 	if ( inInterruption == kAudioSessionEndInterruption )
 	{
 		// make sure we are again the active session
-		UInt32 audioCategory = kAudioSessionCategory_AmbientSound;
-		AudioSessionSetProperty(kAudioSessionProperty_AudioCategory, sizeof(audioCategory), &audioCategory);
-		AudioSessionSetActive( true );
+//        UInt32 audioCategory = kAudioSessionCategory_AmbientSound;
+//        AudioSessionSetProperty(kAudioSessionProperty_AudioCategory, sizeof(audioCategory), &audioCategory);
+//        AudioSessionSetActive( true );
 		// do we need to re-initialize the sound subsystem in this case?
+        
+        AVAudioSession *session = [AVAudioSession sharedInstance];
+        
+        NSError *setCategoryError = nil;
+        if (![session setCategory:AVAudioSessionCategoryAmbient
+                            error:&setCategoryError]) {
+            // handle error
+        }
 	}
 }
 
 int otherAudioIsPlaying;
 
 void SysIPhoneInitAudioSession() {
-	OSStatus status = 0;
-	status = AudioSessionInitialize(NULL, NULL, interruptionListener, NULL);	// else "couldn't initialize audio session"
-	UInt32 audioCategory = kAudioSessionCategory_AmbientSound;
-	status = AudioSessionSetProperty(kAudioSessionProperty_AudioCategory, sizeof(audioCategory), &audioCategory);
+    
+//    OSStatus status = 0;
+    [[AVAudioSession sharedInstance] setActive:YES error:nil];
+	NSString* audioCategory = AVAudioSessionCategoryAmbient;
+    [[AVAudioSession sharedInstance] setCategory:audioCategory error:nil];
+//    status = AudioSessionSetProperty(kAudioSessionProperty_AudioCategory, sizeof(audioCategory), &audioCategory);
 
-	AudioSessionPropertyID  propOtherAudioIsPlaying = kAudioSessionProperty_OtherAudioIsPlaying;
-	UInt32  size = sizeof( otherAudioIsPlaying );
-	AudioSessionGetProperty( propOtherAudioIsPlaying, &size, &otherAudioIsPlaying );
+//    AudioSessionPropertyID  propOtherAudioIsPlaying = kAudioSessionProperty_OtherAudioIsPlaying;
+//    UInt32  size = sizeof( otherAudioIsPlaying );
+//    AudioSessionGetProperty( propOtherAudioIsPlaying, &size, &otherAudioIsPlaying );
+    
+    otherAudioIsPlaying = [[AVAudioSession sharedInstance] isOtherAudioPlaying];
 
-	status = AudioSessionSetActive(true);                                       // else "couldn't set audio session active\n"	
-} 
+//    status = AudioSessionSetActive(true);                                       // else "couldn't set audio session active\n"
+}
 
 int SysIPhoneOtherAudioIsPlaying() {
 	static int called = 0;
@@ -118,7 +130,7 @@ int SysIPhoneGetPathToMainBundleLength( void )  {
 	
 	NSString *path = [mainBundle bundlePath];
 	
-	return [path length];
+	return (int)[path length];
 
 }
 
@@ -147,14 +159,26 @@ void SysIPhoneGetPathToMainBundle( char * outPath, int maxLength ) {
  ==================
  */
 void iphoneRotateForLandscape() {
-	switch ( deviceOrientation ) {
-		case ORIENTATION_LANDSCAPE_LEFT:
-			pfglRotatef( 90.0f, 0.0f, 0.0f, 1.0f );
-			break;
-		default:
-			pfglRotatef( -90.0f, 0.0f, 0.0f, 1.0f );
-			break;
-	}
+    
+    // TODO: get this working after a rotate, or before one.
+    //       could this be related to why we have to dink with the X touches?
+    
+//    switch ( deviceOrientation ) {
+//        case ORIENTATION_LANDSCAPE_LEFT:
+//            pfglRotatef( 0.0f, 0.0f, 0.0f, 1.0f );
+//            break;
+//        default:
+//            pfglRotatef( -180.0f, 0.0f, 0.0f, 1.0f );
+//            break;
+//    }
+//    switch ( deviceOrientation ) {
+//        case ORIENTATION_LANDSCAPE_LEFT:
+//            pfglRotatef( 90.0f, 0.0f, 0.0f, 1.0f );
+//            break;
+//        default:
+//            pfglRotatef( -90.0f, 0.0f, 0.0f, 1.0f );
+//            break;
+//    }
 }
 
 /*

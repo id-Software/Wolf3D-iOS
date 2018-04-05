@@ -61,7 +61,7 @@ void pfglColor4f( GLfloat r, GLfloat g, GLfloat b, GLfloat a );
 void pfglTexCoord2i( GLint s, GLint t );
 void pfglTexCoord2f( GLfloat s, GLfloat t );
 
-void pfglEnd();
+void pfglEnd(void);
 
 #ifdef __cplusplus
 }

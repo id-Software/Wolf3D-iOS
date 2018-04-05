@@ -80,7 +80,7 @@ Called by the system when the application gets product information about an In-A
 	// For now, immediately request payment for any items the user has requested.
 	for (SKProduct *product in myProduct)
 	{
-		SKPayment *payment = [SKPayment paymentWithProductIdentifier:[product productIdentifier]];
+		SKPayment *payment = [SKPayment paymentWithProduct:product];
 		[[SKPaymentQueue defaultQueue] addPayment:payment];
 	}
 	

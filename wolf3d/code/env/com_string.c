@@ -454,7 +454,7 @@ PUBLIC double StringToFloat( const char *string, W32 *error )
 	const char *ptr = string;
 	double number = 0;
 	SW32 exponent = 0;
-	W32 expError;
+    W32 expError = 0;
 	_boolean bNegative = false;
 
 	*error = 0;

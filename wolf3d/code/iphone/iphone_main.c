@@ -115,7 +115,7 @@ void Reset_f() {
  */
 void iphoneStartup() {
 	char	*s;
-	int		start = Sys_Milliseconds();
+	int		start = (int)Sys_Milliseconds();
 	static bool firstInit = true;
 	
 	if ( !firstInit ) {
@@ -291,7 +291,7 @@ void iphoneStartGameplay() {
  ===================
 */
 void iphonePreloadBeforePlay() {
-	int	start = Sys_Milliseconds();
+	int	start = (int)Sys_Milliseconds();
 	
 	// the texnums might have been different in the savegame
 	HudSetTexnums();

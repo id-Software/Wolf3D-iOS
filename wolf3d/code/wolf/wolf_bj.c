@@ -42,14 +42,14 @@ void SpawnBJVictory( void )
 {
 	entity_t *bj;
 
-	bj = SpawnActor( en_bj, POS2TILE(Player.position.origin[0]), POS2TILE(Player.position.origin[1]), dir4_north, r_world );
+	bj = SpawnActor( en_bj, (int)POS2TILE(Player.position.origin[0]), (int)POS2TILE(Player.position.origin[1]), dir4_north, r_world );
 	if( ! bj )
 	{
 		return;
 	}
 
-	bj->x = Player.position.origin[ 0 ];
-	bj->y = Player.position.origin[ 1 ];
+	bj->x = (int)Player.position.origin[ 0 ];
+	bj->y = (int)Player.position.origin[ 1 ];
 	bj->state = st_path1;
 	bj->speed = BJRUNSPEED;
 	bj->flags = FL_NONMARK; // FL_NEVERMARK;

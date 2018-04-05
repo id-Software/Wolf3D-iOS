@@ -102,7 +102,7 @@ UITableView interface
 
 - (void)handleSelectionAtIndexPath:(NSIndexPath*)indexPath {
 	int episodeIndex = episode->value;
-	int levelIndex = indexPath.row;	
+	int levelIndex = (int)indexPath.row;
 
 	// Prompt for In-App Purchase when the user selects a level that is not currently available.
 	if ( SysIPhoneGetContentVersion() == CONTENT_LITE ) {
@@ -165,10 +165,10 @@ UITableView interface
 	cell.selectionStyle = UITableViewCellSelectionStyleNone;
 	
 	// Cell text configuration	
-	NSString* levelName = [NSString stringWithFormat:@"Level %d", indexPath.row + 1 ];
+	NSString* levelName = [NSString stringWithFormat:@"Level %lu", (long)(indexPath.row + 1) ];
 	
 	int episodeIndex = episode->value;
-	int levelIndex = indexPath.row;
+	int levelIndex = (int)indexPath.row;
 
 	if ( episodeIndex < NUM_ORIGINAL_EPISODES ) {
 		// Wolfenstein episodes are the first six, and they all follow the pattern of 8 levels,
@@ -203,6 +203,8 @@ UITableView interface
 	
 	cell.textLabel.textColor = [UIColor lightGrayColor];
 	cell.textLabel.highlightedTextColor = [UIColor colorWithRed:98.0/255.0 green:149.0/255.0 blue:212.0/255.0 alpha:1.0];
+    
+    cell.backgroundColor = UIColor.clearColor;
 	
 	return cell;
 }
@@ -225,29 +227,12 @@ UITableView interface
 	[self handleSelectionAtIndexPath:indexPath];
 }
 
-// Override to allow orientations other than the default portrait orientation.
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-    // Return YES for supported orientations.
-    return UIInterfaceOrientationIsLandscape(interfaceOrientation);
-}
-
-
 - (void)didReceiveMemoryWarning {
     // Releases the view if it doesn't have a superview.
     [super didReceiveMemoryWarning];
     
-    // Release any cached data, images, etc. that aren't in use.
+    self.missionList = nil;
 }
-
-- (void)viewDidUnload {
-    [super viewDidUnload];
-    // Release any retained subviews of the main view.
-    // e.g. self.myOutlet = nil;
-	
-	self.missionList = nil;
-	
-}
-
 
 - (void)dealloc {
     [super dealloc];

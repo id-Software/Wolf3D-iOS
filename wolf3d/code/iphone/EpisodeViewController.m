@@ -94,31 +94,13 @@ static const char * const EpisodeNames[TOTAL_EPISODES][2] = {
 	[self handleSelectionAtIndexPath:initialPath];
 }
 
-
-
-// Override to allow orientations other than the default portrait orientation.
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-    // Return YES for supported orientations.
-    return UIInterfaceOrientationIsLandscape(interfaceOrientation);
-}
-
-
 - (void)didReceiveMemoryWarning {
     // Releases the view if it doesn't have a superview.
     [super didReceiveMemoryWarning];
     
-    // Release any cached data, images, etc. that aren't in use.
+    [self.episodeList release];
+    self.episodeList = nil;
 }
-
-- (void)viewDidUnload {
-    [super viewDidUnload];
-    // Release any retained subviews of the main view.
-    // e.g. self.myOutlet = nil;
-	
-	[self.episodeList release];
-	self.episodeList = nil;
-}
-
 
 - (void)dealloc {
     [super dealloc];
@@ -159,7 +141,7 @@ static const char * const EpisodeNames[TOTAL_EPISODES][2] = {
 	int maxRow = 0;
 	
 	for ( NSIndexPath* path in visibleIndexPaths ) {
-		maxRow = maxRow < path.row ? path.row: maxRow;
+		maxRow = maxRow < path.row ? (int)path.row: maxRow;
 	}
 	
 	const int rowToMakeVisible = maxRow + 1;
@@ -180,7 +162,7 @@ static const char * const EpisodeNames[TOTAL_EPISODES][2] = {
 	int minRow = TOTAL_EPISODES - 1;
 	
 	for ( NSIndexPath* path in visibleIndexPaths ) {
-		minRow = minRow < path.row ? minRow: path.row;
+		minRow = minRow < path.row ? minRow: (int)path.row;
 	}
 	
 	const int rowToMakeVisible = minRow - 1;
@@ -312,9 +294,10 @@ static CGRect maximumNameLabelFrame = { { 0.0, 0.0 }, { 0.0, 0.0 } };
     episodeNameLabel = (UILabel *)[cell viewWithTag:2];
     NSString* episodeNameText = [NSString stringWithCString:EpisodeNames[indexPath.row][1] encoding:NSASCIIStringEncoding];
 	
-	CGSize expectedLabelSize = [episodeNameText sizeWithFont:episodeNameLabel.font 
-                        constrainedToSize:maximumNameLabelFrame.size 
-                        lineBreakMode:episodeNameLabel.lineBreakMode]; 
+    CGSize expectedLabelSize = [episodeNameText boundingRectWithSize:maximumNameLabelFrame.size
+                                          options:NSStringDrawingUsesLineFragmentOrigin
+                                       attributes:@{NSFontAttributeName: episodeNameLabel.font}
+                                          context:nil].size;
 
 	//adjust the label the the new height.
 	CGRect newFrame = maximumNameLabelFrame;
@@ -322,6 +305,9 @@ static CGRect maximumNameLabelFrame = { { 0.0, 0.0 }, { 0.0, 0.0 } };
 	episodeNameLabel.frame = newFrame;
 		
 	episodeNameLabel.text = episodeNameText;
+    
+    cell.backgroundColor = UIColor.clearColor;
+    
 	
 	return cell;
 }

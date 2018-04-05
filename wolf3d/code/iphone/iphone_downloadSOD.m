@@ -506,7 +506,7 @@ void WriteInstallLog()
 // Installs the needed files for SOD and
 // removes any unwanted data
 //================================ 
-extern void iphoneWriteConfig();
+extern void iphoneWriteConfig(void);
 void FinalizeDownload()
 {
 	// get the documents directory

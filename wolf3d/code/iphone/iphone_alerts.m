@@ -51,8 +51,8 @@ void iphoneMessageBox(char *title, char *message)
 		InitAlert();
 	}
 	
-	NSString *nsTitle = [[NSString alloc] initWithCString:title];
-	NSString *nsMessage = [[NSString alloc] initWithCString:message];
+    NSString *nsTitle = [[NSString alloc] initWithCString:title encoding:NSUTF8StringEncoding];
+	NSString *nsMessage = [[NSString alloc] initWithCString:message encoding:NSUTF8StringEncoding];
 	
 	alert.title = nsTitle;
 	alert.message = nsMessage;
@@ -82,8 +82,8 @@ void iphoneNewMessageBox(char *title, char *message)
 							 otherButtonTitles: nil];
 	
 	
-	NSString *nsTitle = [[NSString alloc] initWithCString:title];
-	NSString *nsMessage = [[NSString alloc] initWithCString:message];
+	NSString *nsTitle = [[NSString alloc] initWithCString:title encoding:NSUTF8StringEncoding];
+	NSString *nsMessage = [[NSString alloc] initWithCString:message encoding:NSUTF8StringEncoding];
 	
 	newAlert.title = nsTitle;
 	newAlert.message = nsMessage;
@@ -121,8 +121,8 @@ void iphoneYesNoBox(char *title, char *message)
 		InitAlertYesNo();
 	}
 	
-	NSString *nsTitle = [[NSString alloc] initWithCString:title];
-	NSString *nsMessage = [[NSString alloc] initWithCString:message];
+	NSString *nsTitle = [[NSString alloc] initWithCString:title encoding:NSUTF8StringEncoding];
+	NSString *nsMessage = [[NSString alloc] initWithCString:message encoding:NSUTF8StringEncoding];
 	
 	alertYesNo.title = nsTitle;
 	alertYesNo.message = nsMessage;

@@ -53,14 +53,14 @@ void DownloadURLConnection( char *url )
 {
 	Com_Printf( "ConnectURL char *: %s\n", url );
 	
-	int length = strlen(url);
+	int length = (int)strlen(url);
 	if (length <= 4)
 	{
 		iphoneMessageBox("error", "url is not a valid map name.  Maps must end in \".map\"");
 		return;
 	}
 	
-	length = strlen(url);
+	length = (int)strlen(url);
 	//acquire file name of map
 	int pos = length;
 	while (pos > 0)

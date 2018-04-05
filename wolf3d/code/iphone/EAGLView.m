@@ -263,9 +263,9 @@ EAGLView *eaglview = nil;
 		}
 		
         
-		loggedTimes[iphoneFrameNum&(MAX_LOGGED_TIMES-1)].beforeSwap = Sys_Milliseconds();
+		loggedTimes[iphoneFrameNum&(MAX_LOGGED_TIMES-1)].beforeSwap = (int)Sys_Milliseconds();
         success = [context presentRenderbuffer:GL_RENDERBUFFER_OES];
-		loggedTimes[iphoneFrameNum&(MAX_LOGGED_TIMES-1)].afterSwap = Sys_Milliseconds();
+		loggedTimes[iphoneFrameNum&(MAX_LOGGED_TIMES-1)].afterSwap = (int)Sys_Milliseconds();
     }
     
     return success;
@@ -276,7 +276,7 @@ EAGLView *eaglview = nil;
 	//float widthRatio = ( self.bounds.size.width * deviceScale ) / REFERENCE_WIDTH;
 	//float heightRatio = ( self.bounds.size.height * deviceScale ) / REFERENCE_HEIGHT;
 	
-	[self deleteFramebuffer];
+	[self deleteFramebuffer];   
 	
 	/*
 	if ( widthRatio < heightRatio ) {
@@ -317,10 +317,15 @@ EAGLView *eaglview = nil;
     for (UITouch *myTouch in t)
     {
         CGPoint touchLocation = [myTouch locationInView:self];
-
-		points[ 2 * touchCount + 0 ] = touchLocation.x;
-		points[ 2 * touchCount + 1 ] = touchLocation.y; // ( h - 1 ) - touchLocation.y;
-		
+        
+        if ([[UIDevice currentDevice] orientation] == UIDeviceOrientationLandscapeLeft) {
+            points[ 2 * touchCount + 1 ] = self.bounds.size.width - (self.bounds.size.width - touchLocation.x);
+            points[ 2 * touchCount + 0 ] = self.bounds.size.height - touchLocation.y;
+        } else {
+            points[ 2 * touchCount + 1 ] = self.bounds.size.width - touchLocation.x;
+            points[ 2 * touchCount + 0 ] = self.bounds.size.height - (self.bounds.size.height - touchLocation.y);
+        }
+        
 		touchCount++;
 		
         if (myTouch.phase == UITouchPhaseBegan) {
@@ -353,7 +358,7 @@ EAGLView *eaglview = nil;
 			textField.autocorrectionType = UITextAutocorrectionTypeNo;
 			[textField becomeFirstResponder];
 		} else {
-			void iphoneDeactivateConsole();
+			void iphoneDeactivateConsole(void);
 			[textField resignFirstResponder];
 			[textField removeFromSuperview];
 			textField = nil;
@@ -479,7 +484,7 @@ void SysIPhoneLoadJPG( W8* jpegData, int jpegBytes, W8 **pic, W16 *width, W16 *h
 	*height = img.size.height;	
 	imgBytes = (int)(*width) * (int)(*height) * 4;
 	data = CGDataProviderCopyData( CGImageGetDataProvider( img.CGImage ) );
-	dataBytes = CFDataGetLength( data );
+	dataBytes = (int)CFDataGetLength( data );
 	*bytes = 4;
 	if ( dataBytes > imgBytes ) {
 		*pic = NULL;

@@ -24,6 +24,7 @@
 #import <UIKit/UIKit.h>
 #import <UIKit/UIAccelerometer.h>
 #import <AVFoundation/AVAudioPlayer.h>
+#import <CoreMotion/CoreMotion.h>
 
 #import "iphone_store.h"
 
@@ -46,6 +47,7 @@
 @property (nonatomic, retain) UINavigationController *navigationController;
 @property (nonatomic, retain) UIView *waitingView;
 @property (nonatomic, retain) AVAudioPlayer *player;
+@property (nonatomic, strong) CMMotionManager * motionManager;
 
 - (void)initMenuMusicPlayer;
 
@@ -53,7 +55,7 @@
 - (void)stopMenuMusic;
 
 
-- (void)restartAccelerometerIfNeeded;
+//- (void)restartAccelerometerIfNeeded;
 - (void)showOpenGL;
 - (void)GLtoMainMenu;
 - (void)GLtoPreviousMenu;

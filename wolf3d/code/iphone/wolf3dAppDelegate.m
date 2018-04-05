@@ -37,7 +37,7 @@ extern void AppendUserDataToFile(NSData* data);
 //extern void SaveData();
 
 //used for downloading custom made map
-extern void FinalizeUserDownload();
+extern void FinalizeUserDownload(void);
 
 yesNoBoxType_t currentYesNoBox = YESNO_NONE;
 
@@ -52,7 +52,7 @@ extern void GetSpear();
 
 extern void DownloadURLConnection(char *url);
 
-extern void iphoneSet2D();
+extern void iphoneSet2D(void);
 
 
 //extern bool isAlive;
@@ -69,7 +69,6 @@ extern void iphoneSet2D();
 
 char iphoneDocDirectory[1024];
 char iphoneAppDirectory[1024];
-
 
 void SysIPhoneVibrate() {
 	AudioServicesPlaySystemSound( kSystemSoundID_Vibrate );
@@ -138,9 +137,18 @@ void SysIPhoneVibrate() {
 							encoding: NSASCIIStringEncoding ];
 	
 	// start the flow of accelerometer events
-	UIAccelerometer *accelerometer = [UIAccelerometer sharedAccelerometer];
-	accelerometer.delegate = self;
-	accelerometer.updateInterval = 1.0 / 30.0;
+//    UIAccelerometer *accelerometer = [UIAccelerometer sharedAccelerometer];
+//    accelerometer.delegate = self;
+//    accelerometer.updateInterval = 1.0 / 30.0;
+    
+    [NSTimer scheduledTimerWithTimeInterval:0.01 target:self selector:@selector(updateDeviceMotion) userInfo:nil repeats:YES];
+
+    self.motionManager = [[CMMotionManager alloc] init];
+//    self.motionManager.accelerometerActive = YES;
+    self.motionManager.deviceMotionUpdateInterval = 1.0 / 30.0;
+    [self.motionManager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXArbitraryCorrectedZVertical];
+    
+    [self.motionManager startAccelerometerUpdates];
 	
 	// do all the game startup work
 	//iphoneStartup();
@@ -178,7 +186,16 @@ void SysIPhoneVibrate() {
 	// BEWARE! For UI*Interface*Orientation, Left/Right refers to the location of the home button.
 	// BUT, for UI*Device*Orientation, Left/Right refers to the location of the side OPPOSITE the home button!!
 	[self setScreenForOrientation:UIDeviceOrientationLandscapeRight];
-	
+    
+    CGRect screenBound = [[UIScreen mainScreen] bounds];
+    CGSize screenSize = screenBound.size;
+    
+    CGFloat screenHeight = screenSize.height;
+    CGFloat screenWidth = screenSize.width;
+    
+    window = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, screenWidth, screenHeight)];
+    window.bounds = CGRectMake(0, 0, screenWidth, screenHeight);
+
 	// Create the window programmatically instead of loading from a nib file.
 	self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
 	
@@ -195,6 +212,7 @@ void SysIPhoneVibrate() {
 	[rootController release];
 	
 	[window addSubview:navigationController.view];
+    [window setRootViewController:self.navigationController];
 	[window makeKeyAndVisible];
 
 	return YES;
@@ -208,7 +226,7 @@ void SysIPhoneVibrate() {
 	[[navigationController view] removeFromSuperview];
 	
 	[self.viewController setActive:YES];
-	[window addSubview:[self.viewController view]];
+    [window addSubview:[self.viewController view]];
 
 	[self.viewController startAnimation];
 }
@@ -220,19 +238,24 @@ void SysIPhoneVibrate() {
 }
 
 - (void)setScreenForOrientation:(UIDeviceOrientation) orientation {
+    
 	// Note the the UIDeviceOrientations are REVERSED from the UIInterface orientations!
-	switch (orientation) {	
+	switch (orientation) {
 		case UIDeviceOrientationLandscapeLeft:
-			deviceOrientation = ORIENTATION_LANDSCAPE_RIGHT;
-			viddef.width = [UIScreen mainScreen].bounds.size.height * deviceScale;
-			viddef.height = [UIScreen mainScreen].bounds.size.width * deviceScale;
+            deviceOrientation = ORIENTATION_LANDSCAPE_RIGHT;
+//            viddef.width = [UIScreen mainScreen].bounds.size.height * deviceScale;
+//            viddef.height = [UIScreen mainScreen].bounds.size.width * deviceScale;
+            viddef.width = [UIScreen mainScreen].bounds.size.width * deviceScale;
+            viddef.height = [UIScreen mainScreen].bounds.size.height * deviceScale;
 			//[UIApplication sharedApplication].statusBarOrientation = UIInterfaceOrientationLandscapeRight;
 			break;
 			
 		case UIDeviceOrientationLandscapeRight:
 			deviceOrientation = ORIENTATION_LANDSCAPE_LEFT;
-			viddef.width = [UIScreen mainScreen].bounds.size.height * deviceScale;
-			viddef.height = [UIScreen mainScreen].bounds.size.width * deviceScale;
+//            viddef.width = [UIScreen mainScreen].bounds.size.height * deviceScale;
+//            viddef.height = [UIScreen mainScreen].bounds.size.width * deviceScale;
+            viddef.width = [UIScreen mainScreen].bounds.size.width * deviceScale;
+            viddef.height = [UIScreen mainScreen].bounds.size.height * deviceScale;
 			//[UIApplication sharedApplication].statusBarOrientation = UIInterfaceOrientationLandscapeLeft;
 			break;
 			
@@ -418,29 +441,52 @@ extern char urlbuffer[1024];
 	[super dealloc];
 }
 
-- (void)restartAccelerometerIfNeeded {
+//- (void)restartAccelerometerIfNeeded {
+//
+//    // I have no idea why this seems to happen sometimes...
+//    if ( Sys_Milliseconds() - lastAccelUpdateMsec > 1000 ) {
+//        static int count;
+//        if ( ++count < 5 ) {
+//            printf( "Restarting accelerometer updates.\n" );
+//        }
+//        UIAccelerometer *accelerometer = [UIAccelerometer sharedAccelerometer];
+//        accelerometer.delegate = self;
+//        accelerometer.updateInterval = 1.0 / 30.0;
+//    }
+//}
 
-	// I have no idea why this seems to happen sometimes...
-	if ( Sys_Milliseconds() - lastAccelUpdateMsec > 1000 ) {
-		static int count;
-		if ( ++count < 5 ) {
-			printf( "Restarting accelerometer updates.\n" );
-		}
-		UIAccelerometer *accelerometer = [UIAccelerometer sharedAccelerometer];
-		accelerometer.delegate = self;
-		accelerometer.updateInterval = 1.0 / 30.0;
-	}
-}
+//- (void)accelerometer:(UIAccelerometer *)accelerometer didAccelerate:(UIAcceleration *)acceleration
+//{
+//    float acc[4];
+//    acc[0] = acceleration.x;
+//    acc[1] = acceleration.y;
+//    acc[2] = acceleration.z;
+//    acc[3] = acceleration.timestamp;
+//    iphoneTiltEvent( acc );
+//    lastAccelUpdateMsec = (int)Sys_Milliseconds();
+////    Com_Printf("acc: x: %f y: %f z: %f\n", acceleration.x, acceleration.y, acceleration.z);
+//
+//}
 
-- (void)accelerometer:(UIAccelerometer *)accelerometer didAccelerate:(UIAcceleration *)acceleration
-{	
-	float acc[4];
-	acc[0] = acceleration.x;
-	acc[1] = acceleration.y;
-	acc[2] = acceleration.z;
-	acc[3] = acceleration.timestamp;
-	iphoneTiltEvent( acc );
-	lastAccelUpdateMsec = Sys_Milliseconds();
+-(void)updateDeviceMotion
+{
+    CMAccelerometerData *deviceMotion = self.motionManager.accelerometerData;
+
+    if(deviceMotion == nil)
+    {
+        return;
+    }
+
+//    CMAcceleration acceleration = deviceMotion.acceleration;
+//    Com_Printf("cmm:x: %f y: %f z: %f\n", acceleration.x, acceleration.y, acceleration.z);
+
+    float acc[4];
+    acc[0] = deviceMotion.acceleration.x;
+    acc[1] = deviceMotion.acceleration.y;
+    acc[2] = deviceMotion.acceleration.z;
+    acc[3] = deviceMotion.timestamp;
+    iphoneTiltEvent( acc );
+    lastAccelUpdateMsec = (int)Sys_Milliseconds();
 }
 
 //------------------------------------------------------------

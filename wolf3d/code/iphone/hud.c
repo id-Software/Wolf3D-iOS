@@ -23,16 +23,16 @@
 
 #include "../wolfiphone.h"
 
-extern int BackButton();
-extern int MenuButton();
+extern int BackButton(void);
+extern int MenuButton(void);
 
 hud_t	huds;
 
-void HudDraw();
+void HudDraw(void);
 
-void HudWrite();
+void HudWrite(void);
 
-void HudRead();
+void HudRead(void);
 
 hudPic_t	*dragHud;
 int			dragX, dragY;

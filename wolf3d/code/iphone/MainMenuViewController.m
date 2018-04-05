@@ -34,7 +34,7 @@
 @interface MainMenuViewController ()
 
     @property (nonatomic, retain) IBOutlet UIButton *resumeButton;
-    @property (nonatomic, retain) IBOutlet UIButton *newGameButton;
+    @property (nonatomic, retain) IBOutlet UIButton *startNewGameButton;
     @property (nonatomic, retain) IBOutlet UIButton *settingsButton;
     @property (nonatomic, retain) IBOutlet UIButton *aboutButton;
 	@property (nonatomic, retain) IBOutlet UIButton *extrasButton;
@@ -57,35 +57,32 @@
 
 @implementation MainMenuViewController
 
-@synthesize resumeButton, newGameButton, settingsButton, aboutButton, extrasButton, resumeStar;
+@synthesize resumeButton, startNewGameButton, settingsButton, aboutButton, extrasButton, resumeStar;
 @synthesize creditsButton, legalButton;
 @synthesize idGamesButton, idSoftwareButton, triviaButton;
 @synthesize backButton;
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-	return UIInterfaceOrientationIsLandscape(interfaceOrientation);
-}
-
-- (void)viewDidUnload {
-    [super viewDidUnload];
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
-	
-	self.resumeButton = nil;
-	self.newGameButton = nil;
-	self.settingsButton = nil;
-	self.aboutButton = nil;
-	self.extrasButton = nil;
-	self.resumeStar = nil;
-	
-	self.idGamesButton = nil;
-	self.idSoftwareButton = nil;
-	self.triviaButton = nil;
-	
-	self.creditsButton = nil;
-	self.legalButton = nil;
-	
-	self.backButton = nil;
+    
+    self.resumeButton = nil;
+    self.startNewGameButton = nil;
+    self.settingsButton = nil;
+    self.aboutButton = nil;
+    self.extrasButton = nil;
+    self.resumeStar = nil;
+    
+    self.idGamesButton = nil;
+    self.idSoftwareButton = nil;
+    self.triviaButton = nil;
+    
+    self.creditsButton = nil;
+    self.legalButton = nil;
+    
+    self.backButton = nil;
 }
 
 - (IBAction)resume:(id)sender {
@@ -157,7 +154,7 @@
 - (void)setMainHidden:(BOOL)hide {
 	// Set the main menu visibility
 	[self.resumeButton setHidden:hide];
-	[self.newGameButton setHidden:hide];
+	[self.startNewGameButton setHidden:hide];
 	[self.settingsButton setHidden:hide];
 	[self.aboutButton setHidden:hide];
 	[self.extrasButton setHidden:hide];

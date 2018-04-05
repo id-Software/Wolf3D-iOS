@@ -34,7 +34,7 @@ void UITableViewScrollingPageDown( UITableView * table, int totalRows ) {
 	int maxRow = 0;
 	
 	for ( NSIndexPath* path in visibleIndexPaths ) {
-		maxRow = maxRow < path.row ? path.row: maxRow;
+		maxRow = maxRow < path.row ? (int)path.row: maxRow;
 	}
 	
 	const int rowToMakeVisible = maxRow + 1;
@@ -54,7 +54,7 @@ void UITableViewScrollingPageUp( UITableView * table, int totalRows ) {
 	int minRow = totalRows - 1;
 	
 	for ( NSIndexPath* path in visibleIndexPaths ) {
-		minRow = minRow < path.row ? minRow: path.row;
+		minRow = minRow < path.row ? minRow: (int)path.row;
 	}
 	
 	const int rowToMakeVisible = minRow - 1;

@@ -108,23 +108,23 @@ PRIVATE void Wav_FindChunk( const char *name )
 	Wav_FindNextChunk( name );
 }
 
-PRIVATE void DumpChunks( void )
-{
-	char str[ 5 ];
-	
-	str[ 4 ] = 0;
-	iff_pdata = iff_data;
-	do
-	{
-		memcpy( str, iff_pdata, 4 );
-		iff_pdata += 4;
-		iff_chunk_len = Wav_GetLittleLong();
-		Com_Printf( "0x%x : %s (%d)\n", (int)(iff_pdata - 4), str, iff_chunk_len );
-		iff_pdata += (iff_chunk_len + 1) & ~1;
-
-	} while( iff_pdata < iff_end );
-
-}
+//PRIVATE void DumpChunks( void )
+//{
+//    char str[ 5 ];
+//
+//    str[ 4 ] = 0;
+//    iff_pdata = iff_data;
+//    do
+//    {
+//        memcpy( str, iff_pdata, 4 );
+//        iff_pdata += 4;
+//        iff_chunk_len = Wav_GetLittleLong();
+//        Com_Printf( "0x%x : %s (%d)\n", (int)(iff_pdata - 4), str, iff_chunk_len );
+//        iff_pdata += (iff_chunk_len + 1) & ~1;
+//
+//    } while( iff_pdata < iff_end );
+//
+//}
 
 
 /*
