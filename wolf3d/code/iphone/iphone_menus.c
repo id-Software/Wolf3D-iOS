@@ -3276,8 +3276,12 @@ void iphoneIntermission() {
 	//----------------------
 	// tap for next level
 	//----------------------
-	if ( !TouchReleased( 0, 0, viddef.width, viddef.height ) ) {
-		return;
+    if (buttonAPressed) {
+        // do nothing!
+    } else if ( !TouchReleased( 0, 0, viddef.width, viddef.height ) ) {
+        if (!buttonAPressed) {
+            return;
+        }
 	}
 	
 	menuState = IPM_GAME;

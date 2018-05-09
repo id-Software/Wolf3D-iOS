@@ -162,6 +162,7 @@ Called by updatedTransactions when a request fails.
 {
 	if (transaction.error.code != SKErrorPaymentCancelled)
     {
+#if !TARGET_OS_TV
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"In-App Purchase error"
 												  message:[transaction.error localizedDescription]
 												  delegate:nil
@@ -170,6 +171,7 @@ Called by updatedTransactions when a request fails.
 												  
 		[alert show];
 		[alert release];
+#endif
     }
     [[SKPaymentQueue defaultQueue] finishTransaction: transaction];
 	
@@ -286,6 +288,7 @@ void InAppPurchaseStartPurchase( const char * productIdentifier ) {
 	} else {
 		// User has disabled In-App purchases in settings. Kindly remind him that he can
 		// enable purchases again.
+#if !TARGET_OS_TV
 		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"In-App Purchases are disabled"
 			message:@"You can enable In-App purchases in your device's settings."
 			delegate:nil
@@ -294,6 +297,7 @@ void InAppPurchaseStartPurchase( const char * productIdentifier ) {
 			
 		[alert show];
 		[alert release];
+#endif
 	}
 
 }

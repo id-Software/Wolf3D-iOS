@@ -24,6 +24,7 @@
 #import "SkillViewController.h"
 #import "EpisodeViewController.h"
 #import "wolf_local.h"
+#import "wolf3dAppDelegate.h"
 
 @interface SkillViewController ()
 
@@ -65,6 +66,9 @@
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
 - (void)viewDidLoad {
     [super viewDidLoad];
+#if TARGET_OS_TV
+    self.selectionFrame.hidden = YES;
+#endif
 }
 
 - (void)viewDidLayoutSubviews {
@@ -90,7 +94,8 @@
 }
 
 - (IBAction)next:(id)sender {
-	EpisodeViewController *evc = [[EpisodeViewController alloc] initWithNibName:@"EpisodeView" bundle:nil];
+    wolf3dAppDelegate* app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+	EpisodeViewController *evc = [[EpisodeViewController alloc] initWithNibName:[app GetNibNameForDevice:@"EpisodeView"] bundle:nil];
 	[self.navigationController pushViewController:evc animated:YES];
 	[evc release];
 }
@@ -99,21 +104,33 @@
 -(IBAction)canIPlayDaddy:(id)sender {
 	Cvar_SetValue( skill->name, 0 );
 	[self setSelectionFrame];
+#if TARGET_OS_TV
+    [self next:sender];
+#endif
 }
 
 -(IBAction)dontHurtMe:(id)sender {
 	Cvar_SetValue( skill->name, 1 );
 	[self setSelectionFrame];
+#if TARGET_OS_TV
+    [self next:sender];
+#endif
 }
 
 -(IBAction)BringEmOn:(id)sender {
 	Cvar_SetValue( skill->name, 2 );
 	[self setSelectionFrame];
+#if TARGET_OS_TV
+    [self next:sender];
+#endif
 }
 
 -(IBAction)IAmDeathIncarnate:(id)sender {
 	Cvar_SetValue( skill->name, 3 );
 	[self setSelectionFrame];
+#if TARGET_OS_TV
+    [self next:sender];
+#endif
 }
 
 @end

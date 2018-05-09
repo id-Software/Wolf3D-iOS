@@ -106,6 +106,9 @@ int TestURLConnection()
 //-----------------------------
 void OpenURLConnection( const char *url )
 {
+    // the entire bit with downloading the SOD expansion is disabled on tvOS for now -tkidd
+    
+#if !TARGET_OS_TV
 	Com_Printf( "ConnectURL char *: %s\n", url );
 	
 	//convert url to nsstring
@@ -115,7 +118,7 @@ void OpenURLConnection( const char *url )
 	NSURLRequest *theRequest=[NSURLRequest requestWithURL:[NSURL URLWithString:nssURL]
 											  cachePolicy:NSURLRequestUseProtocolCachePolicy
 										  timeoutInterval:60.0];
-	
+    
 	// create the connection with the request
 	// and start loading the data
 	NSURLConnection *theConnection=[[NSURLConnection alloc] initWithRequest:theRequest 
@@ -132,6 +135,7 @@ void OpenURLConnection( const char *url )
 		//return to main menu
 		menuState = IPM_MAIN;
 	}
+#endif
 }
 
 //============================

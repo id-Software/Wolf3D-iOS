@@ -225,7 +225,16 @@ UITableView interface
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 
 	[self handleSelectionAtIndexPath:indexPath];
+#if TARGET_OS_TV
+    [self next:self];
+#endif
 }
+
+#if TARGET_OS_TV
+-(NSArray<id<UIFocusEnvironment>> *)preferredFocusEnvironments {
+    return @[missionList];
+}
+#endif
 
 - (void)didReceiveMemoryWarning {
     // Releases the view if it doesn't have a superview.

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder.AppleTV.XIB" version="3.0" toolsVersion="14109" targetRuntime="AppleTV" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="appleTV" orientation="landscape">
+        <adaptation id="light"/>
+    </device>
+    <dependencies>
+        <deployment identifier="tvOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="SkillViewController">
+            <connections>
+                <outlet property="selectionFrame" destination="35" id="37"/>
+                <outlet property="view" destination="1" id="3"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="1">
+            <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFill" fixedFrame="YES" image="wolf_bg" translatesAutoresizingMaskIntoConstraints="NO" id="4">
+                    <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                </imageView>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="iIi-X8-EoY">
+                    <rect key="frame" x="205" y="0.0" width="614" height="768"/>
+                    <subviews>
+                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" image="highlight_bracket" translatesAutoresizingMaskIntoConstraints="NO" id="35">
+                            <rect key="frame" x="20" y="61" width="623" height="174"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="174" id="Kiz-t2-Zq3"/>
+                                <constraint firstAttribute="width" constant="623" id="mFr-Mw-nkB"/>
+                            </constraints>
+                        </imageView>
+                        <imageView userInteractionEnabled="NO" tag="1" contentMode="scaleToFill" image="episode_bracket" translatesAutoresizingMaskIntoConstraints="NO" id="12">
+                            <rect key="frame" x="4" y="52" width="606" height="151"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="606" id="9E5-cQ-9H0"/>
+                                <constraint firstAttribute="height" constant="151" id="vLE-sC-Wug"/>
+                            </constraints>
+                        </imageView>
+                        <imageView userInteractionEnabled="NO" tag="2" contentMode="scaleToFill" image="episode_bracket" translatesAutoresizingMaskIntoConstraints="NO" id="13">
+                            <rect key="frame" x="4" y="223" width="606" height="151"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="606" id="JQ6-uc-QEt"/>
+                                <constraint firstAttribute="height" constant="151" id="gGz-6v-dqx"/>
+                            </constraints>
+                        </imageView>
+                        <imageView userInteractionEnabled="NO" tag="3" contentMode="scaleToFill" image="episode_bracket" translatesAutoresizingMaskIntoConstraints="NO" id="14">
+                            <rect key="frame" x="8" y="394" width="606" height="151"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="151" id="NkK-Dw-YE6"/>
+                                <constraint firstAttribute="width" constant="606" id="kDn-jU-JUA"/>
+                            </constraints>
+                        </imageView>
+                        <imageView userInteractionEnabled="NO" tag="4" contentMode="scaleToFill" image="episode_bracket" translatesAutoresizingMaskIntoConstraints="NO" id="15">
+                            <rect key="frame" x="8" y="565" width="606" height="151"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="151" id="Tf1-N9-a3N"/>
+                                <constraint firstAttribute="width" constant="606" id="bkM-iv-Sjt"/>
+                            </constraints>
+                        </imageView>
+                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Difficulty Select" lineBreakMode="tailTruncation" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="11" customClass="UIFontLabel">
+                            <rect key="frame" x="0.0" y="0.0" width="295" height="52"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="52" id="OkH-YP-XNl"/>
+                                <constraint firstAttribute="width" constant="295" id="euI-Bw-9tY"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="44"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        </label>
+                        <button autoresizesSubviews="NO" opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="left" contentVerticalAlignment="bottom" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="21" customClass="UIFontButton">
+                            <rect key="frame" x="22" y="52" width="588" height="151"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="151" id="Obp-mG-K5d"/>
+                                <constraint firstAttribute="width" constant="588" id="bzA-pg-T3T"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name="Helvetica-Bold" family="Helvetica" pointSize="48"/>
+                            <state key="normal" title="       Can I Play, Daddy?">
+                                <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </state>
+                            <state key="highlighted" backgroundImage="highlight_bracket">
+                                <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </state>
+                            <state key="focused" backgroundImage="highlight_bracket"/>
+                            <connections>
+                                <action selector="canIPlayDaddy:" destination="-1" eventType="primaryActionTriggered" id="31"/>
+                            </connections>
+                        </button>
+                        <button autoresizesSubviews="NO" opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="left" contentVerticalAlignment="bottom" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="22" customClass="UIFontButton">
+                            <rect key="frame" x="22" y="223" width="588" height="151"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="151" id="Fxj-mx-DmE"/>
+                                <constraint firstAttribute="width" constant="588" id="ZV4-Zp-TOw"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name="Helvetica-Bold" family="Helvetica" pointSize="48"/>
+                            <state key="normal" title="       Don't Hurt Me">
+                                <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </state>
+                            <state key="highlighted" backgroundImage="highlight_bracket">
+                                <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </state>
+                            <state key="focused" backgroundImage="highlight_bracket"/>
+                            <connections>
+                                <action selector="dontHurtMe:" destination="-1" eventType="primaryActionTriggered" id="32"/>
+                            </connections>
+                        </button>
+                        <button autoresizesSubviews="NO" opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="left" contentVerticalAlignment="bottom" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="23" customClass="UIFontButton">
+                            <rect key="frame" x="22" y="394" width="592" height="151"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="592" id="Hfo-w3-War"/>
+                                <constraint firstAttribute="height" constant="151" id="Kr1-i5-WY9"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name="Helvetica-Bold" family="Helvetica" pointSize="48"/>
+                            <state key="normal" title="       Bring 'Em On!">
+                                <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </state>
+                            <state key="highlighted" backgroundImage="highlight_bracket">
+                                <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </state>
+                            <state key="focused" backgroundImage="highlight_bracket"/>
+                            <connections>
+                                <action selector="BringEmOn:" destination="-1" eventType="primaryActionTriggered" id="30"/>
+                            </connections>
+                        </button>
+                        <button autoresizesSubviews="NO" opaque="NO" contentMode="scaleAspectFit" contentHorizontalAlignment="left" contentVerticalAlignment="bottom" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="24" customClass="UIFontButton">
+                            <rect key="frame" x="22" y="565" width="592" height="151"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="151" id="h01-jq-l52"/>
+                                <constraint firstAttribute="width" constant="592" id="uS6-bZ-1CU"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name="Helvetica-Bold" family="Helvetica" pointSize="48"/>
+                            <state key="normal" title="       I am Death Incarnate!">
+                                <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="titleShadowColor" red="0.5" green="0.5" blue="0.5" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </state>
+                            <state key="highlighted" backgroundImage="highlight_bracket">
+                                <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </state>
+                            <state key="focused" backgroundImage="highlight_bracket"/>
+                            <connections>
+                                <action selector="IAmDeathIncarnate:" destination="-1" eventType="primaryActionTriggered" id="33"/>
+                            </connections>
+                        </button>
+                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="difficulty_head1" translatesAutoresizingMaskIntoConstraints="NO" id="R7G-C4-M3c">
+                            <rect key="frame" x="22" y="74" width="79" height="107"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="107" id="2VV-pk-fvE"/>
+                                <constraint firstAttribute="width" constant="79" id="khd-rC-AbQ"/>
+                            </constraints>
+                        </imageView>
+                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="difficulty_head2" translatesAutoresizingMaskIntoConstraints="NO" id="fOA-bX-5bb">
+                            <rect key="frame" x="22" y="245" width="79" height="107"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="79" id="3h0-Og-8az"/>
+                                <constraint firstAttribute="height" constant="107" id="W5T-oN-h5H"/>
+                            </constraints>
+                        </imageView>
+                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="difficulty_head3" translatesAutoresizingMaskIntoConstraints="NO" id="29L-lJ-brz">
+                            <rect key="frame" x="22" y="416" width="79" height="107"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="79" id="5IX-8G-Kjb"/>
+                                <constraint firstAttribute="height" constant="107" id="WED-Jv-m8h"/>
+                            </constraints>
+                        </imageView>
+                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="difficulty_head4" translatesAutoresizingMaskIntoConstraints="NO" id="BXu-Um-H4P">
+                            <rect key="frame" x="22" y="587" width="79" height="107"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="107" id="DbQ-J5-HXx"/>
+                                <constraint firstAttribute="width" constant="79" id="YUq-R6-2o2"/>
+                            </constraints>
+                        </imageView>
+                    </subviews>
+                    <constraints>
+                        <constraint firstItem="12" firstAttribute="leading" secondItem="iIi-X8-EoY" secondAttribute="leading" constant="4" id="06J-2H-TAG"/>
+                        <constraint firstItem="11" firstAttribute="leading" secondItem="iIi-X8-EoY" secondAttribute="leading" id="3Ed-qt-EvU"/>
+                        <constraint firstItem="22" firstAttribute="top" secondItem="12" secondAttribute="bottom" constant="20" id="66N-sn-F57"/>
+                        <constraint firstItem="13" firstAttribute="top" secondItem="12" secondAttribute="bottom" constant="20" id="GeR-3T-tgP"/>
+                        <constraint firstItem="15" firstAttribute="leading" secondItem="iIi-X8-EoY" secondAttribute="leading" constant="8" id="Gnw-nf-Y3I"/>
+                        <constraint firstItem="24" firstAttribute="top" secondItem="14" secondAttribute="bottom" constant="20" id="IYI-EY-rXg"/>
+                        <constraint firstItem="22" firstAttribute="leading" secondItem="iIi-X8-EoY" secondAttribute="leading" constant="22" id="LJM-7y-aIT"/>
+                        <constraint firstItem="23" firstAttribute="leading" secondItem="iIi-X8-EoY" secondAttribute="leading" constant="22" id="Pc4-xp-2Jm"/>
+                        <constraint firstItem="BXu-Um-H4P" firstAttribute="top" secondItem="14" secondAttribute="bottom" constant="42" id="QIq-zG-WwF"/>
+                        <constraint firstItem="13" firstAttribute="leading" secondItem="iIi-X8-EoY" secondAttribute="leading" constant="4" id="Qmd-9y-fox"/>
+                        <constraint firstItem="29L-lJ-brz" firstAttribute="top" secondItem="13" secondAttribute="bottom" constant="42" id="RNB-Br-vOH"/>
+                        <constraint firstItem="14" firstAttribute="top" secondItem="13" secondAttribute="bottom" constant="20" id="Tpl-uO-bDZ"/>
+                        <constraint firstItem="14" firstAttribute="leading" secondItem="iIi-X8-EoY" secondAttribute="leading" constant="8" id="Utu-qW-InM"/>
+                        <constraint firstItem="fOA-bX-5bb" firstAttribute="top" secondItem="35" secondAttribute="bottom" constant="10" id="V7j-2U-pdQ"/>
+                        <constraint firstItem="15" firstAttribute="top" secondItem="14" secondAttribute="bottom" constant="20" id="Wuv-oQ-AsO"/>
+                        <constraint firstItem="11" firstAttribute="top" secondItem="iIi-X8-EoY" secondAttribute="top" id="Xym-TO-Z7L"/>
+                        <constraint firstItem="21" firstAttribute="leading" secondItem="iIi-X8-EoY" secondAttribute="leading" constant="22" id="Zez-0T-7KI"/>
+                        <constraint firstItem="R7G-C4-M3c" firstAttribute="leading" secondItem="iIi-X8-EoY" secondAttribute="leading" constant="22" id="bNY-qh-Wit"/>
+                        <constraint firstItem="24" firstAttribute="leading" secondItem="iIi-X8-EoY" secondAttribute="leading" constant="22" id="c7A-Hb-saF"/>
+                        <constraint firstItem="21" firstAttribute="top" secondItem="11" secondAttribute="bottom" id="dDE-Q5-Ug0"/>
+                        <constraint firstItem="29L-lJ-brz" firstAttribute="leading" secondItem="iIi-X8-EoY" secondAttribute="leading" constant="22" id="eU4-4g-Et8"/>
+                        <constraint firstItem="35" firstAttribute="top" secondItem="11" secondAttribute="bottom" constant="9" id="eaM-3g-H2i"/>
+                        <constraint firstAttribute="width" constant="614" id="ihM-wr-jPE"/>
+                        <constraint firstItem="12" firstAttribute="top" secondItem="11" secondAttribute="bottom" id="kS5-mJ-QBW"/>
+                        <constraint firstItem="fOA-bX-5bb" firstAttribute="leading" secondItem="iIi-X8-EoY" secondAttribute="leading" constant="22" id="l5u-97-pfE"/>
+                        <constraint firstItem="23" firstAttribute="top" secondItem="13" secondAttribute="bottom" constant="20" id="mK0-5q-UMu"/>
+                        <constraint firstItem="35" firstAttribute="leading" secondItem="iIi-X8-EoY" secondAttribute="leading" constant="20" id="nCZ-fG-smY"/>
+                        <constraint firstItem="BXu-Um-H4P" firstAttribute="leading" secondItem="iIi-X8-EoY" secondAttribute="leading" constant="22" id="uls-c2-fsE"/>
+                        <constraint firstItem="R7G-C4-M3c" firstAttribute="top" secondItem="11" secondAttribute="bottom" constant="22" id="y7r-hc-dRb"/>
+                        <constraint firstAttribute="height" constant="768" id="yzT-VR-85v"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <constraints>
+                <constraint firstItem="iIi-X8-EoY" firstAttribute="centerY" secondItem="1" secondAttribute="centerY" id="BUg-tS-KdP"/>
+                <constraint firstItem="iIi-X8-EoY" firstAttribute="centerX" secondItem="1" secondAttribute="centerX" id="D3j-po-LNv"/>
+                <constraint firstItem="iIi-X8-EoY" firstAttribute="centerX" secondItem="1" secondAttribute="centerX" id="IDb-Kd-Xyy"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="difficulty_head1" width="64" height="87"/>
+        <image name="difficulty_head2" width="60" height="82"/>
+        <image name="difficulty_head3" width="60" height="78"/>
+        <image name="difficulty_head4" width="59" height="79"/>
+        <image name="episode_bracket" width="606" height="168"/>
+        <image name="highlight_bracket" width="623" height="189"/>
+        <image name="wolf_bg" width="480" height="320"/>
+    </resources>
+</document>

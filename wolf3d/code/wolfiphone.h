@@ -118,3 +118,20 @@ void picTimingClear(void);
 #define IS_IPHONE (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
 #define IS_IPHONE_X (IS_IPHONE && SCREEN_MAX_LENGTH == 812.0)
 extern bool isiPhoneX;
+
+// Game controller stuff
+extern bool controllerConnected;
+extern bool leftTriggerPressed;
+extern bool rightTriggerPressed;
+extern bool leftShoulderPressed;
+extern bool rightShoulderPressed;
+extern bool buttonAPressed;
+extern bool buttonBPressed;
+extern bool buttonXPressed;
+extern bool buttonYPressed;
+// TODO: d-pad
+extern float leftThumbstickYAxis;
+extern float leftThumbstickXAxis;
+extern float rightThumbstickYAxis;
+extern float rightThumbstickXAxis;
+

@@ -23,6 +23,7 @@
 
 #import "EpisodeViewController.h"
 #import "LevelSelectViewController.h"
+#import "wolf3dAppDelegate.h"
 
 #import "wolfiphone.h"
 
@@ -86,12 +87,14 @@ static const char * const EpisodeNames[TOTAL_EPISODES][2] = {
 	
 	// TODO: Select the current episode. Haven't yet figured out a good way to get the table
 	// view to load with a default row selected, so for now always select episode 1.
+#if !TARGET_OS_TV
 	int initialEpisode = 0;
 	
 	NSIndexPath *initialPath = [NSIndexPath indexPathForRow:initialEpisode inSection:0];
 	
 	[self.episodeList selectRowAtIndexPath:initialPath animated:YES scrollPosition:UITableViewScrollPositionNone];
 	[self handleSelectionAtIndexPath:initialPath];
+#endif
 }
 
 - (void)didReceiveMemoryWarning {
@@ -125,7 +128,8 @@ static const char * const EpisodeNames[TOTAL_EPISODES][2] = {
 }
 
 - (IBAction)next:(id)sender {
-	LevelSelectViewController *lsc = [[LevelSelectViewController alloc] initWithNibName:@"LevelSelectView" bundle:nil];
+    wolf3dAppDelegate* app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+	LevelSelectViewController *lsc = [[LevelSelectViewController alloc] initWithNibName:[app GetNibNameForDevice: @"LevelSelectView"] bundle:nil];
 	[self.navigationController pushViewController:lsc animated:YES];
 	[lsc release];
 }
@@ -263,7 +267,8 @@ static CGRect maximumNameLabelFrame = { { 0.0, 0.0 }, { 0.0, 0.0 } };
 	
     if (cell == nil) {
         //cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:MyIdentifier] autorelease];
-		[[NSBundle mainBundle] loadNibNamed:@"EpisodeCell" owner:self options:nil];
+        wolf3dAppDelegate* app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+		[[NSBundle mainBundle] loadNibNamed:[app GetNibNameForDevice:@"EpisodeCell"] owner:self options:nil];
         
 		if ( episodeCell == nil ) {
 			// Couldn't create from nib file, load a default cell.
@@ -308,6 +313,7 @@ static CGRect maximumNameLabelFrame = { { 0.0, 0.0 }, { 0.0, 0.0 } };
     
     cell.backgroundColor = UIColor.clearColor;
     
+    cell.contentView.backgroundColor = UIColor.blackColor;
 	
 	return cell;
 }
@@ -321,19 +327,48 @@ static CGRect maximumNameLabelFrame = { { 0.0, 0.0 }, { 0.0, 0.0 } };
 	[self setCellSelected:NO atIndexPath:indexPath];
 }
 
+#if TARGET_OS_TV
+- (void)didUpdateFocusInContext:(UIFocusUpdateContext *)context withAnimationCoordinator:(UIFocusAnimationCoordinator *)coordinator {
+    
+    [super didUpdateFocusInContext:context withAnimationCoordinator:coordinator];
+    
+    if ([context.nextFocusedView isKindOfClass:[UITableViewCell class]]) {
+        [coordinator addCoordinatedAnimations:^{
+            
+            [((UITableViewCell *)context.nextFocusedView).contentView setBackgroundColor:[UIColor blackColor]];
+            [((UITableViewCell *)context.nextFocusedView) viewWithTag:3].hidden = false;
+
+            
+            if ([context.previouslyFocusedView isKindOfClass:[UITableViewCell class]]) {
+                [((UITableViewCell *)context.previouslyFocusedView).contentView setBackgroundColor:[UIColor blackColor]];
+                [((UITableViewCell *)context.previouslyFocusedView) viewWithTag:3].hidden = true;
+            }
+
+            [context.nextFocusedView setBackgroundColor:[UIColor blackColor]];
+            [context.previouslyFocusedView setBackgroundColor:[UIColor clearColor]];
+        } completion:nil];
+    }
+}
+#endif
+
 - (void)setCellSelected:(BOOL)selected atIndexPath:(NSIndexPath*)indexPath {
 	// Get the cell that was selected.
+#if TARGET_OS_TV
+    [self next:self];
+#else
 	UITableViewCell * cell = [episodeList cellForRowAtIndexPath:indexPath];
-
 	[self setCellSelected:selected cell:cell];
+#endif
 }
 
 - (void)setCellSelected:(BOOL)selected cell:(UITableViewCell*)cell {
-	// Get the "selected" image
-	UIView * selectionFrame = [cell viewWithTag:3];
-	
-	// Show the selected image
+#if !TARGET_OS_TV
+    // Get the "selected" image
+    UIView * selectionFrame = [cell viewWithTag:3];
+    
+    // Show the selected image
 	selectionFrame.hidden = !selected;
+#endif
 
 
 }

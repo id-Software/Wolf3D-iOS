@@ -1933,14 +1933,23 @@ void iphoneFrame() {
 	iphoneDrawNotifyText();
 	
 	//gsh
+#if !TARGET_OS_TV
 	iphoneDrawReturnButton();
+#endif
 
 	iphoneDrawMapView();
 
 	iphoneDrawFace();	
 
-	iphoneDrawNumber( huds.ammo.x + huds.ammo.width / 2, huds.ammo.y, Player.ammo[AMMO_BULLETS], 48, 48 );
+#if !TARGET_OS_TV
+    
+    // TODO: make the ammo count scooch over for the notch when the iPhone X is being held with the notch to the right.    
+	iphoneDrawNumber( huds.ammo.x + huds.ammo.width / 2, huds.ammo.y, Player.ammo[AMMO_BULLETS], 48 * screenScale, 48 * screenScale );
+#else
+    iphoneDrawNumber( huds.ammo.x + huds.ammo.width / 2, (viddef.height - huds.ammo.height) - 2, Player.ammo[AMMO_BULLETS], 48 * screenScale, 48 * screenScale );
+#endif
 	
+#if !TARGET_OS_TV
 	if ( hideControls->value != 1 ) {
 		iphoneDrawHudControl( &huds.forwardStick );
 		iphoneDrawHudControl( &huds.sideStick );
@@ -1955,6 +1964,7 @@ void iphoneFrame() {
 	if ( iphoneDrawHudButton( &huds.map ) ) {
 		iphoneOpenAutomap();
 	}
+#endif
 
 	Client_Screen_DrawConsole();	
 
@@ -2009,3 +2019,9 @@ void iPhoneSetRightTriggerPressed( bool _rightTriggerPressed )
 {
     rightTriggerPressed = _rightTriggerPressed;
 }
+
+void iPhoneSetButtonAPressed( bool _buttonAPressed )
+{
+    buttonAPressed = _buttonAPressed;
+}
+

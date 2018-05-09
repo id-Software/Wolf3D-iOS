@@ -27,11 +27,13 @@
 #import "wolf3dAppDelegate.h"
 
 #import <AudioToolbox/AudioServices.h>
+#include <AudioToolbox/AudioToolbox.h>
 #import <UIKit/UIDevice.h>
 #import <Foundation/NSUserDefaults.h>
 
 void interruptionListener( void *inUserData, UInt32 inInterruption)
 {
+#if !TARGET_OS_TV
 	printf("Session interrupted! --- %s ---", inInterruption == kAudioSessionBeginInterruption ? "Begin Interruption" : "End Interruption");
 	
 	if ( inInterruption == kAudioSessionEndInterruption )
@@ -50,6 +52,7 @@ void interruptionListener( void *inUserData, UInt32 inInterruption)
             // handle error
         }
 	}
+#endif
 }
 
 int otherAudioIsPlaying;

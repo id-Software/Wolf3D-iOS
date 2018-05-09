@@ -340,6 +340,7 @@ void iPhoneSetLeftThumbstickYValue( float  _leftThumbstickYAxis );
 void iPhoneSetRightThumbstickXValue( float  _rightThumbstickXAxis );
 void iPhoneSetRightThumbstickYValue( float  _rightThumbstickYAxis );
 void iPhoneSetRightTriggerPressed( bool _rightTriggerPressed );
+void iPhoneSetButtonAPressed( bool _buttonAPressed );
 
 void iphoneResume(void);
 

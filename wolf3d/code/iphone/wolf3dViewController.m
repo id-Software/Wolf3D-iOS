@@ -26,7 +26,7 @@
 #import "wolf3dViewController.h"
 #import "EAGLView.h"
 #import "wolfiphone.h"
-//#import "wolf3dAppDelegate.h"
+#import "wolf3dAppDelegate.h"
 
 #import <GameController/GameController.h>
 
@@ -97,10 +97,19 @@
     
 	// Now that we have a context, we can init the render system.
 	iphoneStartup();
+    
+#if TARGET_OS_TV
+    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapFrom:)];
+    [self.view addGestureRecognizer:tapGestureRecognizer];
+#endif
 	
 	return self;
 }
 
+-(void)handleTapFrom:(UIPanGestureRecognizer *)gesture
+{
+    NSLog(@"caught!");
+}
 
 
 - (void)awakeFromNib
@@ -163,7 +172,9 @@
 
 - (void)dealloc {
 	// Stop orientation notifications.
+#if !TARGET_OS_TV
 	[[UIDevice currentDevice] endGeneratingDeviceOrientationNotifications];
+#endif
 
 	// Tear down context.
     if ([EAGLContext currentContext] == context)
@@ -186,6 +197,10 @@
 	[self setActive:NO];
 	
     [super viewWillDisappear:animated];
+    
+
+    wolf3dAppDelegate* app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+    [app GLtoMainMenu];
 }
 
 - (NSInteger)animationFrameInterval
@@ -219,7 +234,11 @@
 		// Not worrying about supporting external displays yet, so just create a default display link.
         //CADisplayLink *aDisplayLink = [[UIScreen mainScreen] displayLinkWithTarget:self selector:@selector(drawFrame)];
 		CADisplayLink *aDisplayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawFrame)];
+#if TARGET_OS_TV
+        [aDisplayLink setPreferredFramesPerSecond:60];
+#else
         [aDisplayLink setFrameInterval:animationFrameInterval];
+#endif
         [aDisplayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
         self.displayLink = aDisplayLink;
         
@@ -275,6 +294,39 @@
 	[(EAGLView *)self.view presentFramebuffer];
 	
 }
+
+//#if TARGET_OS_TV
+//- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+//    for (UIPress* press in presses) {
+//        switch (press.type) {
+//            case UIPressTypeMenu:
+//                break;
+//            default:
+//                [super pressesBegan: presses withEvent: event];
+//                break;
+//        }
+//    }
+//}
+//
+//- (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+//    for (UIPress* press in presses) {
+//        wolf3dAppDelegate* app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+//        switch (press.type) {
+//            case UIPressTypeMenu:
+//                if ([app isGLVisible]) {
+//                    [app GLtoMainMenu];
+//                } else {
+//                    [super pressesEnded: presses withEvent: event];
+//                }
+//                break;
+//            default:
+//                [super pressesEnded: presses withEvent: event];
+//                break;
+//        }
+//    }
+//}
+//
+//#endif
 
 // Clears the renderbuffer and immediately displays it.
 - (void)clearAndPresentRenderbuffer {
@@ -338,8 +390,8 @@
         }
         
         // A button
-        if (gamepad.buttonA == element && gamepad.buttonA.isPressed) {
-            message = [message stringByAppendingString:@"A Button"];
+        if (gamepad.buttonA == element) {
+            iPhoneSetButtonAPressed(gamepad.buttonA.isPressed);
         }
         
         // B button

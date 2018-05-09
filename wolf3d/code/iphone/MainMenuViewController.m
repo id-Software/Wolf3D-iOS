@@ -29,7 +29,10 @@
 #import "CreditsViewController.h"
 #import "LegalViewController.h"
 #import "TriviaViewController.h"
+
+#if !TARGET_OS_TV
 #import "SettingsViewController.h"
+#endif
 
 @interface MainMenuViewController ()
 
@@ -62,6 +65,8 @@
 @synthesize idGamesButton, idSoftwareButton, triviaButton;
 @synthesize backButton;
 
+BOOL subMenu = NO;
+
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     
@@ -93,15 +98,18 @@
 
 
 - (IBAction)newGame:(id)sender {
-	SkillViewController *svc = [[SkillViewController alloc] initWithNibName:@"SkillView" bundle:nil];
+    wolf3dAppDelegate* app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+	SkillViewController *svc = [[SkillViewController alloc] initWithNibName:[app GetNibNameForDevice:@"SkillView"] bundle:nil];
 	[self.navigationController pushViewController:svc animated:YES];
 	[svc release];	
 }
 
 - (IBAction)settings:(id)sender {
+#if !TARGET_OS_TV
  	SettingsViewController *evc = [[SettingsViewController alloc] initWithNibName:@"SettingsView" bundle:nil];
 	[self.navigationController pushViewController:evc animated:YES];
-	[evc release];	
+	[evc release];
+#endif
 }
 
 - (IBAction)about:(id)sender {
@@ -115,19 +123,21 @@
 }
 
 - (IBAction)credits:(id)sender {
-	CreditsViewController *cvc = [[CreditsViewController alloc] initWithNibName:@"CreditsView" bundle:nil];
+    wolf3dAppDelegate* app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+	CreditsViewController *cvc = [[CreditsViewController alloc] initWithNibName:[app GetNibNameForDevice:@"CreditsView"] bundle:nil];
 	[self.navigationController pushViewController:cvc animated:YES];
 	[cvc release];
 }
 
 - (IBAction)legal:(id)sender {
-	LegalViewController *lvc = [[LegalViewController alloc] initWithNibName:@"LegalView" bundle:nil];
+    wolf3dAppDelegate* app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+	LegalViewController *lvc = [[LegalViewController alloc] initWithNibName:[app GetNibNameForDevice:@"LegalView"] bundle:nil];
 	[self.navigationController pushViewController:lvc animated:YES];
 	[lvc release];
 }
 
 - (IBAction)idGames:(id)sender {
-	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"itms-apps://itunes.com/apps/idsoftware"]];
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"itms-apps://itunes.com/apps/idsoftware"] options:@{} completionHandler:nil];
 }
 
 - (IBAction)idSoftware:(id)sender {
@@ -136,7 +146,8 @@
 }
 
 - (IBAction)trivia:(id)sender {
-	TriviaViewController *tvc = [[TriviaViewController alloc] initWithNibName:@"TriviaView" bundle:nil];
+    wolf3dAppDelegate* app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+	TriviaViewController *tvc = [[TriviaViewController alloc] initWithNibName:[app GetNibNameForDevice:@"TriviaView"] bundle:nil];
 	[self.navigationController pushViewController:tvc animated:YES];
 	[tvc release];
 	
@@ -159,7 +170,7 @@
 	[self.aboutButton setHidden:hide];
 	[self.extrasButton setHidden:hide];
 	[self.resumeStar setHidden:hide];
-	
+    subMenu = hide;
 }
 
 - (void)setAboutHidden:(BOOL)hide {
@@ -185,5 +196,42 @@
 	[app showOpenGL];
 }
 
+#if TARGET_OS_TV
+- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+    for (UIPress* press in presses) {
+        switch (press.type) {
+            case UIPressTypeMenu:
+                if (subMenu) {
+                    break;
+                } else {
+                    [super pressesBegan: presses withEvent: event];
+                }
+            default:
+                [super pressesBegan: presses withEvent: event];
+                break;
+        }
+    }
+}
+
+- (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+    for (UIPress* press in presses) {
+        switch (press.type) {
+            case UIPressTypeMenu:
+                if (subMenu) {
+                    [self setAboutHidden:YES];
+                    [self setExtrasHidden:YES];
+                    [self setMainHidden:NO];
+                } else {
+                    [super pressesEnded: presses withEvent: event];
+                }
+                break;
+            default:
+                [super pressesEnded: presses withEvent: event];
+                break;
+        }
+    }
+}
+
+#endif
 
 @end

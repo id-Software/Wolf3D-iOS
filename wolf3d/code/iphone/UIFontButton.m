@@ -25,6 +25,14 @@
 
 @implementation UIFontButton
 
+#if TARGET_OS_TV
+
+- (BOOL)canBecomeFocused {
+    return YES;
+}
+
+#endif
+
 - (void)awakeFromNib {
     [super awakeFromNib];
 	CGFloat points = self.titleLabel.font.pointSize;

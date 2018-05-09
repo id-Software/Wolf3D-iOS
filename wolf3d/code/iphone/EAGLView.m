@@ -96,7 +96,10 @@ EAGLView *eaglview = nil;
 	eaglview = self;
 
 	if ( self ) {
+
+#if !TARGET_OS_TV
 		[self setMultipleTouchEnabled:YES];
+#endif
 		
 		// Support rendering at native resolution on devices with Retina displays.
 		if( [self respondsToSelector:@selector(contentScaleFactor)] ) {
@@ -305,6 +308,7 @@ EAGLView *eaglview = nil;
 }
 
 - (void) handleTouches:(NSSet*)touches withEvent:(UIEvent*)event {
+#if !TARGET_OS_TV
 	int touchCount = 0;
 	int points[16];
 	static int previousTouchCount = 0;
@@ -369,6 +373,7 @@ EAGLView *eaglview = nil;
 	previousTouchCount = touchCount;
 	
 	iphoneTouchEvent( touchCount, points );
+#endif
 }
 
 
@@ -472,7 +477,7 @@ void SysIPhoneOpenURL( const char *url ) {
 	Com_Printf( "OpenURL char *: %s\n", url );
 	
 	NSString *nss = [NSString stringWithCString: url encoding: NSASCIIStringEncoding];
-	[[UIApplication sharedApplication] openURL:[NSURL URLWithString: nss]];
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString: nss] options:@{} completionHandler:nil];
 }
 
 void SysIPhoneLoadJPG( W8* jpegData, int jpegBytes, W8 **pic, W16 *width, W16 *height, W16 *bytes ) {

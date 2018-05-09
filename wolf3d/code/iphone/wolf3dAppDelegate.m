@@ -141,6 +141,7 @@ void SysIPhoneVibrate() {
 //    accelerometer.delegate = self;
 //    accelerometer.updateInterval = 1.0 / 30.0;
     
+#if !TARGET_OS_TV
     [NSTimer scheduledTimerWithTimeInterval:0.01 target:self selector:@selector(updateDeviceMotion) userInfo:nil repeats:YES];
 
     self.motionManager = [[CMMotionManager alloc] init];
@@ -149,7 +150,8 @@ void SysIPhoneVibrate() {
     [self.motionManager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXArbitraryCorrectedZVertical];
     
     [self.motionManager startAccelerometerUpdates];
-	
+#endif
+    
 	// do all the game startup work
 	//iphoneStartup();
 	
@@ -169,12 +171,14 @@ void SysIPhoneVibrate() {
 #endif
 	
 	// Sign up for rotation notifications
+#if !TARGET_OS_TV
 	[[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self 
                 selector:@selector(didRotate:) 
                 name:UIDeviceOrientationDidChangeNotification
                 object:nil];
+#endif
 	
 	// Support rendering at native resolution on devices with Retina displays.
 	if ( [[UIScreen mainScreen] respondsToSelector:@selector(scale)] ) {
@@ -185,7 +189,21 @@ void SysIPhoneVibrate() {
 	// Screen is initially landscape-left.
 	// BEWARE! For UI*Interface*Orientation, Left/Right refers to the location of the home button.
 	// BUT, for UI*Device*Orientation, Left/Right refers to the location of the side OPPOSITE the home button!!
+#if !TARGET_OS_TV
 	[self setScreenForOrientation:UIDeviceOrientationLandscapeRight];
+#else
+    viddef.width = [UIScreen mainScreen].bounds.size.width * deviceScale;
+    viddef.height = [UIScreen mainScreen].bounds.size.height * deviceScale;
+    
+    float widthRatio = viddef.width / REFERENCE_WIDTH;
+    float heightRatio = viddef.height / REFERENCE_HEIGHT;
+    
+    if ( widthRatio < heightRatio ) {
+        screenScale = widthRatio;
+    } else {
+        screenScale = heightRatio;
+    }
+#endif
     
     CGRect screenBound = [[UIScreen mainScreen] bounds];
     CGSize screenSize = screenBound.size;
@@ -198,7 +216,8 @@ void SysIPhoneVibrate() {
 
 	// Create the window programmatically instead of loading from a nib file.
 	self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]] autorelease];
-	
+    self.window.backgroundColor = UIColor.blackColor;
+
 	// We will create the OpenGL view here so we can get a context and preload textures, but
 	// don't actually add the view to the window until the player enters a level.
 	wolf3dViewController *vc = [[wolf3dViewController alloc] initWithNibName:nil bundle:nil];
@@ -206,7 +225,7 @@ void SysIPhoneVibrate() {
 	[self.viewController setActive:NO];
 	[vc release];
 	
-	MainMenuViewController *rootController = [[MainMenuViewController alloc] initWithNibName:@"MainMenuView" bundle:nil];
+    MainMenuViewController *rootController = [[MainMenuViewController alloc] initWithNibName:[self GetNibNameForDevice: @"MainMenuView"] bundle:nil];
 	navigationController = [[UINavigationController alloc] initWithRootViewController:rootController];
 	[navigationController setNavigationBarHidden:YES];
 	[rootController release];
@@ -221,22 +240,30 @@ void SysIPhoneVibrate() {
 - (void)showOpenGL {
 	// Maybe clearing the OpenGL view before displaying will fix the old frame flashing.
 	// I don't mind if this blocks until a vsync, becasue it's just a menu.
-	[self.viewController clearAndPresentRenderbuffer];
-	
-	[[navigationController view] removeFromSuperview];
-	
-	[self.viewController setActive:YES];
-    [window addSubview:[self.viewController view]];
-
-	[self.viewController startAnimation];
+//    [self.viewController clearAndPresentRenderbuffer];
+//
+//    [[navigationController view] removeFromSuperview];
+//
+//    [self.viewController setActive:YES];
+//    [window addSubview:[self.viewController view]];
+//
+//    [self.viewController startAnimation];
+    [self.viewController clearAndPresentRenderbuffer];
+    [self.viewController setActive:YES];
+    [self.navigationController pushViewController:self.viewController animated:NO];
+    [self.viewController startAnimation];
+    glVisible = YES;
 }
 
 - (void)didRotate:(NSNotification *)notification {
+#if !TARGET_OS_TV
 	UIDeviceOrientation orient = [[UIDevice currentDevice] orientation];
 	
 	[self setScreenForOrientation:orient];
+#endif
 }
 
+#if !TARGET_OS_TV
 - (void)setScreenForOrientation:(UIDeviceOrientation) orientation {
     
 	// Note the the UIDeviceOrientations are REVERSED from the UIInterface orientations!
@@ -272,9 +299,11 @@ void SysIPhoneVibrate() {
 		screenScale = heightRatio; 
 	}
 }
+#endif
 
 //this is so that we can respond to alertView events (messageboxes)
 //but this should only respond to the alertPurchaseSpear
+#if !TARGET_OS_TV
 - (void)alertView:(UIAlertView *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
 {
 	if (buttonIndex == 1) {
@@ -334,6 +363,7 @@ void SysIPhoneVibrate() {
 			BeginStoreKit();
 	}*/
 }
+#endif
 
 - (void)applicationWillResignActive:(UIApplication *)application {
 	[self.viewController stopAnimation]; 
@@ -369,6 +399,7 @@ void SysIPhoneVibrate() {
 
 #if 1
 extern char urlbuffer[1024];
+#if !TARGET_OS_TV
 - (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url {
 	// wolf3d:foo should launch wolf3d now... next, add useful URL parameter encoding
 
@@ -431,6 +462,7 @@ extern char urlbuffer[1024];
 	return YES;
 }
 #endif
+#endif
 
 
 - (void)dealloc {
@@ -468,6 +500,7 @@ extern char urlbuffer[1024];
 //
 //}
 
+#if !TARGET_OS_TV
 -(void)updateDeviceMotion
 {
     CMAccelerometerData *deviceMotion = self.motionManager.accelerometerData;
@@ -488,6 +521,19 @@ extern char urlbuffer[1024];
     iphoneTiltEvent( acc );
     lastAccelUpdateMsec = (int)Sys_Milliseconds();
 }
+#endif
+
+- (NSString*) GetNibNameForDevice:(NSString*) nibName
+{
+    NSString *extension = @"";
+    
+#if TARGET_OS_TV
+    extension = @"-tvos";
+#endif
+    
+    return [NSString stringWithFormat:@"%@%@", nibName, extension];
+}
+
 
 //------------------------------------------------------------
 // connection
@@ -593,14 +639,19 @@ extern char urlbuffer[1024];
 	[viewController setActive:NO];
 	[[viewController view] removeFromSuperview];
 	[window addSubview:navigationController.view];
+    glVisible = NO;
 }
 
 - (void)GLtoPreviousMenu {
 	[viewController setActive:NO];
 	[[viewController view] removeFromSuperview];
 	[window addSubview:navigationController.view];
+    glVisible = NO;
 }
 
+- (BOOL) isGLVisible {
+    return glVisible;
+}
 @end
 
 void iphoneStartMainMenu() {
