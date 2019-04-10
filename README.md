@@ -2,7 +2,7 @@
 
 #  Wolfenstein 3D for iOS 11 and tvOS for Apple TV
 
-*nbsp;
+&nbsp;
 
 This is my update for Wolfenstein 3D for iOS to run on iOS 11, running in modern resolutions including the full width of the iPhone X. I have also made a target and version for tvOS to run on Apple TV
 
