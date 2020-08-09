@@ -970,8 +970,10 @@ PUBLIC LevelData_t *Level_LoadMap( const char *levelname )
 	
 
 	FS_ReadFile( &length, 2, 3, fhandle );
-	FS_ReadFile( &offset, 4, 3, fhandle );
-	
+    //    FS_ReadFile( &offset, 4, 3, fhandle );
+    FS_ReadFile( &offset[0], 4, 1, fhandle );
+    FS_ReadFile( &offset[1], 4, 1, fhandle );
+    FS_ReadFile( &offset[2], 4, 1, fhandle );
 	
 	FS_ReadFile( &mapNameLength, 1, 2, fhandle );
 	FS_ReadFile( &musicNameLength, 1, 2, fhandle );

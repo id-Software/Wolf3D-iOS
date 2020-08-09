@@ -335,8 +335,8 @@ void SysIPhoneVibrate() {
 				[topView addSubview:waitingView];
 				
 				// Start the request to the app store
-				InAppPurchaseSetCallback( inAppPurchaseCallback );
-				InAppPurchaseStartPurchase( PLATINUM_UPGRADE_STRING );
+//				InAppPurchaseSetCallback( inAppPurchaseCallback );
+//				InAppPurchaseStartPurchase( PLATINUM_UPGRADE_STRING );
 				
 				break;
 			}

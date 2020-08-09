@@ -129,7 +129,7 @@ void iphoneStartup() {
 	CheckForStorekitExistence();
 #endif
 	
-	InAppPurchaseInit();
+//	InAppPurchaseInit();
 	
 	// temporary 
 	const char *systemVersion = SysIPhoneGetOSVersion();

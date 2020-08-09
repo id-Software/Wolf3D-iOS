@@ -48,8 +48,6 @@
 		3D10C39F13F3212A00DF5856 /* WolfSlider.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D10C39E13F3212A00DF5856 /* WolfSlider.m */; };
 		3D10C3E413F33AB700DF5856 /* SkillViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D10C3E313F33AB700DF5856 /* SkillViewController.m */; };
 		3D10C3F213F33D3700DF5856 /* SkillView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3D10C3F113F33D3700DF5856 /* SkillView.xib */; };
-		3D24009E13D89BF4009FC7A7 /* iphone_store.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D24009D13D89BF4009FC7A7 /* iphone_store.m */; };
-		3D24FF3913D77577009FC7A7 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D24FF3813D77577009FC7A7 /* StoreKit.framework */; };
 		3D3ED73F13BF554400C5B1DF /* wolf3dViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D3ED73E13BF554400C5B1DF /* wolf3dViewController.m */; };
 		3D3ED8D113BF775B00C5B1DF /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D3ED8D013BF775B00C5B1DF /* OpenAL.framework */; };
 		3D3ED8EB13BF77A800C5B1DF /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D3ED8EA13BF77A800C5B1DF /* QuartzCore.framework */; };
@@ -210,7 +208,6 @@
 		A1337A372090BC6C00F4D670 /* iphone_main.c in Sources */ = {isa = PBXBuildFile; fileRef = 43E8D2DF0F4FC61E003F09B2 /* iphone_main.c */; };
 		A1337A382090BC6C00F4D670 /* iphone_mapselector.c in Sources */ = {isa = PBXBuildFile; fileRef = ED0A8D0F1069ACA8001E0547 /* iphone_mapselector.c */; };
 		A1337A392090BC6C00F4D670 /* iphone_menus.c in Sources */ = {isa = PBXBuildFile; fileRef = 72A7E8F60F5F2063005B83C0 /* iphone_menus.c */; };
-		A1337A3A2090BC6C00F4D670 /* iphone_store.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D24009D13D89BF4009FC7A7 /* iphone_store.m */; };
 		A1337A3B2090BC6C00F4D670 /* iphone_sys.m in Sources */ = {isa = PBXBuildFile; fileRef = 43AF6B940F996DA200777569 /* iphone_sys.m */; };
 		A1337A3C2090BC6C00F4D670 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; };
 		A1337A3D2090BC6C00F4D670 /* MissionTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D5C0FD713E10204008ECBD1 /* MissionTableViewCell.m */; };
@@ -447,7 +444,6 @@
 		3D10C3E313F33AB700DF5856 /* SkillViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SkillViewController.m; sourceTree = "<group>"; };
 		3D10C3F113F33D3700DF5856 /* SkillView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SkillView.xib; sourceTree = "<group>"; };
 		3D24009D13D89BF4009FC7A7 /* iphone_store.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = iphone_store.m; sourceTree = "<group>"; };
-		3D24FF3813D77577009FC7A7 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		3D3ED73D13BF554400C5B1DF /* wolf3dViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wolf3dViewController.h; sourceTree = "<group>"; };
 		3D3ED73E13BF554400C5B1DF /* wolf3dViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = wolf3dViewController.m; sourceTree = "<group>"; };
 		3D3ED8D013BF775B00C5B1DF /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
@@ -735,7 +731,6 @@
 				ED3703B4106C1CD40059C5F8 /* SystemConfiguration.framework in Frameworks */,
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
 				3D3ED95B13BF77FA00C5B1DF /* AudioToolbox.framework in Frameworks */,
-				3D24FF3913D77577009FC7A7 /* StoreKit.framework in Frameworks */,
 				3DB8734113FACAD20050FB2A /* AVFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -869,7 +864,6 @@
 				3D3ED8EA13BF77A800C5B1DF /* QuartzCore.framework */,
 				ED3703B3106C1CD40059C5F8 /* SystemConfiguration.framework */,
 				1DF5F4DF0D08C38300B7A737 /* UIKit.framework */,
-				3D24FF3813D77577009FC7A7 /* StoreKit.framework */,
 				3DB8734013FACAD20050FB2A /* AVFoundation.framework */,
 			);
 			name = Frameworks;
@@ -1567,7 +1561,6 @@
 				ED0A8D141069ACA8001E0547 /* iphone_downloadUserMap.m in Sources */,
 				ED0A8D151069ACA8001E0547 /* iphone_mapselector.c in Sources */,
 				3D3ED73F13BF554400C5B1DF /* wolf3dViewController.m in Sources */,
-				3D24009E13D89BF4009FC7A7 /* iphone_store.m in Sources */,
 				3D86CF8E13DDE51800186487 /* MainMenuViewController.m in Sources */,
 				3DDD3A2413DF231100967735 /* UIFontButton.m in Sources */,
 				3D5C0C2B13DF6836008ECBD1 /* EpisodeViewController.m in Sources */,
@@ -1673,7 +1666,6 @@
 				A1337A372090BC6C00F4D670 /* iphone_main.c in Sources */,
 				A1337ACE209138FA00F4D670 /* font_manager.c in Sources */,
 				A1337ADE209138FA00F4D670 /* texture_manager.c in Sources */,
-				A1337A3A2090BC6C00F4D670 /* iphone_store.m in Sources */,
 				A1337A392090BC6C00F4D670 /* iphone_menus.c in Sources */,
 				A1337A312090BC6C00F4D670 /* gles_glue.c in Sources */,
 				A1337A3C2090BC6C00F4D670 /* main.m in Sources */,
@@ -1704,6 +1696,7 @@
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				MARKETING_VERSION = 1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.idsoftware.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = wolf3d;
 				PROFILE_PREFIX = nu.r3;
@@ -1729,6 +1722,7 @@
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				MARKETING_VERSION = 1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.idsoftware.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = wolf3d;
 				PROFILE_PREFIX = nu.r3;
@@ -1798,7 +1792,7 @@
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.idsoftware.${PRODUCT_NAME:identifier}";
+				MARKETING_VERSION = 1;
 				PRODUCT_NAME = wolf3dlite;
 				PROFILE_PREFIX = nu.r3;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1864,6 +1858,7 @@
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				MARKETING_VERSION = 1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.idsoftware.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = wolf3d;
 				PROFILE_PREFIX = nu.r3;
@@ -1932,7 +1927,7 @@
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.idsoftware.${PRODUCT_NAME:identifier}";
+				MARKETING_VERSION = 1;
 				PRODUCT_NAME = wolf3dlite;
 				PROFILE_PREFIX = nu.r3;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2004,7 +1999,7 @@
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.idsoftware.${PRODUCT_NAME:identifier}";
+				MARKETING_VERSION = 1;
 				PRODUCT_NAME = wolf3dlite;
 				PROFILE_PREFIX = nu.r3;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2501,7 +2496,7 @@
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.idsoftware.${PRODUCT_NAME:identifier}";
+				MARKETING_VERSION = 1;
 				PRODUCT_NAME = wolf3dlite;
 				PROFILE_PREFIX = nu.r3;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -2566,6 +2561,7 @@
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				MARKETING_VERSION = 1;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.idsoftware.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = wolf3d;
 				PROFILE_PREFIX = nu.r3;
