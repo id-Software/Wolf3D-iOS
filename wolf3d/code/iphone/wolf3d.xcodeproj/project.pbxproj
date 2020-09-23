@@ -305,7 +305,6 @@
 		A1337A9A2090BCF800F4D670 /* WOLF_114.png in Resources */ = {isa = PBXBuildFile; fileRef = C8D1CFE513E22B5B00F0EAC6 /* WOLF_114.png */; };
 		A1337AA52090BDC300F4D670 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1337A9B2090BDC100F4D670 /* AudioToolbox.framework */; };
 		A1337AA62090BDC300F4D670 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1337A9C2090BDC200F4D670 /* OpenGLES.framework */; };
-		A1337AA72090BDC300F4D670 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1337A9D2090BDC200F4D670 /* StoreKit.framework */; };
 		A1337AA82090BDC300F4D670 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1337A9E2090BDC200F4D670 /* SystemConfiguration.framework */; };
 		A1337AA92090BDC300F4D670 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1337A9F2090BDC200F4D670 /* AVFoundation.framework */; };
 		A1337AAA2090BDC300F4D670 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1337AA02090BDC200F4D670 /* UIKit.framework */; };
@@ -672,7 +671,6 @@
 		A1337A1B2090BAE400F4D670 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A1337A9B2090BDC100F4D670 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS11.3.sdk/System/Library/Frameworks/AudioToolbox.framework; sourceTree = DEVELOPER_DIR; };
 		A1337A9C2090BDC200F4D670 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS11.3.sdk/System/Library/Frameworks/OpenGLES.framework; sourceTree = DEVELOPER_DIR; };
-		A1337A9D2090BDC200F4D670 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS11.3.sdk/System/Library/Frameworks/StoreKit.framework; sourceTree = DEVELOPER_DIR; };
 		A1337A9E2090BDC200F4D670 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS11.3.sdk/System/Library/Frameworks/SystemConfiguration.framework; sourceTree = DEVELOPER_DIR; };
 		A1337A9F2090BDC200F4D670 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS11.3.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		A1337AA02090BDC200F4D670 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS11.3.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
@@ -742,7 +740,6 @@
 				A1337AB02090BDEA00F4D670 /* QuartzCore.framework in Frameworks */,
 				A1337AA52090BDC300F4D670 /* AudioToolbox.framework in Frameworks */,
 				A1337AA62090BDC300F4D670 /* OpenGLES.framework in Frameworks */,
-				A1337AA72090BDC300F4D670 /* StoreKit.framework in Frameworks */,
 				A1337AA82090BDC300F4D670 /* SystemConfiguration.framework in Frameworks */,
 				A1337AA92090BDC300F4D670 /* AVFoundation.framework in Frameworks */,
 				A1337AAA2090BDC300F4D670 /* UIKit.framework in Frameworks */,
@@ -852,7 +849,6 @@
 				A1337AA42090BDC200F4D670 /* GameController.framework */,
 				A1337AA22090BDC200F4D670 /* OpenAL.framework */,
 				A1337A9C2090BDC200F4D670 /* OpenGLES.framework */,
-				A1337A9D2090BDC200F4D670 /* StoreKit.framework */,
 				A1337A9E2090BDC200F4D670 /* SystemConfiguration.framework */,
 				A1337AA02090BDC200F4D670 /* UIKit.framework */,
 				A1B3746C2036A6CA00E1C7BE /* CoreMotion.framework */,
