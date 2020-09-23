@@ -683,7 +683,7 @@
 		A1337AAF2090BDEA00F4D670 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS11.3.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
 		A19BF3691FD6E4C800DAC4C1 /* base */ = {isa = PBXFileReference; lastKnownFileType = folder; name = base; path = ../../base; sourceTree = "<group>"; };
 		A1B3746C2036A6CA00E1C7BE /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
-		A1B3746E2036B0F100E1C7BE /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
+		A1B3746E2036B0F100E1C7BE /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../../../README.md; sourceTree = "<group>"; };
 		A1B7CA31209D195B00743C98 /* Default-Portrait.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Default-Portrait.png"; path = "../../menu_art/Default-Portrait.png"; sourceTree = "<group>"; };
 		A1B7CA32209D195B00743C98 /* Default-Portrait~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Default-Portrait~ipad.png"; path = "../../menu_art/Default-Portrait~ipad.png"; sourceTree = "<group>"; };
 		A1BB8B82206DFC2D00D46B47 /* header_ep8.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = header_ep8.png; path = ../../menu_art/header_ep8.png; sourceTree = "<group>"; };
