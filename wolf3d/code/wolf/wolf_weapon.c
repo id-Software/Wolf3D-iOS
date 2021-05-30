@@ -49,14 +49,14 @@ PUBLIC void fire_hit( player_t *self )
 	{
 		if( Guards[ n ].flags & FL_SHOOTABLE ) // && Guards[n].flags&FL_VISABLE
 		{
-			shot_dist = Point2LineDist( Guards[ n ].x - self->position.origin[ 0 ], Guards[ n ].y - self->position.origin[ 1 ], self->position.angle );
+			shot_dist = Point2LineDist( Guards[ n ].x - (int)self->position.origin[ 0 ], Guards[ n ].y - (int)self->position.origin[ 1 ], (int)self->position.angle );
 			
 			if( shot_dist > (2 * TILEGLOBAL / 3) ) 
 			{
 				continue; // miss
 			}
 			
-			d1 = LineLen2Point( Guards[ n ].x - self->position.origin[ 0 ], Guards[ n ].y - self->position.origin[ 1 ], self->position.angle );
+			d1 = LineLen2Point( Guards[ n ].x - (int)self->position.origin[ 0 ], Guards[ n ].y - (int)self->position.origin[ 1 ], (int)self->position.angle );
 			
 			if( d1 < 0 || d1 > dist ) 
 			{
@@ -126,13 +126,13 @@ PUBLIC void fire_lead( player_t *self )
 	{
 		if( Guards[ n ].flags & FL_SHOOTABLE ) // && Guards[n].flags&FL_VISABLE
 		{
-			shot_dist = Point2LineDist( Guards[ n ].x - self->position.origin[ 0 ], Guards[ n ].y - self->position.origin[ 1 ], self->position.angle );			
+			shot_dist = Point2LineDist( Guards[ n ].x - (int)self->position.origin[ 0 ], Guards[ n ].y - (int)self->position.origin[ 1 ], (int)self->position.angle );
 			if( shot_dist > (2 * TILEGLOBAL / 3) )
 			{
 				continue; // miss
 			}
 
-			d1 = LineLen2Point( Guards[ n ].x - self->position.origin[ 0 ], Guards[ n ].y - self->position.origin[ 1 ], self->position.angle );
+			d1 = LineLen2Point( Guards[ n ].x - (int)self->position.origin[ 0 ], Guards[ n ].y - (int)self->position.origin[ 1 ], (int)self->position.angle );
 			if( d1 < 0 || d1 > dist )
 			{
 				continue;
@@ -153,9 +153,9 @@ PUBLIC void fire_lead( player_t *self )
 	{
 		r_trace_t trace;
 
-		trace.a = NormalizeAngle( self->position.angle - DEG2FINE( 2 ) + rand() % (DEG2FINE( 4 ) ) );
-		trace.x = self->position.origin[ 0 ];
-		trace.y = self->position.origin[ 1 ];
+		trace.a = NormalizeAngle( (int)self->position.angle - DEG2FINE( 2 ) + rand() % (DEG2FINE( 4 ) ) );
+		trace.x = (int)self->position.origin[ 0 ];
+		trace.y = (int)self->position.origin[ 1 ];
 		trace.flags = TRACE_BULLET;
 		trace.tile_vis = NULL;
 		R_Trace( &trace, r_world );

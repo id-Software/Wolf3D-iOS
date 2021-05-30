@@ -58,7 +58,7 @@
 */
 PUBLIC void GL_SetDefaultState( void )
 {
-	pfglViewport( 0,0, viddef.height, viddef.width );
+	pfglViewport( 0,0, viddef.width, viddef.height );
 	pfglClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 	pfglEnable( GL_TEXTURE_2D );
 	pfglDisable( GL_DEPTH_TEST );
@@ -351,7 +351,7 @@ PUBLIC void R_DrawSprites( void )
 	}
 
 // prepare values for billboarding
-	ang = NormalizeAngle( Player.position.angle + ANG_90 );
+	ang = (int)NormalizeAngle( (int)Player.position.angle + ANG_90 );
 	sina = (float)(0.5 * SinTable[ ang ]);
 	cosa = (float)(0.5 * CosTable[ ang ]);
 
@@ -458,7 +458,7 @@ PUBLIC void R_DrawNumber( int x, int y, int number )
 
 	pfglBegin( GL_QUADS );
 
-	for( i = length-1 ; i >= 0 ; --i )
+	for( i = (int)length-1 ; i >= 0 ; --i )
 	{
 		col = string[ i ] - 48;
 

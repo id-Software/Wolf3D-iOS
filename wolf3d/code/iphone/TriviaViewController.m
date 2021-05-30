@@ -64,31 +64,15 @@
 }
 
 
-// Override to allow orientations other than the default portrait orientation.
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-    // Return YES for supported orientations.
-    return UIInterfaceOrientationIsLandscape(interfaceOrientation);
-}
-
-
 - (void)didReceiveMemoryWarning {
     // Releases the view if it doesn't have a superview.
     [super didReceiveMemoryWarning];
     
-    // Release any cached data, images, etc. that aren't in use.
+    self.firstTrivia = nil;
+    self.lastTrivia = nil;
+    
+    self.currentTrivia = nil;
 }
-
-- (void)viewDidUnload {
-    [super viewDidUnload];
-    // Release any retained subviews of the main view.
-    // e.g. self.myOutlet = nil;
-	
-	self.firstTrivia = nil;
-	self.lastTrivia = nil;
-	
-	self.currentTrivia = nil;
-}
-
 
 - (void)dealloc {
     [super dealloc];

@@ -133,7 +133,7 @@ PUBLIC void Cbuf_AddText( const char *text )
 		return;
 	}
 	
-	SZ_Write( &cmd_text, (void *)text, length );
+	SZ_Write( &cmd_text, (void *)text, (int)length );
 }
 
 /*
@@ -174,7 +174,7 @@ PUBLIC void Cbuf_InsertText( char *text )
 // add the copied off data
 	if( templen )
 	{
-		SZ_Write( &cmd_text, temp, templen );
+		SZ_Write( &cmd_text, temp, (int)templen );
 		Z_Free( temp );
 	}
 }
@@ -501,7 +501,7 @@ PRIVATE void Cmd_Exec_f( void )
 		return;
 	}
 
-	len = FS_GetFileSize( hfile );
+	len = (int)FS_GetFileSize( hfile );
 
 	Com_Printf( "execing %s\n", Cmd_Argv( 1 ) );
 	
@@ -725,7 +725,7 @@ PRIVATE char *Cmd_MacroExpandString( char *text )
 	inquote = false;
 	scan = text;
 
-	len = strlen( scan );
+	len = (int)strlen( scan );
 	if( len >= MAX_STRING_CHARS )
 	{
 		Com_Printf( "Line exceeded %i chars, discarded.\n", MAX_STRING_CHARS );
@@ -753,7 +753,7 @@ PRIVATE char *Cmd_MacroExpandString( char *text )
 	
 		token = Cvar_VariableString (token);
 
-		j = strlen(token);
+		j = (int)strlen(token);
 		len += j;
 		if (len >= MAX_STRING_CHARS)
 		{
@@ -851,7 +851,7 @@ PUBLIC void Cmd_TokenizeString( char *text, _boolean macroExpand )
 			my_strlcpy( cmd_args, text, sizeof( cmd_args ) - 1 );
 
 			// strip off any trailing whitespace
-			l = strlen( cmd_args ) - 1;
+			l = (int)strlen( cmd_args ) - 1;
 			for( ; l >= 0 ; --l )
 			{
 				if (cmd_args[l] <= ' ')
@@ -1019,7 +1019,7 @@ PUBLIC char *Cmd_CompleteCommand( char *partial )
 	cmdalias_t		*a;
 	W32 hashid;
 	
-	len = strlen( partial );
+	len = (int)strlen( partial );
 	
 	if( ! len )
 	{

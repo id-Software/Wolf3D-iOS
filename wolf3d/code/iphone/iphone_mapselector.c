@@ -112,7 +112,7 @@ const char levelNames[][29] = {
 int dragVelocity = 0;   //velocity for the scrolling maps
 int dragPosition = 32;   //position for the scrolling maps
 
-extern int BackButton();
+extern int BackButton(void);
 #ifdef SPEARSTOREKIT
 extern void GetSpearOfDestiny( int x, int y );
 #endif
@@ -236,7 +236,7 @@ int iphoneDrawUserMaps(int Yoffset, int height, int spacing, int skillValue)
 	struct dirent *ep;
 	char mapBuffer[1024];
 	
-	int length = strlen(iphoneDocDirectory);
+	int length = (int)strlen(iphoneDocDirectory);
 	strcpy(mapBuffer, iphoneDocDirectory);
 	strcpy(mapBuffer + length, "/usermaps/");
 	

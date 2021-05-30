@@ -58,12 +58,12 @@ PUBLIC void R_RayCast( placeonplane_t viewport, LevelData_t *lvl )
 	memset( tile_visible, 0, sizeof( tile_visible ) ); // clear tile visible flags
 
 // viewport tile coordinates
-	x = viewport.origin[ 0 ];
-	y = viewport.origin[ 1 ];
-	angle = viewport.angle;
+	x = (int)viewport.origin[ 0 ];
+	y = (int)viewport.origin[ 1 ];
+	angle = (int)viewport.angle;
 
-	vx = POS2TILE( viewport.origin[ 0 ] );
-	vy = POS2TILE( viewport.origin[ 1 ] );
+	vx = (int)POS2TILE( viewport.origin[ 0 ] );
+	vy = (int)POS2TILE( viewport.origin[ 1 ] );
 
 	trace.tile_vis = tile_visible;
 	trace.flags = TRACE_SIGHT | TRACE_MARK_MAP;

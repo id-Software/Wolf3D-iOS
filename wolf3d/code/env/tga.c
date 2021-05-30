@@ -616,7 +616,7 @@ PRIVATE void rle_write( FILE   *fp,
 			/* next pixel is different */
 			if( repeat )
 			{
-				putc( 128 + repeat, fp );
+				putc( 128 + (int)repeat, fp );
 				fwrite( from, bytes, 1, fp );
 				from = buffer + bytes; /* point to first different pixel */
 				repeat = 0;
@@ -632,7 +632,7 @@ PRIVATE void rle_write( FILE   *fp,
 			/* next pixel is the same */
 			if( direct )
 			{
-				putc( direct - 1, fp );
+				putc( (int)direct - 1, fp );
 				fwrite( from, bytes, direct, fp );
 				from = buffer; /* point to first identical pixel */
 				direct = 0;
@@ -666,12 +666,12 @@ PRIVATE void rle_write( FILE   *fp,
 
 	if( repeat > 0 )
 	{
-		putc( 128 + repeat, fp );
+		putc( 128 + (int)repeat, fp );
 		fwrite( from, bytes, 1, fp );
 	}
 	else
 	{
-		putc( direct, fp );
+		putc( (int)direct, fp );
 		fwrite( from, bytes, direct + 1, fp );
 	}
 }

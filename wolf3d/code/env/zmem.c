@@ -161,7 +161,7 @@ PUBLIC void *Z_TagMalloc( size_t size, int tag )
 	z_bytes += size;
 	z->magic = Z_MAGIC;
 	z->tag = tag;
-	z->size = size;
+	z->size = (int)size;
 
 	// Add new memory block to chain.
 	z->next = z_chain.next;

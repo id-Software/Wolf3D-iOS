@@ -399,7 +399,7 @@ PUBLIC void SZ_Print( sizebuf_t *buf, W8 *data )
 {
 	int		len;
 	
-	len = strlen( (char *)data ) + 1;
+	len = (int)strlen( (char *)data ) + 1;
 
 	if (buf->cursize)
 	{
@@ -585,9 +585,9 @@ PUBLIC void COM_AddParm( char *parm )
 
 -----------------------------------------------------------------------------
 */
-PRIVATE void Com_Error_f (void)
-{
-	Com_Error( ERR_FATAL, "%s", Cmd_Argv( 1 ) );
-}
+//PRIVATE void Com_Error_f (void)
+//{
+//    Com_Error( ERR_FATAL, "%s", Cmd_Argv( 1 ) );
+//}
 
 

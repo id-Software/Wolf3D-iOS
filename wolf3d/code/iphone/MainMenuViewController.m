@@ -29,12 +29,15 @@
 #import "CreditsViewController.h"
 #import "LegalViewController.h"
 #import "TriviaViewController.h"
+
+#if !TARGET_OS_TV
 #import "SettingsViewController.h"
+#endif
 
 @interface MainMenuViewController ()
 
     @property (nonatomic, retain) IBOutlet UIButton *resumeButton;
-    @property (nonatomic, retain) IBOutlet UIButton *newGameButton;
+    @property (nonatomic, retain) IBOutlet UIButton *startNewGameButton;
     @property (nonatomic, retain) IBOutlet UIButton *settingsButton;
     @property (nonatomic, retain) IBOutlet UIButton *aboutButton;
 	@property (nonatomic, retain) IBOutlet UIButton *extrasButton;
@@ -57,35 +60,34 @@
 
 @implementation MainMenuViewController
 
-@synthesize resumeButton, newGameButton, settingsButton, aboutButton, extrasButton, resumeStar;
+@synthesize resumeButton, startNewGameButton, settingsButton, aboutButton, extrasButton, resumeStar;
 @synthesize creditsButton, legalButton;
 @synthesize idGamesButton, idSoftwareButton, triviaButton;
 @synthesize backButton;
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-	return UIInterfaceOrientationIsLandscape(interfaceOrientation);
-}
+BOOL subMenu = NO;
 
-- (void)viewDidUnload {
-    [super viewDidUnload];
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    
     // Release any retained subviews of the main view.
     // e.g. self.myOutlet = nil;
-	
-	self.resumeButton = nil;
-	self.newGameButton = nil;
-	self.settingsButton = nil;
-	self.aboutButton = nil;
-	self.extrasButton = nil;
-	self.resumeStar = nil;
-	
-	self.idGamesButton = nil;
-	self.idSoftwareButton = nil;
-	self.triviaButton = nil;
-	
-	self.creditsButton = nil;
-	self.legalButton = nil;
-	
-	self.backButton = nil;
+    
+    self.resumeButton = nil;
+    self.startNewGameButton = nil;
+    self.settingsButton = nil;
+    self.aboutButton = nil;
+    self.extrasButton = nil;
+    self.resumeStar = nil;
+    
+    self.idGamesButton = nil;
+    self.idSoftwareButton = nil;
+    self.triviaButton = nil;
+    
+    self.creditsButton = nil;
+    self.legalButton = nil;
+    
+    self.backButton = nil;
 }
 
 - (IBAction)resume:(id)sender {
@@ -96,15 +98,18 @@
 
 
 - (IBAction)newGame:(id)sender {
-	SkillViewController *svc = [[SkillViewController alloc] initWithNibName:@"SkillView" bundle:nil];
+    wolf3dAppDelegate* app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+	SkillViewController *svc = [[SkillViewController alloc] initWithNibName:[app GetNibNameForDevice:@"SkillView"] bundle:nil];
 	[self.navigationController pushViewController:svc animated:YES];
 	[svc release];	
 }
 
 - (IBAction)settings:(id)sender {
+#if !TARGET_OS_TV
  	SettingsViewController *evc = [[SettingsViewController alloc] initWithNibName:@"SettingsView" bundle:nil];
 	[self.navigationController pushViewController:evc animated:YES];
-	[evc release];	
+	[evc release];
+#endif
 }
 
 - (IBAction)about:(id)sender {
@@ -118,19 +123,21 @@
 }
 
 - (IBAction)credits:(id)sender {
-	CreditsViewController *cvc = [[CreditsViewController alloc] initWithNibName:@"CreditsView" bundle:nil];
+    wolf3dAppDelegate* app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+	CreditsViewController *cvc = [[CreditsViewController alloc] initWithNibName:[app GetNibNameForDevice:@"CreditsView"] bundle:nil];
 	[self.navigationController pushViewController:cvc animated:YES];
 	[cvc release];
 }
 
 - (IBAction)legal:(id)sender {
-	LegalViewController *lvc = [[LegalViewController alloc] initWithNibName:@"LegalView" bundle:nil];
+    wolf3dAppDelegate* app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+	LegalViewController *lvc = [[LegalViewController alloc] initWithNibName:[app GetNibNameForDevice:@"LegalView"] bundle:nil];
 	[self.navigationController pushViewController:lvc animated:YES];
 	[lvc release];
 }
 
 - (IBAction)idGames:(id)sender {
-	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"itms-apps://itunes.com/apps/idsoftware"]];
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"itms-apps://itunes.com/apps/idsoftware"] options:@{} completionHandler:nil];
 }
 
 - (IBAction)idSoftware:(id)sender {
@@ -139,7 +146,8 @@
 }
 
 - (IBAction)trivia:(id)sender {
-	TriviaViewController *tvc = [[TriviaViewController alloc] initWithNibName:@"TriviaView" bundle:nil];
+    wolf3dAppDelegate* app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+	TriviaViewController *tvc = [[TriviaViewController alloc] initWithNibName:[app GetNibNameForDevice:@"TriviaView"] bundle:nil];
 	[self.navigationController pushViewController:tvc animated:YES];
 	[tvc release];
 	
@@ -157,12 +165,12 @@
 - (void)setMainHidden:(BOOL)hide {
 	// Set the main menu visibility
 	[self.resumeButton setHidden:hide];
-	[self.newGameButton setHidden:hide];
+	[self.startNewGameButton setHidden:hide];
 	[self.settingsButton setHidden:hide];
 	[self.aboutButton setHidden:hide];
 	[self.extrasButton setHidden:hide];
 	[self.resumeStar setHidden:hide];
-	
+    subMenu = hide;
 }
 
 - (void)setAboutHidden:(BOOL)hide {
@@ -188,5 +196,42 @@
 	[app showOpenGL];
 }
 
+#if TARGET_OS_TV
+- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+    for (UIPress* press in presses) {
+        switch (press.type) {
+            case UIPressTypeMenu:
+                if (subMenu) {
+                    break;
+                } else {
+                    [super pressesBegan: presses withEvent: event];
+                }
+            default:
+                [super pressesBegan: presses withEvent: event];
+                break;
+        }
+    }
+}
+
+- (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+    for (UIPress* press in presses) {
+        switch (press.type) {
+            case UIPressTypeMenu:
+                if (subMenu) {
+                    [self setAboutHidden:YES];
+                    [self setExtrasHidden:YES];
+                    [self setMainHidden:NO];
+                } else {
+                    [super pressesEnded: presses withEvent: event];
+                }
+                break;
+            default:
+                [super pressesEnded: presses withEvent: event];
+                break;
+        }
+    }
+}
+
+#endif
 
 @end

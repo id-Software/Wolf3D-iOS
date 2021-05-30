@@ -156,6 +156,24 @@ int isTouchMoving = 0; //gsh
 int touchCoordinateScale = 1;
 
 float deviceScale = 1.0f;
+bool isiPhoneX;
+
+// Game controller stuff
+bool controllerConnected = false;
+bool leftTriggerPressed = false;
+bool rightTriggerPressed = false;
+bool leftShoulderPressed = false;
+bool rightShoulderPressed = false;
+bool buttonAPressed = false;
+bool buttonBPressed = false;
+bool buttonXPressed = false;
+bool buttonYPressed = false;
+// TODO: d-pad
+float leftThumbstickYAxis = 0.0;
+float leftThumbstickXAxis = 0.0;
+float rightThumbstickYAxis = 0.0;
+float rightThumbstickXAxis = 0.0;
+
 
 deviceOrientation_t deviceOrientation = ORIENTATION_LANDSCAPE_LEFT;
 
@@ -309,7 +327,7 @@ void iphoneSavePrevTouches() {
  */
 extern font_t *myfonts[ 1 ];
 int iphoneCenterText( int x, int y, const char *str ) {
-	int l = strlen( str );
+	int l = (int)strlen( str );
 	int	i;
 	font_t *myfont = myfonts[0];
 	int		scale;
@@ -492,7 +510,7 @@ int iphoneCenterArialText( int x, int y, float scale, const char *str )
  */
 int iphoneDrawArialTextInBox( rect_t paragraph, int lineLength, const char *str, rect_t boxRect ) {
 	
-	int l = strlen( str );
+	int l = (int)strlen( str );
 	int	i;
 	
 	if (paragraph.x > boxRect.x + boxRect.width)
@@ -615,7 +633,7 @@ int iphoneDrawArialTextInBox( rect_t paragraph, int lineLength, const char *str,
 
 
 int iphoneDrawText( int x, int y, int width, int height, const char *str ) {
-	int l = strlen( str );
+	int l = (int)strlen( str );
 	int	i;
 	font_t *myfont = myfonts[0];
 //	int		scale;
@@ -719,7 +737,7 @@ void iphoneDrawMapName( rect_t rect, const char *str ) {
  ==================
  */
 int iphoneDrawTextInBox( rect_t paragraph, int lineLength, const char *str, rect_t boxRect ) {
-	int l = strlen( str );
+	int l = (int)strlen( str );
 	int	i;
 	font_t *myfont = myfonts[0];
 	
@@ -941,6 +959,9 @@ int	TouchDown( int x, int y, int w, int h ) {
 	
 	int	i;
 	for ( i = 0 ; i < numTouches ; i++ ) {
+        
+//        Com_Printf("touch %i: %i %i | x: %i y: %i w: %i h: %i x+w: %i y+h: %i hit: %s\n", i, touches[i][0], touches[i][1], x, y, w, h, x + w, y + h, ( touches[i][0] >= x && touches[i][1] >= y && touches[i][0] < x + w && touches[i][1] < y + h ) ? "true" : "false" );
+        
 		if ( touches[i][0] >= x && touches[i][1] >= y
 			&& touches[i][0] < x + w && touches[i][1] < y + h ) {
 			return 1;
@@ -1278,8 +1299,17 @@ PRIVATE void CreateIphoneUserCmd()
 	float forwardAxisHit = AxisHit( &huds.forwardStick );
 	float sideAxisHit = AxisHit( &huds.sideStick );
 	float turnAxisHit = AxisHit( &huds.turnStick );
+    
+    if (controllerConnected) {
+        forwardAxisHit += -leftThumbstickYAxis + -rightThumbstickYAxis;
+        turnAxisHit += leftThumbstickXAxis + rightThumbstickXAxis;
+        
+        if (rightTriggerPressed) {
+            cmd->buttons |= BUTTON_ATTACK;
+        }
+    }
 	
-	static bool printSticks = false;
+    static bool printSticks = false;
 	
 	if ( printSticks ) {
 		printf( "Forward: %.4f \nSide: %.4f\nTurn: %.4f\n", forwardAxisHit, sideAxisHit, turnAxisHit );
@@ -1746,7 +1776,7 @@ void iphoneFrame() {
 	unsigned char blendColor[4] = { 0, 0, 0, 0 };
 	
 	iphoneFrameNum++;
-	loggedTimes[iphoneFrameNum&(MAX_LOGGED_TIMES-1)].enterFrame = Sys_Milliseconds();
+	loggedTimes[iphoneFrameNum&(MAX_LOGGED_TIMES-1)].enterFrame = (int)Sys_Milliseconds();
 
 	// check for delayed intermission trigger after boss kill
 	if ( intermissionTriggerFrame > 0 && iphoneFrameNum >= intermissionTriggerFrame ) {
@@ -1781,7 +1811,7 @@ void iphoneFrame() {
 		iphoneSet2D();
 		
 		CFAbsoluteTime menuStartTime = CFAbsoluteTimeGetCurrent();
-		iphoneDrawMenus( vnull, vnull, vnull, vnull );
+		iphoneDrawMenus();
 		CFAbsoluteTime menuEndTime = CFAbsoluteTimeGetCurrent();
 		menuTime = menuEndTime - menuStartTime;
 	
@@ -1804,7 +1834,7 @@ void iphoneFrame() {
 	if( Player.playstate != ex_dead )
 	{
 		CreateIphoneUserCmd();
-		Player.position.angle = NormalizeAngle( Player.position.angle );
+		Player.position.angle = (int)NormalizeAngle( (int)Player.position.angle );
 
 		PL_Process( &Player, r_world );	// Player processing
 		if ( !slowAI->value || --slowAIFrame < 0 ) {
@@ -1903,14 +1933,23 @@ void iphoneFrame() {
 	iphoneDrawNotifyText();
 	
 	//gsh
+#if !TARGET_OS_TV
 	iphoneDrawReturnButton();
+#endif
 
 	iphoneDrawMapView();
 
 	iphoneDrawFace();	
 
-	iphoneDrawNumber( huds.ammo.x + huds.ammo.width / 2, huds.ammo.y, Player.ammo[AMMO_BULLETS], 48, 48 );
+#if !TARGET_OS_TV
+    
+    // TODO: make the ammo count scooch over for the notch when the iPhone X is being held with the notch to the right.    
+	iphoneDrawNumber( huds.ammo.x + huds.ammo.width / 2, huds.ammo.y, Player.ammo[AMMO_BULLETS], 48 * screenScale, 48 * screenScale );
+#else
+    iphoneDrawNumber( huds.ammo.x + huds.ammo.width / 2, (viddef.height - huds.ammo.height) - 2, Player.ammo[AMMO_BULLETS], 48 * screenScale, 48 * screenScale );
+#endif
 	
+#if !TARGET_OS_TV
 	if ( hideControls->value != 1 ) {
 		iphoneDrawHudControl( &huds.forwardStick );
 		iphoneDrawHudControl( &huds.sideStick );
@@ -1925,6 +1964,7 @@ void iphoneFrame() {
 	if ( iphoneDrawHudButton( &huds.map ) ) {
 		iphoneOpenAutomap();
 	}
+#endif
 
 	Client_Screen_DrawConsole();	
 
@@ -1950,4 +1990,38 @@ void iphoneDrawLoading()
 	//SysIPhoneSwapBuffers();	// do the swapbuffers	
 }
 
+void iPhoneSetControllerConnected( bool _controllerConnected )
+{
+    controllerConnected = _controllerConnected;
+}
+
+void iPhoneSetLeftThumbstickXValue( float  _leftThumbstickXAxis )
+{
+    leftThumbstickXAxis = _leftThumbstickXAxis;
+}
+
+void iPhoneSetLeftThumbstickYValue( float  _leftThumbstickYAxis )
+{
+    leftThumbstickYAxis = _leftThumbstickYAxis;
+}
+
+void iPhoneSetRightThumbstickXValue( float  _rightThumbstickXAxis )
+{
+    rightThumbstickXAxis = _rightThumbstickXAxis;
+}
+
+void iPhoneSetRightThumbstickYValue( float  _rightThumbstickYAxis )
+{
+    rightThumbstickYAxis = _rightThumbstickYAxis;
+}
+
+void iPhoneSetRightTriggerPressed( bool _rightTriggerPressed )
+{
+    rightTriggerPressed = _rightTriggerPressed;
+}
+
+void iPhoneSetButtonAPressed( bool _buttonAPressed )
+{
+    buttonAPressed = _buttonAPressed;
+}
 

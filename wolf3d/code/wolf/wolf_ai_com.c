@@ -213,8 +213,8 @@ PRIVATE void AI_Dodge( entity_t *self )
 		turnaround = opposite8[ self->dir ];
 	}
 
-	deltax = POS2TILE( Player.position.origin[ 0 ] ) - POS2TILE( self->x );
-	deltay = POS2TILE( Player.position.origin[ 1 ] ) - POS2TILE( self->y );
+	deltax = (int)POS2TILE( Player.position.origin[ 0 ] ) - POS2TILE( self->x );
+	deltay = (int)POS2TILE( Player.position.origin[ 1 ] ) - POS2TILE( self->y );
 
 //
 // arange 5 direction choices in order of preference
@@ -307,8 +307,8 @@ PRIVATE void AI_Chase( entity_t *self )
 	turnaround = opposite8[ olddir ];
 	d[ 0 ] = d[ 1 ] = dir8_nodir;
 
-	deltax = POS2TILE( Player.position.origin[ 0 ] ) - POS2TILE( self->x );
-	deltay = POS2TILE( Player.position.origin[ 1 ] ) - POS2TILE( self->y );
+	deltax = (int)POS2TILE( Player.position.origin[ 0 ] ) - POS2TILE( self->x );
+	deltay = (int)POS2TILE( Player.position.origin[ 1 ] ) - POS2TILE( self->y );
 
 	if( deltax > 0 )
 	{
@@ -427,8 +427,8 @@ PRIVATE void AI_Retreat( entity_t *self )
 	int deltax, deltay;
 	dir8type d[2], tdir;
 
-	deltax = POS2TILE( Player.position.origin[ 0 ] ) - POS2TILE( self->x );
-	deltay = POS2TILE( Player.position.origin[ 1 ] ) - POS2TILE( self->y );
+	deltax = (int)POS2TILE( Player.position.origin[ 0 ] ) - POS2TILE( self->x );
+	deltay = (int)POS2TILE( Player.position.origin[ 1 ] ) - POS2TILE( self->y );
 
 	d[ 0 ] = deltax < 0 ? dir8_east  : dir8_west;
 	d[ 1 ] = deltay < 0 ? dir8_north : dir8_south;
@@ -510,8 +510,8 @@ PRIVATE _boolean AI_CheckSight( entity_t *self )
 	}
 
 // if the player is real close, sight is automatic
-	deltax = Player.position.origin[ 0 ] - self->x;
-	deltay = Player.position.origin[ 1 ] - self->y;
+	deltax = (int)Player.position.origin[ 0 ] - self->x;
+	deltay = (int)Player.position.origin[ 1 ] - self->y;
 
 	if( ABS( deltax ) < MINSIGHT && ABS( deltay ) < MINSIGHT ) 
 	{
@@ -870,8 +870,8 @@ PUBLIC void T_Chase( entity_t *self )
 	dodge = 0;
 	if( Level_CheckLine( self->x, self->y, Player.position.origin[0], Player.position.origin[1], r_world ) )	// got a shot at player?
 	{
-		dx = ABS( POS2TILE( self->x ) - POS2TILE( Player.position.origin[ 0 ] ) );
-		dy = ABS( POS2TILE( self->y ) - POS2TILE( Player.position.origin[ 1 ] ) );
+		dx = ABS( (int)POS2TILE( self->x ) - (int)POS2TILE( Player.position.origin[ 0 ] ) );
+		dy = ABS( (int)POS2TILE( self->y ) - (int)POS2TILE( Player.position.origin[ 1 ] ) );
 		dist = max_of_2(dx, dy);
 		if( ! dist || (dist == 1 && self->distance < 16) )
 		{
@@ -1008,8 +1008,8 @@ PUBLIC void T_BossChase( entity_t *self )
 	W8 dodge;
 
 	dodge = 0;
-	dx = ABS( self->tilex - POS2TILE( Player.position.origin[ 0 ] ) );
-	dy = ABS( self->tiley - POS2TILE( Player.position.origin[ 1 ] ) );
+	dx = ABS( self->tilex - (int)POS2TILE( Player.position.origin[ 0 ] ) );
+	dy = ABS( self->tiley - (int)POS2TILE( Player.position.origin[ 1 ] ) );
 	dist = max_of_2( dx, dy );
 
 	if( Level_CheckLine( self->x, self->y, Player.position.origin[0], Player.position.origin[1], r_world ) )						// got a shot at player?
@@ -1107,8 +1107,8 @@ PUBLIC void T_Shoot( entity_t *self )
 		return; // player is behind a wall
 	}
 
-	dx = ABS( POS2TILE( self->x ) - POS2TILE( Player.position.origin[ 0 ] ) );
-	dy = ABS( POS2TILE( self->y ) - POS2TILE( Player.position.origin[ 1 ] ) );
+	dx = ABS( (int)POS2TILE( self->x ) - (int)POS2TILE( Player.position.origin[ 0 ] ) );
+	dy = ABS( (int)POS2TILE( self->y ) - (int)POS2TILE( Player.position.origin[ 1 ] ) );
 	dist = max_of_2( dx, dy );
 
 	if( self->type == en_ss || self->type == en_boss )
@@ -1209,8 +1209,8 @@ PUBLIC void T_UShoot( entity_t *self )
 
 	T_Shoot( self );
 
-	dx = ABS( self->tilex - POS2TILE( Player.position.origin[ 0 ] ) );
-	dy = ABS( self->tiley - POS2TILE( Player.position.origin[ 1 ] ) );
+	dx = ABS( self->tilex - (int)POS2TILE( Player.position.origin[ 0 ] ) );
+	dy = ABS( self->tiley - (int)POS2TILE( Player.position.origin[ 1 ] ) );
 	dist = max_of_2( dx, dy );
 
 	if( dist <= 1 )

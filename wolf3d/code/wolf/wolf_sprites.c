@@ -94,7 +94,7 @@ PUBLIC int Sprite_GetNewSprite( void )
 		if( sprt->flags & SPRT_REMOVE )
 		{ // free spot: clear it first
 			memset( sprt, 0, sizeof( sprite_t ) );
-			return n;
+			return (int)n;
 		}
 	}
 
@@ -260,9 +260,9 @@ PUBLIC int Sprite_CreateVisList( void )
 		if( tile_visible[ tx ][ ty ] || tile_visible[ tx + 1 ][ ty ] ||
 			 tile_visible[ tx ][ ty + 1 ] || tile_visible[ tx + 1 ][ ty + 1 ] )
 		{ // player spoted it
-			visptr->dist = LineLen2Point( sprt->x - Player.position.origin[ 0 ],
-																 sprt->y-Player.position.origin[ 1 ],
-																 Player.position.angle ); //FIXME viewport
+			visptr->dist = LineLen2Point( (int)sprt->x - (int)Player.position.origin[ 0 ],
+																 (int)sprt->y-(int)Player.position.origin[ 1 ],
+																 (int)Player.position.angle ); //FIXME viewport
 			visptr->x = sprt->x;
 			visptr->y = sprt->y;
 			visptr->ang = sprt->ang;
@@ -282,6 +282,6 @@ PUBLIC int Sprite_CreateVisList( void )
 		qsort( vislist, num_visible, sizeof( visobj_t ), Sprite_cmpVis );
 	}
 
-	return num_visible;
+	return (int)num_visible;
 }
 

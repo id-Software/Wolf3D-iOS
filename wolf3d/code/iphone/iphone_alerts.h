@@ -25,7 +25,7 @@
 #define __IPHONE_ALERTS__
 
 void iphoneMessageBox(char *title, char *message);
-void iphoneKillMessageBox();
+void iphoneKillMessageBox(void);
 void iphoneNewMessageBox(char *title, char *message);
 void iphoneYesNoBox(char *title, char *message);
 

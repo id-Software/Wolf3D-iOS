@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder.AppleTV.XIB" version="3.0" toolsVersion="14109" targetRuntime="AppleTV" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="appleTV" orientation="landscape">
+        <adaptation id="light"/>
+    </device>
+    <dependencies>
+        <deployment identifier="tvOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="EpisodeViewController">
+            <connections>
+                <outlet property="episodeList" destination="50" id="53"/>
+                <outlet property="view" destination="1" id="13"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="1">
+            <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" fixedFrame="YES" image="wolf_bg" translatesAutoresizingMaskIntoConstraints="NO" id="28">
+                    <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                </imageView>
+                <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="EPISODE" lineBreakMode="middleTruncation" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="32" customClass="UIFontLabel">
+                    <rect key="frame" x="200" y="47" width="191" height="57"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="57" id="QQs-VQ-hcN"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="48"/>
+                    <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                </label>
+                <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" showsHorizontalScrollIndicator="NO" indicatorStyle="white" style="plain" separatorStyle="none" rowHeight="189" sectionHeaderHeight="0.0" sectionFooterHeight="0.0" translatesAutoresizingMaskIntoConstraints="NO" id="50" userLabel="Episode List">
+                    <rect key="frame" x="200" y="104" width="625" height="577"/>
+                    <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="625" id="6Fq-le-jqW"/>
+                    </constraints>
+                    <connections>
+                        <outlet property="dataSource" destination="-1" id="51"/>
+                        <outlet property="delegate" destination="-1" id="52"/>
+                    </connections>
+                </tableView>
+            </subviews>
+            <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="50" firstAttribute="top" secondItem="32" secondAttribute="bottom" id="2Ts-Mj-EFL"/>
+                <constraint firstItem="50" firstAttribute="top" secondItem="1" secondAttribute="top" constant="104" id="F8i-Tn-iW6"/>
+                <constraint firstItem="50" firstAttribute="centerX" secondItem="1" secondAttribute="centerX" id="Nkh-Qy-YI6"/>
+                <constraint firstItem="32" firstAttribute="leading" secondItem="50" secondAttribute="leading" id="mNB-P0-qd7"/>
+                <constraint firstAttribute="bottom" secondItem="50" secondAttribute="bottom" constant="87" id="xPt-Ur-jUq"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="wolf_bg" width="480" height="320"/>
+    </resources>
+</document>

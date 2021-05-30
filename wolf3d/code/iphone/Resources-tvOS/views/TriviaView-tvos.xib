@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder.AppleTV.XIB" version="3.0" toolsVersion="14109" targetRuntime="AppleTV" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="appleTV" orientation="landscape">
+        <adaptation id="light"/>
+    </device>
+    <dependencies>
+        <deployment identifier="tvOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="TriviaViewController">
+            <connections>
+                <outlet property="firstTrivia" destination="20" id="24"/>
+                <outlet property="lastTrivia" destination="40" id="43"/>
+                <outlet property="view" destination="1" id="3"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="1">
+            <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="zDA-qx-YSf">
+                    <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                    <subviews>
+                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" image="wolf_bg" translatesAutoresizingMaskIntoConstraints="NO" id="45">
+                            <rect key="frame" x="0.0" y="0.0" width="1024" height="768"/>
+                        </imageView>
+                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" text="Trivia" textAlignment="center" lineBreakMode="tailTruncation" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="5" customClass="UIFontLabel">
+                            <rect key="frame" x="435" y="20" width="159" height="77"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="77" id="COf-TA-xjD"/>
+                                <constraint firstAttribute="width" constant="159" id="CQG-MV-Pvu"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="48"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <size key="shadowOffset" width="2" height="2"/>
+                        </label>
+                        <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="1" contentMode="left" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="11" baselineAdjustment="alignBaselines" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="20">
+                            <rect key="frame" x="155" y="140" width="713" height="400"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="713" id="8kJ-j2-Wml"/>
+                                <constraint firstAttribute="height" constant="400" id="ebZ-Yl-oMo"/>
+                            </constraints>
+                            <string key="text">ORIGINAL WOLF: The original release of Wolfenstein 3D only contained 3 Episodes. Episodes 4, 5, and 6 were sold separately as "The Nocturnal Missions", and were intended to act as a prequel to the original trilogy of Episodes.  Subsequent releases of the game included all 6 Episodes together.</string>
+                            <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="30"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <size key="shadowOffset" width="2" height="2"/>
+                        </label>
+                        <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="2" contentMode="left" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="7" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="26">
+                            <rect key="frame" x="162" y="140" width="700" height="400"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="700" id="AdP-d7-jCi"/>
+                                <constraint firstAttribute="height" constant="400" id="C4Q-mS-yYb"/>
+                            </constraints>
+                            <string key="text">BJ, THE MAN: William Joseph Blazkowicz was born August 15, 1911, to Polish immigrants. Blazkowicz was a top spy for the Allied Forces, eventually receiving the Congressional Medal of Honor.</string>
+                            <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="30"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <size key="shadowOffset" width="2" height="2"/>
+                        </label>
+                        <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="3" contentMode="left" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="7" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="30">
+                            <rect key="frame" x="162" y="140" width="700" height="400"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="400" id="Qxx-CW-rnl"/>
+                                <constraint firstAttribute="width" constant="700" id="q44-oo-f9h"/>
+                            </constraints>
+                            <string key="text">BOX ART: Ken Rieger was the talented illustrator who created the cover art for Spear of Destiny, Wolfenstein3D and Commander Keen.</string>
+                            <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="30"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <size key="shadowOffset" width="2" height="2"/>
+                        </label>
+                        <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="4" contentMode="left" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="7" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="28">
+                            <rect key="frame" x="162" y="140" width="700" height="400"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="400" id="DAa-YL-ldr"/>
+                                <constraint firstAttribute="width" constant="700" id="T1F-2x-3Ke"/>
+                            </constraints>
+                            <string key="text">THE REAL SPEAR: The Spear of Destiny, also known as The Spear or The Holy Lance, is believed to have been the weapon used to pierce the side of Jesus Christ at the Crucifixion.  The Spear soon became a symbol of God's favor and those who possessed it were believed to be invincible.</string>
+                            <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="30"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <size key="shadowOffset" width="2" height="2"/>
+                        </label>
+                        <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="5" contentMode="left" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="7" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="27">
+                            <rect key="frame" x="162" y="140" width="700" height="400"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="400" id="b9p-eX-x5q"/>
+                                <constraint firstAttribute="width" constant="700" id="j9u-5U-0f0"/>
+                            </constraints>
+                            <string key="text">THE SPEAR AND HITLER: Hitler is believed to have acquired the Spear at the beginning of WWII.  Near the end of that war, it is rumored that General Patton discovered the Spear and that the downfall of Germany began that day.  It is fabled that the U.S. was destined to succeed Germany as the New World Power once ownership of the Spear changed hands.</string>
+                            <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="30"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <size key="shadowOffset" width="2" height="2"/>
+                        </label>
+                        <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="6" contentMode="left" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="7" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="29">
+                            <rect key="frame" x="162" y="140" width="700" height="400"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="700" id="5MC-bN-noE"/>
+                                <constraint firstAttribute="height" constant="400" id="TuN-Bl-vhl"/>
+                            </constraints>
+                            <string key="text">DEATH DIMENSION: It is said that Hitler made a pact with the Angel of Death, promising the souls of his Nazi soldiers, to protect the Spear of Destiny.</string>
+                            <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="30"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <size key="shadowOffset" width="2" height="2"/>
+                        </label>
+                        <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="7" contentMode="left" text="GOD MODE: In the game, if you can access god mode, BJ's eyes will glow with eerie golden light." textAlignment="center" lineBreakMode="wordWrap" numberOfLines="7" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="32">
+                            <rect key="frame" x="162" y="140" width="700" height="400"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="400" id="Bk8-fv-ZsF"/>
+                                <constraint firstAttribute="width" constant="700" id="oMJ-2V-UXZ"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="30"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <size key="shadowOffset" width="2" height="2"/>
+                        </label>
+                        <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="8" contentMode="left" text="A PRINCE: Robert Prince, wrote the music for Commander Keen, Wolfenstein 3-D, and Doom." textAlignment="center" lineBreakMode="wordWrap" numberOfLines="7" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="31">
+                            <rect key="frame" x="162" y="140" width="700" height="400"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="700" id="e2d-ov-P5H"/>
+                                <constraint firstAttribute="height" constant="400" id="qVz-nH-S3D"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="30"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <size key="shadowOffset" width="2" height="2"/>
+                        </label>
+                        <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="9" contentMode="left" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="7" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="33">
+                            <rect key="frame" x="142" y="140" width="740" height="400"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="740" id="MiG-gl-d49"/>
+                                <constraint firstAttribute="height" constant="400" id="g9i-Vo-wTp"/>
+                            </constraints>
+                            <string key="text">DELAYED DEVELOPMENT: It is rumored that work on Spear of Destiny was hindered by the development team's time spent playing Fatal Fury (which Jay Wilbur called 'Fatal Productivity'), and Street Fighter II.</string>
+                            <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="30"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <size key="shadowOffset" width="2" height="2"/>
+                        </label>
+                        <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="10" contentMode="left" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="7" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="34">
+                            <rect key="frame" x="142" y="140" width="740" height="400"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="400" id="NfU-8Y-zvQ"/>
+                                <constraint firstAttribute="width" constant="740" id="ifC-b0-SkQ"/>
+                            </constraints>
+                            <string key="text">A MATTER OF DEGREES: John Carmack is known for his innovations in 3D graphics and rocketry but what is less known is that this self-taught engineer has no degrees - he dropped out of school after one semester.</string>
+                            <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="30"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <size key="shadowOffset" width="2" height="2"/>
+                        </label>
+                        <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="11" contentMode="left" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="7" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="35">
+                            <rect key="frame" x="162" y="140" width="700" height="400"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="400" id="rFR-Mv-5wY"/>
+                                <constraint firstAttribute="width" constant="700" id="xzI-60-TBu"/>
+                            </constraints>
+                            <string key="text">THE CARMACK: John Carmack, one of the founders of id Software, preferred to work at a pizza joint and make games rather than go to college.  His favorite programming food is pizza and diet coke.</string>
+                            <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="30"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <size key="shadowOffset" width="2" height="2"/>
+                        </label>
+                        <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="12" contentMode="left" text="DREAMING IN DIGITAL: Doom was reported to cause gamers to dream in pixels and lower productivity." textAlignment="center" lineBreakMode="wordWrap" numberOfLines="7" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="36">
+                            <rect key="frame" x="142" y="140" width="740" height="400"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="740" id="870-H5-7Sx"/>
+                                <constraint firstAttribute="height" constant="400" id="h2F-na-IMX"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="30"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <size key="shadowOffset" width="2" height="2"/>
+                        </label>
+                        <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="13" contentMode="left" text="KEEPING IT IN THE FAMILY: BJ is Commander Keen's grandfather." textAlignment="center" lineBreakMode="wordWrap" numberOfLines="7" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="37">
+                            <rect key="frame" x="212" y="140" width="600" height="400"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="400" id="9Pb-mr-9MF"/>
+                                <constraint firstAttribute="width" constant="600" id="LYQ-EM-Zol"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="30"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <size key="shadowOffset" width="2" height="2"/>
+                        </label>
+                        <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="14" contentMode="left" text="WHAT'S IN A NAME: The original name for Doom was &quot;It's Green and Pissed&quot;" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="7" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="38">
+                            <rect key="frame" x="242" y="140" width="540" height="400"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="540" id="WBl-Ko-5Yj"/>
+                                <constraint firstAttribute="height" constant="400" id="zv9-NE-fU9"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="30"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <size key="shadowOffset" width="2" height="2"/>
+                        </label>
+                        <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="15" contentMode="TopLeft" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="7" minimumFontSize="10" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="39">
+                            <rect key="frame" x="192" y="140" width="640" height="400"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="400" id="8aq-4H-iqY"/>
+                                <constraint firstAttribute="width" constant="640" id="kwn-gw-egu"/>
+                            </constraints>
+                            <string key="text">GIBS: Gibs, pronounced with a hard 'g', is sometimes confused as 'jibs' due to its pronunciation.  The term came from the imagery of flying chicken giblets, or gibs for short.</string>
+                            <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="30"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <size key="shadowOffset" width="2" height="2"/>
+                        </label>
+                        <label hidden="YES" opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" tag="16" contentMode="left" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="7" minimumFontSize="10" translatesAutoresizingMaskIntoConstraints="NO" id="40">
+                            <rect key="frame" x="155" y="140" width="713" height="400"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="400" id="E7k-ER-ytb"/>
+                                <constraint firstAttribute="width" constant="713" id="b8O-6o-RzO"/>
+                            </constraints>
+                            <string key="text">WOLFENSTEIN 3D: The game was originally designed to have more complex gameplay. Though dragging bodies, stealth kills and uniforms were already programmed, it was decided that they slowed down the pace of the game and were removed.</string>
+                            <fontDescription key="fontDescription" name="Helvetica" family="Helvetica" pointSize="30"/>
+                            <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <color key="shadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <size key="shadowOffset" width="2" height="2"/>
+                        </label>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="16" customClass="UIFontButton">
+                            <rect key="frame" x="693" y="510" width="99" height="57"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="57" id="FZ8-68-fbY"/>
+                                <constraint firstAttribute="width" constant="99" id="TLk-QT-fi2"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="48"/>
+                            <size key="titleShadowOffset" width="2" height="2"/>
+                            <state key="normal" title="Next">
+                                <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="titleShadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </state>
+                            <state key="highlighted">
+                                <color key="titleColor" red="0.3333333432674408" green="0.3333333432674408" blue="0.3333333432674408" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="titleShadowColor" red="1" green="0.14913141730000001" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </state>
+                            <connections>
+                                <action selector="nextTrivia:" destination="-1" eventType="primaryActionTriggered" id="18"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="17" customClass="UIFontButton">
+                            <rect key="frame" x="440" y="510" width="187" height="57"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="187" id="ZI1-OQ-z3K"/>
+                                <constraint firstAttribute="height" constant="57" id="ozg-nE-nwt"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" name=".AppleSystemUIFont" family=".AppleSystemUIFont" pointSize="48"/>
+                            <size key="titleShadowOffset" width="2" height="2"/>
+                            <state key="normal" title="Previous">
+                                <color key="titleColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="titleShadowColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </state>
+                            <state key="highlighted">
+                                <color key="titleColor" red="0.3333333432674408" green="0.3333333432674408" blue="0.3333333432674408" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="titleShadowColor" red="1" green="0.14913141730000001" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </state>
+                            <connections>
+                                <action selector="previousTrivia:" destination="-1" eventType="primaryActionTriggered" id="19"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstItem="37" firstAttribute="top" secondItem="5" secondAttribute="bottom" constant="43" id="0Um-h0-nct"/>
+                        <constraint firstItem="40" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" constant="155" id="4ci-Ma-zUe"/>
+                        <constraint firstItem="29" firstAttribute="top" secondItem="5" secondAttribute="bottom" constant="43" id="5rq-D4-8Kj"/>
+                        <constraint firstItem="36" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" constant="142" id="68X-Kg-6hI"/>
+                        <constraint firstItem="26" firstAttribute="top" secondItem="5" secondAttribute="bottom" constant="43" id="6MK-bS-lg6"/>
+                        <constraint firstItem="40" firstAttribute="top" secondItem="5" secondAttribute="bottom" constant="43" id="6h6-uY-pTV"/>
+                        <constraint firstAttribute="bottom" secondItem="45" secondAttribute="bottom" id="6uB-6T-niw"/>
+                        <constraint firstItem="5" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" constant="435" id="7NO-iK-wLK"/>
+                        <constraint firstItem="31" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" constant="162" id="8AN-dK-Zks"/>
+                        <constraint firstItem="16" firstAttribute="top" secondItem="zDA-qx-YSf" secondAttribute="top" constant="510" id="Amm-Qa-yQ0"/>
+                        <constraint firstItem="37" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" constant="212" id="Auw-Ok-gb5"/>
+                        <constraint firstAttribute="width" constant="1024" id="Bua-Fi-Lgp"/>
+                        <constraint firstItem="5" firstAttribute="top" secondItem="zDA-qx-YSf" secondAttribute="top" constant="20" id="Dsa-Ia-4wO"/>
+                        <constraint firstItem="34" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" constant="142" id="IpT-vo-uAI"/>
+                        <constraint firstItem="28" firstAttribute="top" secondItem="5" secondAttribute="bottom" constant="43" id="Jd8-dH-eQr"/>
+                        <constraint firstItem="17" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" constant="440" id="LaL-d4-o0e"/>
+                        <constraint firstItem="34" firstAttribute="top" secondItem="5" secondAttribute="bottom" constant="43" id="OdK-r8-2rD"/>
+                        <constraint firstItem="39" firstAttribute="top" secondItem="5" secondAttribute="bottom" constant="43" id="On8-ca-02o"/>
+                        <constraint firstItem="33" firstAttribute="top" secondItem="5" secondAttribute="bottom" constant="43" id="PXZ-Zk-pgU"/>
+                        <constraint firstItem="35" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" constant="162" id="QF2-b2-dAf"/>
+                        <constraint firstItem="45" firstAttribute="top" secondItem="zDA-qx-YSf" secondAttribute="top" id="SFT-3y-GLb"/>
+                        <constraint firstItem="30" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" constant="162" id="TWc-tF-z3s"/>
+                        <constraint firstItem="17" firstAttribute="top" secondItem="5" secondAttribute="bottom" constant="413" id="V6c-Hv-D0n"/>
+                        <constraint firstItem="16" firstAttribute="leading" secondItem="17" secondAttribute="trailing" constant="66" id="WBv-T7-Mm1"/>
+                        <constraint firstItem="20" firstAttribute="top" secondItem="5" secondAttribute="bottom" constant="43" id="X5u-BE-I2B"/>
+                        <constraint firstItem="36" firstAttribute="top" secondItem="5" secondAttribute="bottom" constant="43" id="XFM-yY-Lz8"/>
+                        <constraint firstItem="38" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" constant="242" id="Yq4-fe-RVu"/>
+                        <constraint firstItem="20" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" constant="155" id="afa-7G-5Y0"/>
+                        <constraint firstItem="32" firstAttribute="top" secondItem="5" secondAttribute="bottom" constant="43" id="cxW-9c-4Qu"/>
+                        <constraint firstItem="30" firstAttribute="top" secondItem="5" secondAttribute="bottom" constant="43" id="dIc-Jp-yuf"/>
+                        <constraint firstItem="39" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" constant="192" id="dVr-1q-NAr"/>
+                        <constraint firstAttribute="height" constant="768" id="deS-Sv-dxc"/>
+                        <constraint firstItem="38" firstAttribute="top" secondItem="5" secondAttribute="bottom" constant="43" id="eYo-el-g4J"/>
+                        <constraint firstItem="35" firstAttribute="top" secondItem="5" secondAttribute="bottom" constant="43" id="efQ-gB-WZn"/>
+                        <constraint firstItem="29" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" constant="162" id="frn-Yj-9o9"/>
+                        <constraint firstAttribute="trailing" secondItem="45" secondAttribute="trailing" id="gHj-qD-tPT"/>
+                        <constraint firstItem="28" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" constant="162" id="hUA-k5-z5A"/>
+                        <constraint firstItem="33" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" constant="142" id="mX8-m8-RXl"/>
+                        <constraint firstItem="26" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" constant="162" id="nHk-ln-RcX"/>
+                        <constraint firstItem="27" firstAttribute="top" secondItem="5" secondAttribute="bottom" constant="43" id="oE3-tS-ryI"/>
+                        <constraint firstItem="27" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" constant="162" id="ofe-g7-3hu"/>
+                        <constraint firstItem="45" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" id="sU0-9k-Ce5"/>
+                        <constraint firstItem="31" firstAttribute="top" secondItem="5" secondAttribute="bottom" constant="43" id="vzE-GI-KuW"/>
+                        <constraint firstItem="32" firstAttribute="leading" secondItem="zDA-qx-YSf" secondAttribute="leading" constant="162" id="yvq-sk-Vxx"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="zDA-qx-YSf" firstAttribute="centerX" secondItem="1" secondAttribute="centerX" id="QBa-gL-Bbm"/>
+                <constraint firstItem="zDA-qx-YSf" firstAttribute="centerY" secondItem="1" secondAttribute="centerY" id="QQj-zc-wO0"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="34" y="54"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="wolf_bg" width="480" height="320"/>
+    </resources>
+</document>

@@ -32,8 +32,9 @@
 	UIImage* trackImage = [self minimumTrackImageForState:UIControlStateNormal];
 	
 	CGFloat trackImageHeight = trackImage.size.height;
-	
-	return CGRectMake(bounds.origin.x, bounds.origin.y, self.bounds.size.width, trackImageHeight);
+    
+    //    return CGRectMake(bounds.origin.x, bounds.origin.y, self.bounds.size.height, trackImageHeight);
+    return CGRectMake(bounds.origin.x, bounds.origin.y, self.bounds.size.width, trackImageHeight);
 }
 
 

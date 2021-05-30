@@ -101,7 +101,7 @@ PUBLIC int US_RndT( void )
 	rndindex++;
 	rndindex &= 0xFF;
 	
-	return rndtable[ rndindex ];
+	return (int)rndtable[ rndindex ];
 }
 
 

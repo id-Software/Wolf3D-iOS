@@ -53,14 +53,14 @@ void DownloadURLConnection( char *url )
 {
 	Com_Printf( "ConnectURL char *: %s\n", url );
 	
-	int length = strlen(url);
+	int length = (int)strlen(url);
 	if (length <= 4)
 	{
 		iphoneMessageBox("error", "url is not a valid map name.  Maps must end in \".map\"");
 		return;
 	}
 	
-	length = strlen(url);
+	length = (int)strlen(url);
 	//acquire file name of map
 	int pos = length;
 	while (pos > 0)
@@ -111,7 +111,10 @@ void DownloadURLConnection( char *url )
 	
 	
 	//convert url to nsstring
-	NSString *nssURL = [NSString stringWithUTF8String: url];
+    // the entire bit with downloading user maps is disabled on tvOS for now -tkidd
+    
+#if !TARGET_OS_TV
+    NSString *nssURL = [NSString stringWithUTF8String: url];
 	
 	// create the request
 	NSURLRequest *theRequest=[NSURLRequest requestWithURL:[NSURL URLWithString:nssURL]
@@ -136,6 +139,7 @@ void DownloadURLConnection( char *url )
 	}
 	
 	menuState = IPM_DOWNLOADPROGRESS;
+#endif
 }
 
 unsigned int userDataAmount = 0;

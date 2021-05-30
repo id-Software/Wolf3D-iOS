@@ -24,6 +24,7 @@
 #import "SkillViewController.h"
 #import "EpisodeViewController.h"
 #import "wolf_local.h"
+#import "wolf3dAppDelegate.h"
 
 @interface SkillViewController ()
 
@@ -65,16 +66,13 @@
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
 - (void)viewDidLoad {
     [super viewDidLoad];
-
-	[self setSelectionFrame];
+#if TARGET_OS_TV
+    self.selectionFrame.hidden = YES;
+#endif
 }
 
-
-
-// Override to allow orientations other than the default portrait orientation.
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
-    // Return YES for supported orientations.
-    return UIInterfaceOrientationIsLandscape(interfaceOrientation);
+- (void)viewDidLayoutSubviews {
+    [self setSelectionFrame];
 }
 
 
@@ -82,17 +80,8 @@
     // Releases the view if it doesn't have a superview.
     [super didReceiveMemoryWarning];
     
-    // Release any cached data, images, etc. that aren't in use.
+    self.selectionFrame = nil;
 }
-
-- (void)viewDidUnload {
-    [super viewDidUnload];
-    // Release any retained subviews of the main view.
-    // e.g. self.myOutlet = nil;
-	
-	self.selectionFrame = nil;
-}
-
 
 - (void)dealloc {
     [super dealloc];
@@ -105,7 +94,8 @@
 }
 
 - (IBAction)next:(id)sender {
-	EpisodeViewController *evc = [[EpisodeViewController alloc] initWithNibName:@"EpisodeView" bundle:nil];
+    wolf3dAppDelegate* app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+	EpisodeViewController *evc = [[EpisodeViewController alloc] initWithNibName:[app GetNibNameForDevice:@"EpisodeView"] bundle:nil];
 	[self.navigationController pushViewController:evc animated:YES];
 	[evc release];
 }
@@ -114,21 +104,33 @@
 -(IBAction)canIPlayDaddy:(id)sender {
 	Cvar_SetValue( skill->name, 0 );
 	[self setSelectionFrame];
+#if TARGET_OS_TV
+    [self next:sender];
+#endif
 }
 
 -(IBAction)dontHurtMe:(id)sender {
 	Cvar_SetValue( skill->name, 1 );
 	[self setSelectionFrame];
+#if TARGET_OS_TV
+    [self next:sender];
+#endif
 }
 
 -(IBAction)BringEmOn:(id)sender {
 	Cvar_SetValue( skill->name, 2 );
 	[self setSelectionFrame];
+#if TARGET_OS_TV
+    [self next:sender];
+#endif
 }
 
 -(IBAction)IAmDeathIncarnate:(id)sender {
 	Cvar_SetValue( skill->name, 3 );
 	[self setSelectionFrame];
+#if TARGET_OS_TV
+    [self next:sender];
+#endif
 }
 
 @end

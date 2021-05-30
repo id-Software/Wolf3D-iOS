@@ -112,7 +112,7 @@ PRIVATE int ovc_seek( void *datasource, ogg_int64_t offset, int whence )
 {
 	musicTrack_t	*track = (musicTrack_t *)datasource;
 
-	return FS_FileSeek( track->hFile, offset, whence );
+	return (int)FS_FileSeek( track->hFile, (long)offset, whence );
 }
 
 /*
@@ -218,8 +218,8 @@ PRIVATE _boolean Sound_OpenBGTrack( const char *name, musicTrack_t *track )
 		return false;
 	}
 
-	track->start = ov_raw_tell( vorbisFile );
-	track->rate = vorbisInfo->rate;
+	track->start = (int)ov_raw_tell( vorbisFile );
+	track->rate = (int)vorbisInfo->rate;
 	track->format = (vorbisInfo->channels == 2) ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
 
 	return true;
@@ -308,7 +308,7 @@ PUBLIC void Sound_StreamBGTrack( void )
 		// Stream from disk
 		while( size < BUFFER_SIZE )
 		{
-			read = ov_read( bgTrack.vorbisFile, (char *)data + size, BUFFER_SIZE - size, &dummy );
+			read = (int)ov_read( bgTrack.vorbisFile, (char *)data + size, BUFFER_SIZE - size, &dummy );
 			if( read == 0 )
 			{
 				// End of file
@@ -331,7 +331,7 @@ PUBLIC void Sound_StreamBGTrack( void )
 				ov_raw_seek( bgTrack.vorbisFile, (ogg_int64_t)bgTrack.start );
 
 				// Try streaming again
-				read = ov_read( bgTrack.vorbisFile, (char *)data + size, BUFFER_SIZE - size, &dummy );
+				read = (int)ov_read( bgTrack.vorbisFile, (char *)data + size, BUFFER_SIZE - size, &dummy );
 			}
 
 			if( read <= 0 )

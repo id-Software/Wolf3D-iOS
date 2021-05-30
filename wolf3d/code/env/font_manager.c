@@ -315,7 +315,7 @@ void Font_put_lineR2L( FONTSELECT fs, int x, int y, const char *string )
 
 	for ( i = 0; i < strlen( string ); ++i )
 	{
-		charindex = strlen( string ) - i - 1;
+		charindex = (int)strlen( string ) - i - 1;
 		mx -= myfonts[ fs ]->nCharWidth[ string[ charindex ]-32 ] * myfonts[ fs ]->nSize;
 
 		R_Draw_Character( mx, y, string[ charindex ], myfonts[ fs ] );		

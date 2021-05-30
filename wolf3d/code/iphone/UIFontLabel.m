@@ -26,6 +26,7 @@
 @implementation UIFontLabel
 
 - (void)awakeFromNib {
+    [super awakeFromNib];
 	CGFloat points = self.font.pointSize;
 	
 	self.font = [UIFont fontWithName:@"POSITYPE idSettler v10.2" size:points];
