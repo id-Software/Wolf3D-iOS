@@ -18,8 +18,6 @@ Improvements/Changes
 - Code locations reorganized and consolodated
 - Second project target for tvOS that takes advantage of focus model and removes on-screen controls.
 
-This commit adds a "menu_art" directory with placeholder images and a substitute font. These are images made from scratch and a public domain font in order to avoid distributing copyrighted material. 
-
 Note that unlike the DOOM for iOS repository from id Software, this repository includes all the game content (levels, sounds, etc.) from the original Wolfenstein 3-D release because John Carmack included them in the initial drop in 2009. As a result, **you can clone this repository, build, and start playing immediately**. It does not include the Spear of Destiny levels as the original release did not have them, and the in-app purchase to purchase them has long since stopped working. If you try to start a Spear of Destiny episiode the app will crash, but if you have the files yourself from some other means you can drop them in the `base/maps` directory along with the `base/sodsprites` directory and play them. 
 
 For a rundown of getting the code up and running in iOS 11, I wrote this [lengthy article](http://schnapple.com/wolfenstein-3d-and-doom-on-ios-11/) on the subject. For a rundown of the effort to get it running on tvOS, I wrote a [second lenghty article](http://schnapple.com/wolfenstein-3d-and-doom-on-tvos-for-apple-tv/) on the subject. 
