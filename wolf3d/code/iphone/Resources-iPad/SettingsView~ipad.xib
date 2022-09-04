@@ -289,7 +289,7 @@
                             <color key="textColor" red="0.66666668653488159" green="0.66666668653488159" blue="0.66666668653488159" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             <color key="highlightedColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         </label>
-                        <imageView userInteractionEnabled="NO" tag="1" contentMode="scaleToFill" image="iphone_preset_1.png" translatesAutoresizingMaskIntoConstraints="NO" id="76">
+                        <imageView userInteractionEnabled="NO" tag="1" contentMode="scaleAspectFill" image="iphone_preset_1.png" translatesAutoresizingMaskIntoConstraints="NO" id="76">
                             <rect key="frame" x="518" y="19" width="348" height="208"/>
                             <constraints>
                                 <constraint firstAttribute="height" constant="236" id="P0v-fN-sx0"/>
@@ -301,7 +301,7 @@
                                 </mask>
                             </variation>
                         </imageView>
-                        <imageView hidden="YES" userInteractionEnabled="NO" tag="2" contentMode="scaleToFill" image="iphone_preset_2.png" translatesAutoresizingMaskIntoConstraints="NO" id="77">
+                        <imageView hidden="YES" userInteractionEnabled="NO" tag="2" contentMode="scaleAspectFill" image="iphone_preset_2.png" translatesAutoresizingMaskIntoConstraints="NO" id="77">
                             <rect key="frame" x="518" y="19" width="348" height="208"/>
                             <constraints>
                                 <constraint firstAttribute="width" constant="348" id="46c-0f-nS7"/>
@@ -313,7 +313,7 @@
                                 </mask>
                             </variation>
                         </imageView>
-                        <imageView hidden="YES" userInteractionEnabled="NO" tag="3" contentMode="scaleToFill" image="iphone_preset_3.png" translatesAutoresizingMaskIntoConstraints="NO" id="78">
+                        <imageView hidden="YES" userInteractionEnabled="NO" tag="3" contentMode="scaleAspectFill" image="iphone_preset_3.png" translatesAutoresizingMaskIntoConstraints="NO" id="78">
                             <rect key="frame" x="518" y="19" width="348" height="208"/>
                             <constraints>
                                 <constraint firstAttribute="width" constant="348" id="2oO-8K-Ig1"/>
@@ -325,7 +325,7 @@
                                 </mask>
                             </variation>
                         </imageView>
-                        <imageView hidden="YES" userInteractionEnabled="NO" tag="4" contentMode="scaleToFill" image="iphone_preset_4.png" translatesAutoresizingMaskIntoConstraints="NO" id="79">
+                        <imageView hidden="YES" userInteractionEnabled="NO" tag="4" contentMode="scaleAspectFill" image="iphone_preset_4.png" translatesAutoresizingMaskIntoConstraints="NO" id="79">
                             <rect key="frame" x="518" y="19" width="348" height="208"/>
                             <constraints>
                                 <constraint firstAttribute="height" constant="236" id="4dM-r1-L2e"/>
