@@ -643,6 +643,7 @@ extern char urlbuffer[1024];
 }
 
 - (void)GLtoPreviousMenu {
+	[self.navigationController popViewControllerAnimated:NO];
 	[viewController setActive:NO];
 	[[viewController view] removeFromSuperview];
 	[window addSubview:navigationController.view];
