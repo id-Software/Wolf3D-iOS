@@ -36,7 +36,7 @@ PRIVATE size_t ovc_read( void *ptr, size_t size, size_t nmemb, void *dataSource 
 
 PRIVATE int ovc_seek( void *dataSource, ogg_int64_t offset, int whence )
 {	
-	return FS_FileSeek( fh, offset, whence );
+	return (int)FS_FileSeek( fh, (long)offset, whence );
 }
 
 PRIVATE int ovc_close( void *dataSource )
@@ -79,7 +79,7 @@ PUBLIC _boolean LoadOggInfo( const char *filename, W8 **wav, soundInfo_t *info )
 	
 	newFilename = strdup( filename );
 	
-	len = strlen( newFilename );
+	len = (int)strlen( newFilename );
 	if ( len < 5 || strcmp( newFilename + len - 4, ".wav" ) ) {
 		free( newFilename );
 		return false;
@@ -121,7 +121,7 @@ PUBLIC _boolean LoadOggInfo( const char *filename, W8 **wav, soundInfo_t *info )
 	while( size < BUFFER_SIZE )
 	{
 		int read = 0;
-		read = ov_read( &vorbisFile, (char *)data + size, BUFFER_SIZE - size, &dummy );
+		read = (int)ov_read( &vorbisFile, (char *)data + size, BUFFER_SIZE - size, &dummy );
 		if( read == 0 )
 		{
 			break;

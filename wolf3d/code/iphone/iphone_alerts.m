@@ -31,38 +31,51 @@
  Provides a basic pop-up message box
  ===================================
  */
+
+// For now, no message boxes will be shown in tvOS. The messages will just go into oblivion.
+// We need to transfer it to use UIAlertViewControllers and also be able to be presented from a utility class
+// and I just don't want to spend the time on that right now -tkidd
+
+#if !TARGET_OS_TV
 UIAlertView *alert;
+#endif
 
 void InitAlert()
 {
-	alert = [[UIAlertView alloc] initWithTitle:@"Title" 
+#if !TARGET_OS_TV
+	alert = [[UIAlertView alloc] initWithTitle:@"Title"
 									   message:@"Message"
 									  delegate:nil 
 							 cancelButtonTitle:@"OK" 
 							 otherButtonTitles: nil];
+#endif
 }
 
 
 void iphoneMessageBox(char *title, char *message)
 {
 	//check if alert exists and initialize if it isn't
+#if !TARGET_OS_TV
 	if (!alert)
 	{
 		InitAlert();
 	}
 	
-	NSString *nsTitle = [[NSString alloc] initWithCString:title];
-	NSString *nsMessage = [[NSString alloc] initWithCString:message];
+    NSString *nsTitle = [[NSString alloc] initWithCString:title encoding:NSUTF8StringEncoding];
+	NSString *nsMessage = [[NSString alloc] initWithCString:message encoding:NSUTF8StringEncoding];
 	
 	alert.title = nsTitle;
 	alert.message = nsMessage;
 	
 	[alert show];
+#endif
 }
 
 void iphoneKillMessageBox()
 {
-	[alert dismissWithClickedButtonIndex:alert.cancelButtonIndex animated:NO];
+#if !TARGET_OS_TV
+[alert dismissWithClickedButtonIndex:alert.cancelButtonIndex animated:NO];
+#endif
 }
 
 /*
@@ -74,6 +87,7 @@ void iphoneKillMessageBox()
  */
 void iphoneNewMessageBox(char *title, char *message)
 {
+#if !TARGET_OS_TV
 	UIAlertView *newAlert;
 	newAlert = [[UIAlertView alloc] initWithTitle:@"Title" 
 									   message:@"Message"
@@ -82,14 +96,15 @@ void iphoneNewMessageBox(char *title, char *message)
 							 otherButtonTitles: nil];
 	
 	
-	NSString *nsTitle = [[NSString alloc] initWithCString:title];
-	NSString *nsMessage = [[NSString alloc] initWithCString:message];
+	NSString *nsTitle = [[NSString alloc] initWithCString:title encoding:NSUTF8StringEncoding];
+	NSString *nsMessage = [[NSString alloc] initWithCString:message encoding:NSUTF8StringEncoding];
 	
 	newAlert.title = nsTitle;
 	newAlert.message = nsMessage;
 	
 	[newAlert show];
 	[newAlert release];
+#endif
 }
 
 
@@ -103,30 +118,36 @@ void iphoneNewMessageBox(char *title, char *message)
  ClickedButton call.
  ===================================
  */
+#if !TARGET_OS_TV
 UIAlertView *alertYesNo;
+#endif
 
 void InitAlertYesNo()
 {
-	alertYesNo = [[UIAlertView alloc] initWithTitle:@"Title" 
+#if !TARGET_OS_TV
+	alertYesNo = [[UIAlertView alloc] initWithTitle:@"Title"
 									   message:@"Message"
 									  delegate:(wolf3dAppDelegate *)[UIApplication sharedApplication].delegate//nil 
 							 cancelButtonTitle:@"No" 
-							 otherButtonTitles:@"Yes", nil];	
+							 otherButtonTitles:@"Yes", nil];
+#endif
 }
 
 void iphoneYesNoBox(char *title, char *message)
 {
+#if !TARGET_OS_TV
 	if (!alertYesNo)
 	{
 		InitAlertYesNo();
 	}
 	
-	NSString *nsTitle = [[NSString alloc] initWithCString:title];
-	NSString *nsMessage = [[NSString alloc] initWithCString:message];
+	NSString *nsTitle = [[NSString alloc] initWithCString:title encoding:NSUTF8StringEncoding];
+	NSString *nsMessage = [[NSString alloc] initWithCString:message encoding:NSUTF8StringEncoding];
 	
 	alertYesNo.title = nsTitle;
 	alertYesNo.message = nsMessage;
 	
 	[alertYesNo show];
+#endif
 }
 #endif

@@ -109,53 +109,53 @@ PUBLIC char *FS_ForceGamedir( void )
 
 -----------------------------------------------------------------------------
 */
-PRIVATE char **FS_ListFiles( char *findname, int *numfiles, unsigned musthave, unsigned canthave )
-{
-	char *s;
-	int nfiles = 0;
-	char **list = 0;
-
-	s = FS_FindFirst( findname, musthave, canthave );
-	while ( s )
-	{
-		if ( s[strlen(s)-1] != '.' )
-			nfiles++;
-		s = FS_FindNext( musthave, canthave );
-	}
-	FS_FindClose ();
-
-	if ( !nfiles )
-		return NULL;
-
-	nfiles++; // add space for a guard
-	*numfiles = nfiles;
-
-	list = MM_MALLOC( sizeof( char * ) * nfiles );
-	if( list == NULL )
-	{
-		MM_OUTOFMEM( "list" );
-	}
-
-	memset( list, 0, sizeof( char * ) * nfiles );
-
-	s = FS_FindFirst( findname, musthave, canthave );
-	nfiles = 0;
-	while( s )
-	{
-		if( s[ strlen( s ) - 1 ] != '.' )
-		{
-			list[ nfiles ] = strdup( s );
-
-			(void)my_strlwr( list[ nfiles ] );
-
-			nfiles++;
-		}
-		s = FS_FindNext( musthave, canthave );
-	}
-	FS_FindClose();
-
-	return list;
-}
+//PRIVATE char **FS_ListFiles( char *findname, int *numfiles, unsigned musthave, unsigned canthave )
+//{
+//    char *s;
+//    int nfiles = 0;
+//    char **list = 0;
+//
+//    s = FS_FindFirst( findname, musthave, canthave );
+//    while ( s )
+//    {
+//        if ( s[strlen(s)-1] != '.' )
+//            nfiles++;
+//        s = FS_FindNext( musthave, canthave );
+//    }
+//    FS_FindClose ();
+//
+//    if ( !nfiles )
+//        return NULL;
+//
+//    nfiles++; // add space for a guard
+//    *numfiles = nfiles;
+//
+//    list = MM_MALLOC( sizeof( char * ) * nfiles );
+//    if( list == NULL )
+//    {
+//        MM_OUTOFMEM( "list" );
+//    }
+//
+//    memset( list, 0, sizeof( char * ) * nfiles );
+//
+//    s = FS_FindFirst( findname, musthave, canthave );
+//    nfiles = 0;
+//    while( s )
+//    {
+//        if( s[ strlen( s ) - 1 ] != '.' )
+//        {
+//            list[ nfiles ] = strdup( s );
+//
+//            (void)my_strlwr( list[ nfiles ] );
+//
+//            nfiles++;
+//        }
+//        s = FS_FindNext( musthave, canthave );
+//    }
+//    FS_FindClose();
+//
+//    return list;
+//}
 
 
 /*

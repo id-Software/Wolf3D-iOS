@@ -184,10 +184,10 @@ PRIVATE _boolean PL_TryMove( player_t *self, LevelData_t *lvl )
 	int xl, yl, xh, yh, x, y;
 	int d, n;
 
-	xl = POS2TILE( Player.position.origin[ 0 ] - PLAYERSIZE );
-	yl = POS2TILE( Player.position.origin[ 1 ] - PLAYERSIZE );
-	xh = POS2TILE( Player.position.origin[ 0 ] + PLAYERSIZE );
-	yh = POS2TILE( Player.position.origin[ 1 ] + PLAYERSIZE );
+	xl = (int)POS2TILE( Player.position.origin[ 0 ] - PLAYERSIZE );
+	yl = (int)POS2TILE( Player.position.origin[ 1 ] - PLAYERSIZE );
+	xh = (int)POS2TILE( Player.position.origin[ 0 ] + PLAYERSIZE );
+	yh = (int)POS2TILE( Player.position.origin[ 1 ] + PLAYERSIZE );
 
 	// Cheching for solid walls:
 	for( y = yl ; y <= yh ; ++y )
@@ -200,8 +200,8 @@ PRIVATE _boolean PL_TryMove( player_t *self, LevelData_t *lvl )
 		   Door_Opened( &lvl->Doors, x, y) != DOOR_FULLOPEN ) {
 			// iphone hack to allow player to move halfway into door tiles
 			// if the player bounds doesn't cross the middle of the tile, let the move continue			
-			if ( abs( Player.position.origin[0] - TILE2POS( x ) ) <= 0x9000
-				&& abs( Player.position.origin[1] - TILE2POS( y ) ) <= 0x9000 ) {
+			if ( abs( (int)Player.position.origin[0] - TILE2POS( x ) ) <= 0x9000
+				&& abs( (int)Player.position.origin[1] - TILE2POS( y ) ) <= 0x9000 ) {
 				return 0;
 			}
 		}
@@ -213,12 +213,12 @@ PRIVATE _boolean PL_TryMove( player_t *self, LevelData_t *lvl )
 		if( Guards[ n ].state >= st_die1 ) 
 			continue;
 
-		d = self->position.origin[ 0 ] - Guards[ n ].x;
+		d = (int)self->position.origin[ 0 ] - Guards[ n ].x;
 
 		if( d < -MINACTORDIST || d > MINACTORDIST )
 			continue;
 
-		d = self->position.origin[ 1 ] - Guards[ n ].y;
+		d = (int)self->position.origin[ 1 ] - Guards[ n ].y;
 
 		if( d < -MINACTORDIST || d > MINACTORDIST)
 			continue;
@@ -245,8 +245,8 @@ PRIVATE void PL_ClipMove( player_t *self, int xmove, int ymove )
 {
 	int basex, basey;
 
-	basex = self->position.origin[ 0 ];
-	basey = self->position.origin[ 1 ];
+	basex = (int)self->position.origin[ 0 ];
+	basey = (int)self->position.origin[ 1 ];
 
 	self->position.origin[ 0 ] += xmove;
 	self->position.origin[ 1 ] += ymove;
@@ -299,7 +299,7 @@ PRIVATE void PL_ControlMovement( player_t *self, LevelData_t *lvl )
 	int angle, speed;
 
 // rotation
-	angle = self->position.angle;
+	angle = (int)self->position.angle;
 
 //	if(cmd->forwardmove || cmd->sidemove)
 		self->movx = self->movy = 0; // clear accumulated movement
@@ -340,8 +340,8 @@ PRIVATE void PL_ControlMovement( player_t *self, LevelData_t *lvl )
 
 // move player and clip movement to walls (check for no-clip mode here)
 	PL_ClipMove( self, self->movx, self->movy );
-	self->tilex = POS2TILE( self->position.origin[ 0 ] );
-	self->tiley = POS2TILE( self->position.origin[ 1 ] );
+	self->tilex = (int)POS2TILE( self->position.origin[ 0 ] );
+	self->tiley = (int)POS2TILE( self->position.origin[ 1 ] );
 
 	// pick up items easier -- any tile you touch, instead of
 	// just the midpoint tile
@@ -349,9 +349,9 @@ PRIVATE void PL_ControlMovement( player_t *self, LevelData_t *lvl )
 		int	x, y;
 		
 		for ( x = -1 ; x <= 1 ; x+= 2 ) {
-			int	tilex = POS2TILE( self->position.origin[0] + x * PLAYERSIZE );
+			int	tilex = (int)POS2TILE( self->position.origin[0] + x * PLAYERSIZE );
 			for ( y = -1 ; y <= 1 ; y+= 2 ) {
-				int	tiley = POS2TILE( self->position.origin[1] + y * PLAYERSIZE );
+				int	tiley = (int)POS2TILE( self->position.origin[1] + y * PLAYERSIZE );
 				Powerup_PickUp( tilex, tiley );
 			}
 		}
@@ -572,8 +572,13 @@ PUBLIC void PL_Reset(void)
 PUBLIC void PL_Spawn( placeonplane_t location, LevelData_t *lvl )
 {
 	Player.position = location;
-	Player.tilex = POS2TILE( location.origin[ 0 ] );
-	Player.tiley = POS2TILE( location.origin[ 1 ] );
+	Player.tilex = (int)POS2TILE( location.origin[ 0 ] );
+	Player.tiley = (int)POS2TILE( location.origin[ 1 ] );
+    
+    // DEBUG! TESTING!
+//    Player.tilex = 1;
+//    Player.tiley = 15;
+    
 	Player.areanumber = lvl->areas[ Player.tilex ][ Player.tiley ];
 	assert( Player.areanumber >= 0 && Player.areanumber < NUMAREAS );
 	if( Player.areanumber < 0 ) 
@@ -749,8 +754,8 @@ PUBLIC void PL_Damage( player_t *self, entity_t *attacker, int points )
 
 	// note the direction of the last hit for the directional blends
 	{
-		int		dx = attacker->x - self->position.origin[0];
-		int		dy = attacker->y - self->position.origin[1];
+		int		dx = attacker->x - (int)self->position.origin[0];
+		int		dy = attacker->y - (int)self->position.origin[1];
 		
 		// probably won't ever have damage from self, but check anyway
 		if ( dx != 0 || dy != 0 ) {

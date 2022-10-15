@@ -710,14 +710,14 @@ PUBLIC void A_Dormant( entity_t *self )
 	int deltax, deltay;
 	int xl, xh, yl, yh, x, y, n;
 
-	deltax = self->x - Player.position.origin[ 0 ];
+	deltax = self->x - (int)Player.position.origin[ 0 ];
 
 	if( deltax < -MINACTORDIST || deltax > MINACTORDIST )
 	{
 		goto moveok;
 	}
 
-	deltay = self->y - Player.position.origin[ 1 ];
+	deltay = self->y - (int)Player.position.origin[ 1 ];
 	if( deltay < -MINACTORDIST || deltay > MINACTORDIST ) 
 	{
 		goto moveok;
@@ -911,8 +911,8 @@ PUBLIC void T_Projectile( entity_t *self )
 	self->x += deltax;
 	self->y += deltay;
 
-	deltax = ABS( self->x-Player.position.origin[ 0 ] );
-	deltay = ABS( self->y-Player.position.origin[ 1 ] );
+	deltax = (int)ABS( self->x-Player.position.origin[ 0 ] );
+	deltay = (int)ABS( self->y-Player.position.origin[ 1 ] );
 
 	if( ! ProjectileTryMove( self, r_world ) )
 	{

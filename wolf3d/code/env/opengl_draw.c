@@ -75,7 +75,7 @@ PUBLIC void R_Draw_Character( int x, int y, int num, font_t *myfont )
 		return;			// totally off screen
 	}
 
-	scale = myfont->nSize;
+	scale = (int)myfont->nSize;
 	sh = myfont->nMaxHeight;
 
 	row = (num >> 4) - 2;

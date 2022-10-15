@@ -25,15 +25,25 @@
 #import <UIKit/UIAccelerometer.h>
 #import <AVFoundation/AVAudioPlayer.h>
 
+#if !TARGET_OS_TV
+#import <CoreMotion/CoreMotion.h>
+#endif
+
 #import "iphone_store.h"
 
 @class wolf3dViewController;
 
+#if TARGET_OS_TV
+@interface wolf3dAppDelegate : NSObject <UIApplicationDelegate> {
+#else
 @interface wolf3dAppDelegate : NSObject <UIApplicationDelegate, UIAccelerometerDelegate, UIAlertViewDelegate> {
+#endif
+
     UIWindow *window;
 	UINavigationController *navigationController;
 	wolf3dViewController *viewController;
 	int		lastAccelUpdateMsec;
+    BOOL    glVisible;
 
 @private	
 	UIView *waitingView;
@@ -46,6 +56,9 @@
 @property (nonatomic, retain) UINavigationController *navigationController;
 @property (nonatomic, retain) UIView *waitingView;
 @property (nonatomic, retain) AVAudioPlayer *player;
+#if !TARGET_OS_TV
+@property (nonatomic, strong) CMMotionManager * motionManager;
+#endif
 
 - (void)initMenuMusicPlayer;
 
@@ -53,12 +66,16 @@
 - (void)stopMenuMusic;
 
 
-- (void)restartAccelerometerIfNeeded;
+//- (void)restartAccelerometerIfNeeded;
 - (void)showOpenGL;
 - (void)GLtoMainMenu;
 - (void)GLtoPreviousMenu;
 - (void)didRotate:(NSNotification *)notification;
+- (BOOL)isGLVisible;
+#if !TARGET_OS_TV
 - (void)setScreenForOrientation:(UIDeviceOrientation)orientation;
+#endif
+- (NSString*) GetNibNameForDevice:(NSString*) nibName;
 
 - (void)dismissWaitingView;
 

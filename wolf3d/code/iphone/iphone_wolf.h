@@ -59,7 +59,7 @@ typedef enum menuState {
 
 extern menuState_t menuState;
 
-void iphoneDrawMenus();
+void iphoneDrawMenus(void);
 
 // bumped to 107 on moving powerups structure into leveldata
 // bumped to 108 with custom huds
@@ -215,16 +215,16 @@ int iphoneDrawPicWithTouch( int x, int y, int w, int h, const char *pic );
 int iphoneDrawPicRectWithTouch( rectFloat_t rect, const char *pic );
 void iphoneDrawPicNum( int x, int y, int w, int h, int glTexNum );
 void R_Draw_Blend( int x, int y, int w, int h, colour4_t c );
-void SaveTheGame();
-int LoadTheGame();
-void StartGame();
-void iphoneOpenAutomap();
-void iphoneDrawFace();
-void iphoneDrawNotifyText();
-void iphonePreloadBeforePlay();
+void SaveTheGame(void);
+int LoadTheGame(void);
+void StartGame(void);
+void iphoneOpenAutomap(void);
+void iphoneDrawFace(void);
+void iphoneDrawNotifyText(void);
+void iphonePreloadBeforePlay(void);
 
-void InitImmediateModeGL();
-void iphoneRotateForLandscape();
+void InitImmediateModeGL(void);
+void iphoneRotateForLandscape(void);
 
 void ScaleToScreen( int * value);
 void ScalePosition( float * x, float * y );
@@ -275,9 +275,9 @@ typedef struct {
 extern hud_t	huds;
 
 void HudSetForScheme( int schemeNum );
-void HudSetTexnums();
-void HudEditFrame();
-void iphoneHudEditFrame();
+void HudSetTexnums(void);
+void HudEditFrame(void);
+void iphoneHudEditFrame(void);
 
 
 //---------------------------------------
@@ -291,51 +291,58 @@ typedef enum {
 //---------------------------------------
 // interfaces from the original game code
 //---------------------------------------
-void iphoneStartBonusFlash();
+void iphoneStartBonusFlash(void);
 void iphoneStartDamageFlash( int points );
 void iphoneSetAttackDirection( int dir );
 void iphoneStartIntermission( int framesFromNow );
 void iphoneSetNotifyText( const char *str, ... );
-void iphoneSetLevelNotifyText(); //gsh
+void iphoneSetLevelNotifyText(void); //gsh
 	
 //---------------------------------------
 // interfaces to Objective-C land
 //---------------------------------------
-void SysIPhoneSwapBuffers();
-void SysIPhoneVibrate();
+void SysIPhoneSwapBuffers(void);
+void SysIPhoneVibrate(void);
 void SysIPhoneOpenURL( const char *url );
 void SysIPhoneLoadJPG( W8* jpegData, int jpegBytes, W8 **pic, W16 *width, W16 *height, W16 *bytes );
-const char * SysIPhoneGetConsoleTextField();
+const char * SysIPhoneGetConsoleTextField(void);
 void SysIPhoneSetConsoleTextField(const char *);
-void SysIPhoneInitAudioSession();
-int SysIPhoneOtherAudioIsPlaying();
-const char *SysIPhoneGetOSVersion();
-contentVersion_t SysIPhoneGetContentVersion();
+void SysIPhoneInitAudioSession(void);
+int SysIPhoneOtherAudioIsPlaying(void);
+const char *SysIPhoneGetOSVersion(void);
+contentVersion_t SysIPhoneGetContentVersion(void);
 int SysIPhoneGetPathToMainBundleLength( void );
 void SysIPhoneGetPathToMainBundle( char * outPath, int maxLength );
 
-void iphoneStartPreviousMenu();
-void iphoneStartMainMenu();
-void iphonePromptToBuyPlatinum();
+void iphoneStartPreviousMenu(void);
+void iphoneStartMainMenu(void);
+void iphonePromptToBuyPlatinum(void);
 
-void iphoneInitMenuMusic();
-void iphoneStartMenuMusic();
-void iphoneStopMenuMusic();
+void iphoneInitMenuMusic(void);
+void iphoneStartMenuMusic(void);
+void iphoneStopMenuMusic(void);
 
 //---------------------------------------
 // interfaces from Objective-C land
 //---------------------------------------
-void iphoneStartup();
-void iphoneShutdown();
-void iphoneFrame();
+void iphoneStartup(void);
+void iphoneShutdown(void);
+void iphoneFrame(void);
 void iphoneTiltEvent( float *tilts );
 void iphoneTouchEvent( int numTouches, int touches[16] );
-void iphoneActivateConsole();
-void iphoneDeactivateConsole();
-void iphoneExecuteCommandLine();
-void iphoneStartGameplay();
+void iphoneActivateConsole(void);
+void iphoneDeactivateConsole(void);
+void iphoneExecuteCommandLine(void);
+void iphoneStartGameplay(void);
+void iPhoneSetControllerConnected( bool _controllerConnected );
+void iPhoneSetLeftThumbstickXValue( float  _leftThumbstickXAxis );
+void iPhoneSetLeftThumbstickYValue( float  _leftThumbstickYAxis );
+void iPhoneSetRightThumbstickXValue( float  _rightThumbstickXAxis );
+void iPhoneSetRightThumbstickYValue( float  _rightThumbstickYAxis );
+void iPhoneSetRightTriggerPressed( bool _rightTriggerPressed );
+void iPhoneSetButtonAPressed( bool _buttonAPressed );
 
-void iphoneResume();
+void iphoneResume(void);
 
 void LoadPNG( const char *filename, W8 **pic, W16 *width, W16 *height, W16 *bytes );
 

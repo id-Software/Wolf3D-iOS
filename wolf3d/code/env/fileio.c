@@ -244,7 +244,7 @@ PUBLIC filehandle_t *FS_OpenFile( const char *filename, W32 FlagsAndAttributes )
 	hFile = Z_Malloc( sizeof( filehandle_t ) );
 	memset( hFile, 0, sizeof( filehandle_t ) );
 	
-	hFile->filesize = s.st_size;
+	hFile->filesize = (W32)s.st_size;
 #ifdef USE_MMAP	
 	hFile->filedata = mmap( NULL, hFile->filesize, PROT_READ, MAP_FILE|MAP_PRIVATE, fd, 0 );
 	if ( (int)hFile->filedata == -1 ) {

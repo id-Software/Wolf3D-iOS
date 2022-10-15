@@ -67,10 +67,10 @@ colour3_t colourconLLGray = { 192, 192, 192 };
 
 -----------------------------------------------------------------------------
 */
-PRIVATE void DrawString( int x, int y, char *s )
-{
-	Font_put_line( FONT0, x, y, s );
-}
+//PRIVATE void DrawString( int x, int y, char *s )
+//{
+//    Font_put_line( FONT0, x, y, s );
+//}
 
 /*
 -----------------------------------------------------------------------------
@@ -479,7 +479,7 @@ PUBLIC void Con_CenteredPrint( const char *text )
 	int		length;
 	char	buffer[ 1024 ];
 
-	length = strlen( text );
+	length = (int)strlen( text );
 	length = ( con.linewidth - length ) >> 1;
 	if( length < 0 )
 	{
@@ -532,7 +532,7 @@ PRIVATE void Con_DrawInput( void )
 			return;
 		}
 		strcpy( buf, SysIPhoneGetConsoleTextField() );
-		key_linepos = strlen( buf );
+		key_linepos = (int)strlen( buf );
 		buf[key_linepos+1] = 0;
 		text = buf;
 	}
@@ -610,7 +610,7 @@ PUBLIC void Con_DrawNotify( void )
 			continue;
 		}
 
-		time = FloatToInt( con.times[ i % NUM_CON_TIMES ] );
+		time = (int)FloatToInt( con.times[ i % NUM_CON_TIMES ] );
 		if( time == 0 )
 		{
 			continue;
@@ -681,15 +681,15 @@ PUBLIC void Con_DrawConsole( float frac )
 //
 // Draw the background	
 //
-	R_Draw_Fill( 0, -viddef.height + lines, viddef.width, viddef.height, colourBlack );
-	R_Draw_Fill( 0, lines-2, viddef.width, 2, colourconLGray );	
+	R_Draw_Fill( 0, (int)(-viddef.height + lines), viddef.width, viddef.height, colourBlack );
+	R_Draw_Fill( 0, (int)(lines-2), viddef.width, 2, colourconLGray );
 
 	Font_SetColour( FONT0, colourconLLGray );
 
 //
 // Draw the text
 //
-	con.vislines = lines;
+	con.vislines = (int)lines;
 	
 #if 0
 
@@ -699,9 +699,9 @@ PUBLIC void Con_DrawConsole( float frac )
 
 #else
 
-	rows = (lines - 22) >> 3;		// rows of text to draw
+	rows = ((int)lines - 22) >> 3;		// rows of text to draw
 
-	y = lines - 30;
+	y = (int)lines - 30;
 
 #endif
 

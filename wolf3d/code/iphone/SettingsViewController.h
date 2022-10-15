@@ -26,10 +26,12 @@
 
 @interface SettingsViewController : UIViewController {
 
+#if !TARGET_OS_TV
     IBOutlet UISlider * sensitivitySlider;
     IBOutlet UISlider * tiltMoveSpeedSlider;
     IBOutlet UISlider * tiltTurnSpeedSlider;
     IBOutlet UISlider * hudAlphaSlider;
+#endif
     
     IBOutlet UILabel * sensitivityLabel;
 	IBOutlet UILabel * tiltMoveSpeedLabel;

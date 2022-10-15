@@ -26,11 +26,14 @@
 #import "wolf3dViewController.h"
 #import "EAGLView.h"
 #import "wolfiphone.h"
-//#import "wolf3dAppDelegate.h"
+#import "wolf3dAppDelegate.h"
+
+#import <GameController/GameController.h>
 
 @interface wolf3dViewController ()
 @property (nonatomic, retain) EAGLContext *context;
 @property (nonatomic, assign) CADisplayLink *displayLink;
+@property (strong, nonatomic) GCController *mainController;
 @end
 
 @implementation wolf3dViewController
@@ -40,11 +43,31 @@
 
 - (id)initWithNibName:(NSString*)file bundle:(NSBundle*)bundle
 {
+    [super initWithNibName:file bundle:bundle];
+    
 	// Get the application's window dimensions.
-	EAGLView *glView = [[EAGLView alloc] initWithFrame:[UIScreen mainScreen].applicationFrame];
+	//EAGLView *glView = [[EAGLView alloc] initWithFrame:[UIScreen mainScreen].applicationFrame];
+    
+//    CGRect rect;
+//    if (self.view.frame.size.width < self.view.frame.size.height)
+//        rect = CGRectMake(self.view.frame.origin.x, self.view.frame.origin.y, self.view.frame.size.width, self.view.frame.size.height);
+//    else
+//        rect = CGRectMake(self.view.frame.origin.y, self.view.frame.origin.x, self.view.frame.size.height, self.view.frame.size.width);
+    
+    CGRect screenBound = [[UIScreen mainScreen] bounds];
+    CGSize screenSize = screenBound.size;
+    
+    CGFloat screenHeight = screenSize.height;
+    CGFloat screenWidth = screenSize.width;
+    
+    EAGLView *glView = [[EAGLView alloc] initWithFrame:CGRectMake(0, 0, screenWidth, screenHeight)];
+    glView.bounds = CGRectMake(0, 0, screenWidth, screenHeight);
+    
+    NSLog(@"initWithNibName glView.bounds: %f %f", glView.bounds.size.width, glView.bounds.size.height);
+    
 	self.view = glView;
 	[glView release];
-	
+
     EAGLContext *aContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
     
     if (!aContext)
@@ -61,18 +84,58 @@
     animating = FALSE;
     animationFrameInterval = DEFAULT_FRAME_INTERVAL;
     self.displayLink = nil;
-				
+    
+    // notifications for controller (dis)connect
+    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(controllerWasConnected:) name:GCControllerDidConnectNotification object:nil];
+    [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(controllerWasDisconnected:) name:GCControllerDidDisconnectNotification object:nil];
+
+    if (IS_IPHONE_X) {
+        isiPhoneX = true;
+    } else {
+        isiPhoneX = false;
+    }
+    
 	// Now that we have a context, we can init the render system.
 	iphoneStartup();
+    
+#if TARGET_OS_TV
+    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTapFrom:)];
+    [self.view addGestureRecognizer:tapGestureRecognizer];
+#endif
 	
 	return self;
 }
 
+-(void)handleTapFrom:(UIPanGestureRecognizer *)gesture
+{
+    NSLog(@"caught!");
+}
 
 
 - (void)awakeFromNib
 {
-	EAGLView *glView = [[EAGLView alloc] initWithFrame:[UIScreen mainScreen].applicationFrame];
+    [super awakeFromNib];
+    
+//    EAGLView *glView = [[EAGLView alloc] initWithFrame:[UIScreen mainScreen].applicationFrame];
+    
+//    CGRect rect;
+//    if (self.view.frame.size.width < self.view.frame.size.height)
+//        rect = CGRectMake(self.view.frame.origin.x, self.view.frame.origin.y, self.view.frame.size.width, self.view.frame.size.height);
+//    else
+//        rect = CGRectMake(self.view.frame.origin.y, self.view.frame.origin.x, self.view.frame.size.height, self.view.frame.size.width);
+//    
+
+    CGRect screenBound = [[UIScreen mainScreen] bounds];
+    CGSize screenSize = screenBound.size;
+    
+    CGFloat screenHeight = screenSize.height;
+    CGFloat screenWidth = screenSize.width;
+    
+    EAGLView *glView = [[EAGLView alloc] initWithFrame:CGRectMake(0, 0, screenWidth, screenHeight)];
+    glView.bounds = CGRectMake(0, 0, screenWidth, screenHeight);
+    
+    NSLog(@"awakeFromNib glView.bounds: %f %f", glView.bounds.size.width, glView.bounds.size.height);
+    
 	self.view = glView;
 	[glView release];
 	
@@ -98,12 +161,20 @@
     // Releases the view if it doesn't have a superview.
     [super didReceiveMemoryWarning];
     
-    // Release any cached data, images, etc. that aren't in use.
+
+    [self stopAnimation];
+    
+    // Tear down context.
+    if ([EAGLContext currentContext] == context)
+        [EAGLContext setCurrentContext:nil];
+    self.context = nil;
 }
 
 - (void)dealloc {
 	// Stop orientation notifications.
+#if !TARGET_OS_TV
 	[[UIDevice currentDevice] endGeneratingDeviceOrientationNotifications];
+#endif
 
 	// Tear down context.
     if ([EAGLContext currentContext] == context)
@@ -126,18 +197,10 @@
 	[self setActive:NO];
 	
     [super viewWillDisappear:animated];
-}
+    
 
-- (void)viewDidUnload
-{
-	[super viewDidUnload];
-
-	[self stopAnimation];
-
-    // Tear down context.
-    if ([EAGLContext currentContext] == context)
-        [EAGLContext setCurrentContext:nil];
-	self.context = nil;	
+    wolf3dAppDelegate* app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+    [app GLtoMainMenu];
 }
 
 - (NSInteger)animationFrameInterval
@@ -171,7 +234,11 @@
 		// Not worrying about supporting external displays yet, so just create a default display link.
         //CADisplayLink *aDisplayLink = [[UIScreen mainScreen] displayLinkWithTarget:self selector:@selector(drawFrame)];
 		CADisplayLink *aDisplayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawFrame)];
+#if TARGET_OS_TV
+        [aDisplayLink setPreferredFramesPerSecond:60];
+#else
         [aDisplayLink setFrameInterval:animationFrameInterval];
+#endif
         [aDisplayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
         self.displayLink = aDisplayLink;
         
@@ -228,10 +295,193 @@
 	
 }
 
+//#if TARGET_OS_TV
+//- (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+//    for (UIPress* press in presses) {
+//        switch (press.type) {
+//            case UIPressTypeMenu:
+//                break;
+//            default:
+//                [super pressesBegan: presses withEvent: event];
+//                break;
+//        }
+//    }
+//}
+//
+//- (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event {
+//    for (UIPress* press in presses) {
+//        wolf3dAppDelegate* app = (wolf3dAppDelegate*)[[UIApplication sharedApplication] delegate];
+//        switch (press.type) {
+//            case UIPressTypeMenu:
+//                if ([app isGLVisible]) {
+//                    [app GLtoMainMenu];
+//                } else {
+//                    [super pressesEnded: presses withEvent: event];
+//                }
+//                break;
+//            default:
+//                [super pressesEnded: presses withEvent: event];
+//                break;
+//        }
+//    }
+//}
+//
+//#endif
+
 // Clears the renderbuffer and immediately displays it.
 - (void)clearAndPresentRenderbuffer {
 	qglClear( GL_COLOR_BUFFER_BIT );
 	[(EAGLView *)self.view presentFramebuffer];
+}
+
+- (void)controllerWasConnected:(NSNotification *)notification {
+    
+    // a controller was connected
+    GCController *controller = (GCController *)notification.object;
+    NSString *status = [NSString stringWithFormat:@"Controller connected\nName: %@\n", controller.vendorName];
+    NSLog(@"%@", status);
+    
+    self.mainController = controller;
+    
+    iPhoneSetControllerConnected(true);
+    [self reactToInput];
+}
+
+- (void)controllerWasDisconnected:(NSNotification *)notification {
+    
+    // a controller was disconnected
+    GCController *controller = (GCController *)notification.object;
+    NSString *status = [NSString stringWithFormat:@"Controller disconnected:\n%@", controller.vendorName];
+    NSLog(@"%@", status);
+
+//    self.mainController = nil;
+    iPhoneSetControllerConnected(false);
+}
+
+- (void)reactToInput {
+    
+    NSLog(@"%s", "reactToInput");
+    
+    // register block for input change detection
+    GCExtendedGamepad *profile = self.mainController.extendedGamepad;
+    profile.valueChangedHandler = ^(GCExtendedGamepad *gamepad, GCControllerElement *element)
+    {
+        NSString *message = @"";
+        CGPoint position = CGPointMake(0, 0);
+        
+        // left trigger
+        if (gamepad.leftTrigger == element && gamepad.leftTrigger.isPressed) {
+            message = [message stringByAppendingString:@"Left Trigger"];
+        }
+        
+        // right trigger
+        if (gamepad.rightTrigger == element) {
+            iPhoneSetRightTriggerPressed(gamepad.rightTrigger.isPressed);
+        }
+        
+        // left shoulder button
+        if (gamepad.leftShoulder == element && gamepad.leftShoulder.isPressed) {
+            message = [message stringByAppendingString:@"Left Shoulder Button"];
+        }
+        
+        // right shoulder button
+        if (gamepad.rightShoulder == element && gamepad.rightShoulder.isPressed) {
+            message = [message stringByAppendingString:@"Right Shoulder Button"];
+        }
+        
+        // A button
+        if (gamepad.buttonA == element) {
+            iPhoneSetButtonAPressed(gamepad.buttonA.isPressed);
+        }
+        
+        // B button
+        if (gamepad.buttonB == element && gamepad.buttonB.isPressed) {
+            message = [message stringByAppendingString:@"B Button"];
+        }
+        
+        // X button
+        if (gamepad.buttonX == element && gamepad.buttonX.isPressed) {
+            message = [message stringByAppendingString:@"X Button"];
+        }
+        
+        // Y button
+        if (gamepad.buttonY == element && gamepad.buttonY.isPressed) {
+            message = [message stringByAppendingString:@"Y Button"];
+        }
+        
+        // d-pad
+        if (gamepad.dpad == element) {
+            if (gamepad.dpad.up.isPressed) {
+                message = [message stringByAppendingString:@"D-Pad Up"];
+            }
+            if (gamepad.dpad.down.isPressed) {
+                message = [message stringByAppendingString:@"D-Pad Down"];
+            }
+            if (gamepad.dpad.left.isPressed) {
+                message = [message stringByAppendingString:@"D-Pad Left"];
+            }
+            if (gamepad.dpad.right.isPressed) {
+                message = [message stringByAppendingString:@"D-Pad Right"];
+            }
+        }
+        
+        // left stick
+        if (gamepad.leftThumbstick == element) {
+            if (gamepad.leftThumbstick.up.isPressed || gamepad.leftThumbstick.down.isPressed) {
+                iPhoneSetLeftThumbstickYValue(gamepad.leftThumbstick.yAxis.value);
+            } else {
+                iPhoneSetLeftThumbstickYValue(0);
+            }
+            
+            if (gamepad.leftThumbstick.left.isPressed || gamepad.leftThumbstick.right.isPressed) {
+                iPhoneSetLeftThumbstickXValue(gamepad.leftThumbstick.xAxis.value);
+            } else {
+                iPhoneSetLeftThumbstickXValue(0);
+            }
+            
+            position = CGPointMake(gamepad.leftThumbstick.xAxis.value, gamepad.leftThumbstick.yAxis.value);
+        }
+        
+        // right stick
+        if (gamepad.rightThumbstick == element) {
+            if (gamepad.rightThumbstick.up.isPressed || gamepad.rightThumbstick.down.isPressed) {
+                iPhoneSetRightThumbstickYValue(gamepad.rightThumbstick.yAxis.value);
+            } else {
+                iPhoneSetRightThumbstickYValue(0);
+            }
+            
+            if (gamepad.rightThumbstick.left.isPressed || gamepad.rightThumbstick.right.isPressed) {
+                iPhoneSetRightThumbstickXValue(gamepad.rightThumbstick.xAxis.value);
+            } else {
+                iPhoneSetRightThumbstickXValue(0);
+            }
+
+            position = CGPointMake(gamepad.rightThumbstick.xAxis.value, gamepad.rightThumbstick.yAxis.value);
+        }
+        
+        //NSLog(@"%@", message);
+        
+    };
+    
+    // we need a weak self here for in-block access
+//    __weak typeof(self) weakSelf = self;
+//
+//    self.mainController.controllerPausedHandler = ^(GCController *controller){
+//
+//        // check if we're currently paused or not
+//        // then bring up or remove the paused view controller
+//        if (weakSelf.currentlyPaused) {
+//
+//            weakSelf.currentlyPaused = NO;
+//            [weakSelf dismissViewControllerAnimated:YES completion:nil];
+//
+//        } else {
+//
+//            weakSelf.currentlyPaused = YES;
+//            [weakSelf presentViewController:weakSelf.pausedViewController animated:YES completion:nil];
+//        }
+//
+//    };
 }
 
 @end

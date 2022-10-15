@@ -268,8 +268,8 @@ PUBLIC texture_t *TM_LoadTexture( const char *name, W8 *data, int width, int hei
 			tex->MipMap = false;	
 			tex->WrapS = Clamp;
 			tex->WrapT = Clamp;
-			tex->MinFilter = Nearest;
-			tex->MagFilter = NearestMipMapOff;
+			tex->MinFilter = NearestMipMapOff;
+			tex->MagFilter = Nearest;
 			break;
 
 		case TT_Wall:
@@ -284,8 +284,8 @@ PUBLIC texture_t *TM_LoadTexture( const char *name, W8 *data, int width, int hei
 		default:
 			tex->WrapS = Repeat;
 			tex->WrapT = Repeat;
-			tex->MinFilter = Nearest;
-			tex->MagFilter = NearestMipMapOff;
+			tex->MinFilter = NearestMipMapOff;
+			tex->MagFilter = Nearest;
 			break;
 	}
 
@@ -465,7 +465,7 @@ PUBLIC texture_t *TM_FindTexture( const char *name, texturetype_t type )
 	}
 
 	// Check for file extension
-	len = strlen( name );
+	len = (int)strlen( name );
 	if( len < 5 )
 	{
 		return r_notexture;
@@ -625,7 +625,7 @@ PUBLIC texture_t *TM_FindTexture( const char *name, texturetype_t type )
 			Com_Printf( "Failed to find texture %s\n", name );
 			return r_notexture;
 		} //else {   //added the else...gsh
-		jpgSize = FS_GetFileSize( fh );
+		jpgSize = (int)FS_GetFileSize( fh );
 		jpgData = fh->ptrStart;
 		
 		SysIPhoneLoadJPG( jpgData, jpgSize, &data, &width, &height, &bytes );

@@ -28,7 +28,7 @@
 @private
 	// Main menu
 	IBOutlet UIButton *resumeButton;
-	IBOutlet UIButton *newGameButton;
+	IBOutlet UIButton *startNewGameButton;
 	IBOutlet UIButton *settingsButton;
 	IBOutlet UIButton *aboutButton;
 	IBOutlet UIButton *extrasButton;

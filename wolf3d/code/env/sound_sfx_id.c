@@ -176,10 +176,10 @@ PUBLIC _boolean Sound_LoadSound( sfx_t *sfx )
 	}
 	
 	sfx->loaded = true;
-	sfx->samples = info.samples;
-	sfx->rate = info.sample_rate;
+	sfx->samples = (int)info.samples;
+	sfx->rate = (int)info.sample_rate;
 
-	Sound_UploadSound( data, info.sample_size, info.channels, sfx );
+	Sound_UploadSound( data, (int)info.sample_size, (int)info.channels, sfx );
 
 	Z_Free( data );
 

@@ -24,9 +24,8 @@
 #import <UIKit/UIKit.h>
 
 
-@interface CreditsViewController : UIViewController {
-	@private
-		IBOutlet UIView* creditsRoll;
+@interface CreditsViewController : UIViewController <UITableViewDelegate, UITableViewDataSource> {
+    IBOutlet UITableView *creditsList;
 }
 
 - (IBAction)back:(id)sender;
